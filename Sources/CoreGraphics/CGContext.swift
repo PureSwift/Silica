@@ -47,5 +47,5 @@ public func CGContextConcatCTM(_ context: CGContext, transform: CGAffineTransfor
 
 public func CGContextGetCTM(_ context: CGContext) -> CGAffineTransform {
     
-    
+    return context.currentTransform
 }

@@ -25,7 +25,7 @@ public final class Context {
     
     private var internalState: State = State()
     
-    private var matrix = AffineTransform.identity
+    private var textMatrix = AffineTransform.identity
     
     // MARK: - Initialization
     
@@ -52,6 +52,20 @@ public final class Context {
     public var currentTransform: AffineTransform {
         
         return AffineTransform(matrix: internalContext.matrix)
+    }
+    
+    public var shouldAntialias: Bool {
+        
+        get { return internalContext.antialias != CAIRO_ANTIALIAS_NONE }
+        
+        set { internalContext.antialias = newValue ? CAIRO_ANTIALIAS_DEFAULT : CAIRO_ANTIALIAS_NONE }
+    }
+    
+    public var lineWidth: Double {
+        
+        get { return internalContext.lineWidth }
+        
+        set { internalContext.lineWidth = newValue }
     }
     
     // MARK: - Methods
@@ -109,6 +123,9 @@ public final class Context {
     }
     
     public func restore() throws {
+
+        guard let restoredState = internalState.next
+            else { throw CAIRO_STATUS_INVALID_RESTORE.toError()! }
         
         internalContext.restore()
         
@@ -117,8 +134,12 @@ public final class Context {
             throw error
         }
         
+        // success
         
+        internalState = restoredState
     }
+    
+    
     
     // MARK: - Private Methods
     
@@ -150,6 +171,9 @@ private extension Silica.Context {
         var copy: State {
             
             let copy = State()
+            copy.next = next
+            copy.alpha = alpha
+            copy.fill = fill
             
             return copy
         }
