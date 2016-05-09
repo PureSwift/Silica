@@ -112,7 +112,7 @@ public func CGContextSetShadow(_ context: CGContext, _ offset: CGSize, _ radius:
 
 public func CGContextSetShadowWithColor(_ context: CGContext, _ offset: CGSize, _ radius: CGFloat, _ color: CGColor) {
     
-    
+    context.setShadow(offset: offset, radius: radius, color: color)
 }
 
 

@@ -20,7 +20,7 @@ public struct Color {
 
 internal extension Color {
     
-    func toPattern(alpha: Double) -> Cairo.Pattern {
+    func toPattern(alpha: Double) throws -> Cairo.Pattern {
         
         
     }

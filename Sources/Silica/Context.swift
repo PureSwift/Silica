@@ -174,9 +174,30 @@ public final class Context {
         internalState = restoredState
     }
     
+    // MARK: Setting Graphics State Attributes
+    
+    public func setShadow(offset: Size, radius: Double, color: Color) {
+        
+        let colorPattern = color.toPattern(alpha: 1.0)
+        
+        internalState.shadow = (offset: offset, radius: radius, color: color, pattern: colorPattern)
+    }
+    
+    // MARK: Constructing Paths
+    
+    public func beginPath() {
+        
+        internalContext.newPath()
+    }
+    
+    public func closePath() {
+        
+        internalContext.closePath()
+    }
+    
     // MARK: - Private Methods
     
-    private func setColor()
+    
 }
 
 // MARK: - Private
@@ -193,7 +214,7 @@ private extension Silica.Context {
         var alpha: Double = 1.0
         var fill: (color: Color, pattern: Cairo.Pattern)?
         var stroke: (color: Color, pattern: Cairo.Pattern)?
-        var shadow: (color: Color, offset: Size, radius: Double)?
+        var shadow: (offset: Size, radius: Double, color: Color, pattern: Cairo.Pattern)?
         var font: Font?
         var fontSize: Double = 0.0
         var characterSpacing: Double = 0.0
