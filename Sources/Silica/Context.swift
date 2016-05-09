@@ -54,6 +54,14 @@ public final class Context {
         return AffineTransform(cairo: internalContext.matrix)
     }
     
+    public var currentPoint: Point? {
+        
+        guard let point = internalContext.currentPoint
+            else { return nil }
+        
+        return Point(x: point.x, y: point.y)
+    }
+    
     public var shouldAntialias: Bool {
         
         get { return internalContext.antialias != CAIRO_ANTIALIAS_NONE }
@@ -208,6 +216,11 @@ public final class Context {
     public func curve(to controlPoints: (first: Point, second: Point, end: Point)) {
         
         internalContext.curve(to: ((x: controlPoints.first.x, y: controlPoints.first.y), (x: controlPoints.second.x, y: controlPoints.second.y), (x: controlPoints.end.x, y: controlPoints.end.y)))
+    }
+    
+    public func add(_ rect: Rect) {
+        
+        internalContext.addRectangle(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: rect.size.height)
     }
     
     // MARK: - Private Methods

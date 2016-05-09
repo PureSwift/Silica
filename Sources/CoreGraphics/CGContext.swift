@@ -18,6 +18,11 @@ public typealias CGLineCap = Silica.LineCap
 
 // MARK: - CGContext Functions
 
+public func CGContextGetPathCurrentPoint(_ context: CGContext) -> CGPoint {
+    
+    return context.currentPoint ?? CGPoint()
+}
+
 public func CGContextBeginPage(_ context: CGContext, _ mediaBox: UnsafePointer<CGRect>? = nil) {
     
     // ignore media box
@@ -125,9 +130,6 @@ public func CGContextAddLineToPoint(_ context: CGContext, _ x: CGFloat, _ y: CGF
     context.line(to: Point(x: x, y: y))
 }
 
-/// Adds a sequence of connected straight-line segments to the current path.
-///
-/// - SeeAlso: [iOS Documentation](https://developer.apple.com/library/ios/documentation/GraphicsImaging/Reference/CGContext/index.html#//apple_ref/c/func/CGContextAddLines)
 public func CGContextAddLines(_ context: CGContext, _ points: UnsafePointer<CGPoint>, _ count: Int) {
     
     guard count > 0 else { return }
@@ -147,6 +149,25 @@ public func CGContextAddCurveToPoint(_ context: CGContext, _ cp1x: CGFloat, _ cp
 
 public func CGContextAddQuadCurveToPoint(_ context: CGContext, _ cpx: CGFloat, _ cpy: CGFloat, _ x: CGFloat, _ y: CGFloat) {
     
+    let currentPoint = CGContextGetPathCurrentPoint(context)
     
+    CGContextAddCurveToPoint(context, (currentPoint.x/3.0) + (2.0*cpx/3.0), (currentPoint.y/3.0) + (2.0*cpy/3.0), (2.0*cpx/3.0) + (x/3.0), (2.0*cpy/3.0) + (y/3.0), x, y)
 }
 
+public func CGContextAddRect(_ context: CGContext, rect: CGRect) {
+    
+    context.add(rect)
+}
+
+public func CGContextAddRects(_ context: CGContext, _ rects: UnsafePointer<CGRect>, _ count: Int) {
+    
+    for i in 0 ..< count {
+        
+        CGContextAddRect(context, rects[i])
+    }
+}
+
+public func func CGContextAddArc(_ context: CGContext, _ x: CGFloat, _ y: CGFloat, _ radius: CGFloat, _ startAngle: CGFloat, _ endAngle: CGFloat, _ clockwise: Int32) {
+    
+    context.add
+}

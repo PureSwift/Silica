@@ -24,6 +24,8 @@
 		6EEFFEBF1CE0A49A00515526 /* CGColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEBE1CE0A49A00515526 /* CGColor.swift */; };
 		6EEFFEC11CE0A53E00515526 /* CGPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEC01CE0A53E00515526 /* CGPath.swift */; };
 		6EEFFEC31CE0A54D00515526 /* CGSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEC21CE0A54D00515526 /* CGSize.swift */; };
+		6EEFFEC91CE10A8D00515526 /* CGPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEC81CE10A8D00515526 /* CGPoint.swift */; };
+		6EEFFECB1CE10BC400515526 /* CGRect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFECA1CE10BC400515526 /* CGRect.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +60,8 @@
 		6EEFFEBE1CE0A49A00515526 /* CGColor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGColor.swift; sourceTree = "<group>"; };
 		6EEFFEC01CE0A53E00515526 /* CGPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPath.swift; sourceTree = "<group>"; };
 		6EEFFEC21CE0A54D00515526 /* CGSize.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGSize.swift; sourceTree = "<group>"; };
+		6EEFFEC81CE10A8D00515526 /* CGPoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPoint.swift; sourceTree = "<group>"; };
+		6EEFFECA1CE10BC400515526 /* CGRect.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGRect.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -141,6 +145,8 @@
 				6EEFFEBE1CE0A49A00515526 /* CGColor.swift */,
 				6EEFFEC01CE0A53E00515526 /* CGPath.swift */,
 				6EEFFEC21CE0A54D00515526 /* CGSize.swift */,
+				6EEFFEC81CE10A8D00515526 /* CGPoint.swift */,
+				6EEFFECA1CE10BC400515526 /* CGRect.swift */,
 			);
 			path = CoreGraphics;
 			sourceTree = "<group>";
@@ -292,7 +298,9 @@
 				6E572ED31CE0732B002E245A /* CGAffineTransform.swift in Sources */,
 				6EEFFEC31CE0A54D00515526 /* CGSize.swift in Sources */,
 				6EEFFEC11CE0A53E00515526 /* CGPath.swift in Sources */,
+				6EEFFEC91CE10A8D00515526 /* CGPoint.swift in Sources */,
 				6E572ECD1CE06EE6002E245A /* CGContext.swift in Sources */,
+				6EEFFECB1CE10BC400515526 /* CGRect.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
