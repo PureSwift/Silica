@@ -21,7 +21,21 @@
 		6EEFFEB71CE099D400515526 /* LineJoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB61CE099D400515526 /* LineJoin.swift */; };
 		6EEFFEB91CE09C9300515526 /* CairoConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB81CE09C9300515526 /* CairoConvertible.swift */; };
 		6EEFFEBB1CE09DE000515526 /* LineCap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEBA1CE09DE000515526 /* LineCap.swift */; };
+		6EEFFEBF1CE0A49A00515526 /* CGColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEBE1CE0A49A00515526 /* CGColor.swift */; };
+		6EEFFEC11CE0A53E00515526 /* CGPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEC01CE0A53E00515526 /* CGPath.swift */; };
+		6EEFFEC31CE0A54D00515526 /* CGSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEC21CE0A54D00515526 /* CGSize.swift */; };
+		6EEFFEC51CE0A6A200515526 /* ColorSpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEC41CE0A6A200515526 /* ColorSpace.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		6EEFFEBC1CE0A24E00515526 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6E339B601CDFC492008E399E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6E339B681CDFC492008E399E;
+			remoteInfo = Silica;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		6E339B691CDFC492008E399E /* Silica.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Silica.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -42,6 +56,10 @@
 		6EEFFEB61CE099D400515526 /* LineJoin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineJoin.swift; sourceTree = "<group>"; };
 		6EEFFEB81CE09C9300515526 /* CairoConvertible.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CairoConvertible.swift; sourceTree = "<group>"; };
 		6EEFFEBA1CE09DE000515526 /* LineCap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineCap.swift; sourceTree = "<group>"; };
+		6EEFFEBE1CE0A49A00515526 /* CGColor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGColor.swift; sourceTree = "<group>"; };
+		6EEFFEC01CE0A53E00515526 /* CGPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPath.swift; sourceTree = "<group>"; };
+		6EEFFEC21CE0A54D00515526 /* CGSize.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGSize.swift; sourceTree = "<group>"; };
+		6EEFFEC41CE0A6A200515526 /* ColorSpace.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ColorSpace.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +125,7 @@
 				6EEFFEB81CE09C9300515526 /* CairoConvertible.swift */,
 				6E339B851CDFC672008E399E /* Context.swift */,
 				6EEFFEAE1CE0797900515526 /* Color.swift */,
+				6EEFFEC41CE0A6A200515526 /* ColorSpace.swift */,
 				6EEFFEB01CE07B6B00515526 /* Font.swift */,
 				6E339B891CDFCBF8008E399E /* Geometry.swift */,
 				6E339B871CDFC67A008E399E /* Path.swift */,
@@ -120,8 +139,11 @@
 		6E572EBD1CE06E0B002E245A /* CoreGraphics */ = {
 			isa = PBXGroup;
 			children = (
-				6E572ED11CE072FD002E245A /* CGAffineTransform.swift */,
 				6E572ECB1CE06ED7002E245A /* CGContext.swift */,
+				6E572ED11CE072FD002E245A /* CGAffineTransform.swift */,
+				6EEFFEBE1CE0A49A00515526 /* CGColor.swift */,
+				6EEFFEC01CE0A53E00515526 /* CGPath.swift */,
+				6EEFFEC21CE0A54D00515526 /* CGSize.swift */,
 			);
 			path = CoreGraphics;
 			sourceTree = "<group>";
@@ -187,6 +209,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				6EEFFEBD1CE0A24E00515526 /* PBXTargetDependency */,
 			);
 			name = SwiftCoreGraphics;
 			productName = SwiftCoreGraphics;
@@ -256,6 +279,7 @@
 				6EEFFEB91CE09C9300515526 /* CairoConvertible.swift in Sources */,
 				6EEFFEB71CE099D400515526 /* LineJoin.swift in Sources */,
 				6E572EBA1CDFE21E002E245A /* AffineTransform.swift in Sources */,
+				6EEFFEC51CE0A6A200515526 /* ColorSpace.swift in Sources */,
 				6EEFFEB11CE07B6B00515526 /* Font.swift in Sources */,
 				6E339B8A1CDFCBF8008E399E /* Geometry.swift in Sources */,
 				6EEFFEB31CE07BDE00515526 /* TextDrawingMode.swift in Sources */,
@@ -268,12 +292,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6EEFFEBF1CE0A49A00515526 /* CGColor.swift in Sources */,
 				6E572ED31CE0732B002E245A /* CGAffineTransform.swift in Sources */,
+				6EEFFEC31CE0A54D00515526 /* CGSize.swift in Sources */,
+				6EEFFEC11CE0A53E00515526 /* CGPath.swift in Sources */,
 				6E572ECD1CE06EE6002E245A /* CGContext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6EEFFEBD1CE0A24E00515526 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6E339B681CDFC492008E399E /* Silica */;
+			targetProxy = 6EEFFEBC1CE0A24E00515526 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		6E339B7B1CDFC492008E399E /* Debug */ = {

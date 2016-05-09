@@ -82,6 +82,27 @@ public final class Context {
         set { internalContext.lineCap = newValue.toCairo() }
     }
     
+    public var miterLimit: Double {
+        
+        get { return internalContext.miterLimit }
+        
+        set { internalContext.miterLimit = newValue }
+    }
+    
+    public var lineDash: (phase: Double, lengths: [Double]) {
+        
+        get { return internalContext.lineDash }
+        
+        set { internalContext.lineDash = newValue }
+    }
+    
+    public var tolerance: Double {
+        
+        get { return internalContext.tolerance }
+        
+        set { internalContext.tolerance = newValue }
+    }
+    
     // MARK: - Methods
     
     // MARK: Defining Pages
@@ -155,7 +176,7 @@ public final class Context {
     
     // MARK: - Private Methods
     
-    
+    private func setColor()
 }
 
 // MARK: - Private
@@ -183,9 +204,16 @@ private extension Silica.Context {
         var copy: State {
             
             let copy = State()
+            
             copy.next = next
             copy.alpha = alpha
             copy.fill = fill
+            copy.stroke = stroke
+            copy.shadow = shadow
+            copy.font = font
+            copy.fontSize = fontSize
+            copy.characterSpacing = characterSpacing
+            copy.textMode = textMode
             
             return copy
         }

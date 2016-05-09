@@ -71,13 +71,48 @@ public func CGContextSetShouldAntialias(_ context: CGContext, _ shouldAntialias:
     context.shouldAntialias = shouldAntialias
 }
 
-public func CGContextSetLineWidth(_ context: CGContext, lineWidth: CGFloat) {
+public func CGContextSetLineWidth(_ context: CGContext, _ lineWidth: CGFloat) {
     
     context.lineWidth = lineWidth
 }
 
-public func CGContextSetLineJoin(_ context: CGContext, lineJoin: CGLineJoin) {
+public func CGContextSetLineJoin(_ context: CGContext, _ lineJoin: CGLineJoin) {
+    
+    context.lineJoin = lineJoin
+}
+
+public func CGContextSetLineCap(_ context: CGContext, _ lineCap: LineCap) {
+    
+    context.lineCap = lineCap
+}
+
+public func CGContextSetLineDash(_ context: CGContext, _ phase: CGFloat, _ lengths: UnsafePointer<CGFloat>, _ count: Int) {
+    
+    var lengthsArray = [CGFloat](repeating: 0, count: count)
+    
+    for i in 0 ..< count {
+        
+        lengthsArray[i] = lengths[i]
+    }
+    
+    context.lineDash = (phase: phase, lengths: lengthsArray)
+}
+
+public func CGContextSetFlatness(_ context: CGContext, _ flatness: CGFloat) {
+    
+    context.tolerance = flatness
+}
+
+public func CGContextSetShadow(_ context: CGContext, _ offset: CGSize, _ radius: CGFloat) {
+    
+    let defaultShadowColor = CGColorCreateGenericGray(0, 0.3)
+    
+    CGContextSetShadowWithColor(context, offset, radius, defaultShadowColor)
+}
+
+public func CGContextSetShadowWithColor(_ context: CGContext, _ offset: CGSize, _ radius: CGFloat, _ color: CGColor) {
     
     
 }
+
 
