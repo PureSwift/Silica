@@ -7,3 +7,5 @@
 //
 
 import Silica
+
+public typealias CGSize = Silica.Size

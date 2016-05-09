@@ -10,12 +10,7 @@ import Silica
 
 public typealias CGColor = Silica.Color
 
-public func CGColorCreateGenericGray(_: Double, _: Double) -> CGColor {
+public func CGColorCreateGenericGray(_ grey: CGFloat, _ alpha: CGFloat) -> CGColor {
     
-    return CGColor() // FIXME
-}
-
-public func CGColorSpaceCreateWithName(_ name: String) -> CGColorSpace {
-    
-    
+    return CGColor(grey: grey, alpha: alpha)
 }

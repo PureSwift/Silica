@@ -12,26 +12,30 @@ public struct Color: Equatable {
     
     // MARK: - Properties
     
-    public let colorSpace: ColorSpace
+    public var red: Double
     
-    public let components: [Double]
+    public var green: Double
+    
+    public var blue: Double
+    
+    public var alpha: Double
     
     // MARK: - Initialization
     
-    public init?(colorSpace: ColorSpace, components: [Double]) {
+    public init(red: Double, green: Double, blue: Double, alpha: Double = 1.0) {
         
-        guard components.count == colorSpace.componentCount
-            else { return nil }
-        
-        self.colorSpace = colorSpace
-        self.components = components
+        self.red = red
+        self.green = green
+        self.blue = blue
+        self.alpha = alpha
     }
     
-    // MARK: - Methods
-    
-    public func transformed(to colorSpace: ColorSpace) -> Color {
+    public init(grey: Double, alpha: Double = 1.0) {
         
-        
+        self.red = grey
+        self.green = grey
+        self.blue = grey
+        self.alpha = alpha
     }
 }
 
@@ -39,16 +43,20 @@ public struct Color: Equatable {
 
 public func == (lhs: Color, rhs: Color) -> Bool {
     
-    return lhs.colorSpace == rhs.colorSpace
-        && lhs.components == rhs.components
+    return lhs.red == rhs.red
+        && lhs.green == rhs.green
+        && lhs.blue == rhs.blue
+        && lhs.alpha == rhs.alpha
 }
 
 // MARK: - Internal Cairo Conversion
 
-internal extension Color {
+internal extension Cairo.Pattern {
     
-    func toPattern(alpha: Double) throws -> Cairo.Pattern {
+    convenience init(color: Color) {
         
+        self.init(color: (color.red, color.green, color.blue, color.alpha))
         
+        assert(status.rawValue == 0, "Error creating Cairo.Pattern from Silica.Color: \(status)")
     }
 }
