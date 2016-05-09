@@ -8,9 +8,15 @@
 
 import Silica
 
-public typealias CGContext = CGContextRef
+// MARK: - Typealiases
 
+public typealias CGContext = CGContextRef
 public typealias CGContextRef = Silica.Context
+public typealias CGFloat = Double
+public typealias CGLineJoin = Silica.LineJoin
+public typealias CGLineCap = Silica.LineCap
+
+// MARK: - CGContext Functions
 
 public func CGContextBeginPage(_ context: CGContext, _ mediaBox: UnsafePointer<CGRect>? = nil) {
     
@@ -70,5 +76,8 @@ public func CGContextSetLineWidth(_ context: CGContext, lineWidth: CGFloat) {
     context.lineWidth = lineWidth
 }
 
-
+public func CGContextSetLineJoin(_ context: CGContext, lineJoin: CGLineJoin) {
+    
+    
+}
 

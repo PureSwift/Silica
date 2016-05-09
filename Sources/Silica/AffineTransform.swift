@@ -33,14 +33,16 @@ public struct AffineTransform {
 
 // MARK: - Cairo Conversion
 
-public extension AffineTransform {
+extension AffineTransform: CairoConvertible {
     
-    init(matrix: Cairo.Matrix) {
+    public typealias CairoType = Cairo.Matrix
+    
+    public init(cairo matrix: CairoType) {
         
         self.init(a: matrix.xx, b: matrix.xy, c: matrix.yx, d: matrix.yy, t: (x: matrix.x0, y: matrix.y0))
     }
     
-    func toMatrix() -> Matrix {
+    public func toCairo() -> CairoType {
         
         var matrix = Matrix()
         

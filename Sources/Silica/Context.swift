@@ -51,7 +51,7 @@ public final class Context {
     /// Returns the current transformation matrix.
     public var currentTransform: AffineTransform {
         
-        return AffineTransform(matrix: internalContext.matrix)
+        return AffineTransform(cairo: internalContext.matrix)
     }
     
     public var shouldAntialias: Bool {
@@ -66,6 +66,20 @@ public final class Context {
         get { return internalContext.lineWidth }
         
         set { internalContext.lineWidth = newValue }
+    }
+    
+    public var lineJoin: LineJoin {
+        
+        get { return LineJoin(cairo: internalContext.lineJoin) }
+        
+        set { internalContext.lineJoin = newValue.toCairo() }
+    }
+    
+    public var lineCap: LineCap {
+        
+        get { return LineCap(cairo: internalContext.lineCap) }
+        
+        set { internalContext.lineCap = newValue.toCairo() }
     }
     
     // MARK: - Methods
@@ -101,7 +115,7 @@ public final class Context {
     
     public func transform(_ transform: AffineTransform) {
         
-        internalContext.transform(transform.toMatrix())
+        internalContext.transform(transform.toCairo())
     }
     
     // MARK: Saving and Restoring the Graphics State
@@ -138,8 +152,6 @@ public final class Context {
         
         internalState = restoredState
     }
-    
-    
     
     // MARK: - Private Methods
     
