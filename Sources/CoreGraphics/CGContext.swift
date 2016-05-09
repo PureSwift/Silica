@@ -115,4 +115,38 @@ public func CGContextSetShadowWithColor(_ context: CGContext, _ offset: CGSize, 
     context.setShadow(offset: offset, radius: radius, color: color)
 }
 
+public func CGContextMoveToPoint(_ context: CGContext, _ x: CGFloat, _ y: CGFloat) {
+    
+    context.move(to: Point(x: x, y: y))
+}
+
+public func CGContextAddLineToPoint(_ context: CGContext, _ x: CGFloat, _ y: CGFloat) {
+    
+    context.line(to: Point(x: x, y: y))
+}
+
+/// Adds a sequence of connected straight-line segments to the current path.
+///
+/// - SeeAlso: [iOS Documentation](https://developer.apple.com/library/ios/documentation/GraphicsImaging/Reference/CGContext/index.html#//apple_ref/c/func/CGContextAddLines)
+public func CGContextAddLines(_ context: CGContext, _ points: UnsafePointer<CGPoint>, _ count: Int) {
+    
+    guard count > 0 else { return }
+    
+    CGContextMoveToPoint (c, points[0].x, points[0].y)
+    
+    for i in 1 ..< count {
+        
+        CGContextAddLineToPoint (c, points[i].x, points[i].y)
+    }
+}
+
+public func CGContextAddCurveToPoint(_ context: CGContext, _ cp1x: CGFloat, _ cp1y: CGFloat, _ cp2x: CGFloat, _ cp2y: CGFloat, _ x: CGFloat, _ y: CGFloat) {
+    
+    context.curve(to: (first: Point(x: cp1x, y: cp1y), second: Point(x: cp2x, y: cp2y), end: Point(x: x, y: y)))
+}
+
+public func CGContextAddQuadCurveToPoint(_ context: CGContext, _ cpx: CGFloat, _ cpy: CGFloat, _ x: CGFloat, _ y: CGFloat) {
+    
+    
+}
 

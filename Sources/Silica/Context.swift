@@ -195,6 +195,21 @@ public final class Context {
         internalContext.closePath()
     }
     
+    public func move(to point: Point) {
+        
+        internalContext.move(to: (x: point.x, y: point.y))
+    }
+    
+    public func line(to point: Point) {
+        
+        internalContext.line(to: (x: point.x, y: point.y))
+    }
+    
+    public func curve(to controlPoints: (first: Point, second: Point, end: Point)) {
+        
+        internalContext.curve(to: ((x: controlPoints.first.x, y: controlPoints.first.y), (x: controlPoints.second.x, y: controlPoints.second.y), (x: controlPoints.end.x, y: controlPoints.end.y)))
+    }
+    
     // MARK: - Private Methods
     
     
