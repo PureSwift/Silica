@@ -218,9 +218,14 @@ public final class Context {
         internalContext.curve(to: ((x: controlPoints.first.x, y: controlPoints.first.y), (x: controlPoints.second.x, y: controlPoints.second.y), (x: controlPoints.end.x, y: controlPoints.end.y)))
     }
     
-    public func add(_ rect: Rect) {
+    public func add(rect: Rect) {
         
         internalContext.addRectangle(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: rect.size.height)
+    }
+    
+    public func add(arc: (center: Point, radius: Double, angle: (start: Double, end: Double), negative: Bool)) {
+        
+        internalContext.addArc(center: (x: arc.center.x, y: arc.center.y), radius: arc.radius, angle: arc.angle, negative: arc.negative)
     }
     
     // MARK: - Private Methods

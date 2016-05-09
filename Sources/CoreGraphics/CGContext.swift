@@ -134,11 +134,11 @@ public func CGContextAddLines(_ context: CGContext, _ points: UnsafePointer<CGPo
     
     guard count > 0 else { return }
     
-    CGContextMoveToPoint (c, points[0].x, points[0].y)
+    CGContextMoveToPoint (context, points[0].x, points[0].y)
     
     for i in 1 ..< count {
         
-        CGContextAddLineToPoint (c, points[i].x, points[i].y)
+        CGContextAddLineToPoint (context, points[i].x, points[i].y)
     }
 }
 
@@ -154,9 +154,9 @@ public func CGContextAddQuadCurveToPoint(_ context: CGContext, _ cpx: CGFloat, _
     CGContextAddCurveToPoint(context, (currentPoint.x/3.0) + (2.0*cpx/3.0), (currentPoint.y/3.0) + (2.0*cpy/3.0), (2.0*cpx/3.0) + (x/3.0), (2.0*cpy/3.0) + (y/3.0), x, y)
 }
 
-public func CGContextAddRect(_ context: CGContext, rect: CGRect) {
+public func CGContextAddRect(_ context: CGContext, _ rect: CGRect) {
     
-    context.add(rect)
+    context.add(rect: rect)
 }
 
 public func CGContextAddRects(_ context: CGContext, _ rects: UnsafePointer<CGRect>, _ count: Int) {
@@ -167,7 +167,9 @@ public func CGContextAddRects(_ context: CGContext, _ rects: UnsafePointer<CGRec
     }
 }
 
-public func func CGContextAddArc(_ context: CGContext, _ x: CGFloat, _ y: CGFloat, _ radius: CGFloat, _ startAngle: CGFloat, _ endAngle: CGFloat, _ clockwise: Int32) {
+public func CGContextAddArc(_ context: CGContext, _ x: CGFloat, _ y: CGFloat, _ radius: CGFloat, _ startAngle: CGFloat, _ endAngle: CGFloat, _ clockwise: Int32) {
     
-    context.add
+    let negative = clockwise != 0
+    
+    context.add(arc: (center: Point(x: x, y: y), radius: radius, angle: (start: startAngle, end: endAngle), negative: negative))
 }
