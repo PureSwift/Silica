@@ -6,6 +6,9 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+import Cairo
+import CCairo
+
 public struct AffineTransform {
     
     // MARK: - Properties
@@ -26,4 +29,28 @@ public struct AffineTransform {
     }
     
     public static let identity = AffineTransform(a: 1, b: 0, c: 0, d: 1, t: (x: 0, y: 0))
+}
+
+// MARK: - Cairo Conversion
+
+public extension AffineTransform {
+    
+    init(matrix: Cairo.Matrix) {
+        
+        self.init(a: matrix.xx, b: matrix.xy, c: matrix.yx, d: matrix.yy, t: (x: matrix.x0, y: matrix.y0))
+    }
+    
+    func toMatrix() -> Matrix {
+        
+        var matrix = Matrix()
+        
+        matrix.xx = a
+        matrix.xy = b
+        matrix.yx = c
+        matrix.yy = d
+        matrix.x0 = t.x
+        matrix.y0 = t.y
+        
+        return matrix
+    }
 }
