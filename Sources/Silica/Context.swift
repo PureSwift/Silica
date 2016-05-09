@@ -178,7 +178,7 @@ public final class Context {
     
     public func setShadow(offset: Size, radius: Double, color: Color) {
         
-        let colorPattern = color.toPattern(alpha: 1.0)
+        let colorPattern = try! color.toPattern(alpha: 1.0)
         
         internalState.shadow = (offset: offset, radius: radius, color: color, pattern: colorPattern)
     }
