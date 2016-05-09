@@ -40,7 +40,7 @@ public func CGContextRotateCTM(_ context: CGContext, _ angle: CGFloat) {
     context.rotate(angle)
 }
 
-public func CGContextConcatCTM(_ context: CGContext, transform: CGAffineTransform) {
+public func CGContextConcatCTM(_ context: CGContext, _ transform: CGAffineTransform) {
     
     context.transform(transform)
 }
@@ -49,3 +49,26 @@ public func CGContextGetCTM(_ context: CGContext) -> CGAffineTransform {
     
     return context.currentTransform
 }
+
+public func CGContextSaveGState(_ context: CGContext) {
+    
+    try! context.save()
+}
+
+public func CGContextRestoreGState(_ context: CGContext) {
+    
+    try! context.restore()
+}
+
+public func CGContextSetShouldAntialias(_ context: CGContext, _ shouldAntialias: Bool) {
+    
+    context.shouldAntialias = shouldAntialias
+}
+
+public func CGContextSetLineWidth(_ context: CGContext, lineWidth: CGFloat) {
+    
+    context.lineWidth = lineWidth
+}
+
+
+
