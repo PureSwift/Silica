@@ -315,6 +315,127 @@ public final class Context {
             }
         }
     }
+    
+    // MARK: - Painting Paths
+    
+    /// Paints a line along the current path.
+    public func stroke() throws {
+        
+        if internalState.shadow != nil {
+            
+            startShadow()
+        }
+        
+        internalContext.source = internalState.stroke?.pattern ?? DefaultPattern
+        
+        internalContext.stroke()
+        
+        if internalState.shadow != nil {
+            
+            endShadow()
+        }
+        
+        if let error = internalContext.status.toError() {
+            
+            throw error
+        }
+    }
+    
+    public func fill(evenOdd: Bool = false) throws {
+        
+        try fillPath(evenOdd: evenOdd, preserve: false)
+    }
+    
+    public func clear() throws {
+        
+        internalContext.source = internalState.fill?.pattern ?? DefaultPattern
+        
+        internalContext.clip()
+        internalContext.clipPreserve()
+        
+        if let error = internalContext.status.toError() {
+            
+            throw error
+        }
+    }
+    
+    public func draw(_ mode: DrawingMode = DrawingMode()) throws {
+        
+        switch mode {
+        case .Fill: try fillPath(evenOdd: false, preserve: false)
+        case .EvenOddFill: try fillPath(evenOdd: true, preserve: false)
+        case .FillStroke: try fillPath(evenOdd: false, preserve: true)
+        case .EvenOddFillStroke: try fillPath(evenOdd: true, preserve: true)
+        case .Stroke: try stroke()
+        }
+    }
+    
+    // MARK: - Private Functions
+    
+    private func fillPath(evenOdd: Bool, preserve: Bool) throws {
+        
+        if internalState.shadow != nil {
+            
+            startShadow()
+        }
+        
+        internalContext.source = internalState.fill?.pattern ?? DefaultPattern
+        
+        internalContext.fillRule = evenOdd ? CAIRO_FILL_RULE_EVEN_ODD : CAIRO_FILL_RULE_WINDING
+        
+        internalContext.fillPreserve()
+        
+        if preserve == false {
+            
+            internalContext.newPath()
+        }
+        
+        if internalState.shadow != nil {
+            
+            endShadow()
+        }
+        
+        if let error = internalContext.status.toError() {
+            
+            throw error
+        }
+    }
+    
+    private func startShadow() {
+        
+        internalContext.pushGroup()
+    }
+    
+    private func endShadow() {
+        
+        let pattern = internalContext.popGroup()
+        
+        internalContext.save()
+        
+        let radius = internalState.shadow!.radius
+        
+        let alphaSurface = Surface(format: .A8,
+                                   width: Int(ceil(size.width + 2 * radius)),
+                                   height: Int(ceil(size.height + 2 * radius)))
+        
+        let alphaContext = Cairo.Context(surface: alphaSurface)
+        
+        alphaContext.source = pattern
+        
+        alphaContext.paint()
+        
+        alphaSurface.flush()
+        
+        internalContext.source = internalState.shadow!.pattern
+        
+        internalContext.mask(surface: alphaSurface, at: (internalState.shadow!.offset.width, internalState.shadow!.offset.height))
+        
+        // draw content
+        internalContext.source = pattern
+        internalContext.paint()
+        
+        internalContext.restore()
+    }
 }
 
 // MARK: - Private

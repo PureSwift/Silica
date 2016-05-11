@@ -43,25 +43,3 @@ public extension Path {
         case CloseSubpath
     }
 }
-
-public extension Path {
-    
-    /// Options for rendering a path.
-    public enum PathDrawingMode {
-        
-        /// Render the area contained within the path using the non-zero winding number rule.
-        case Fill
-        
-        /// Render the area within the path using the even-odd rule.
-        case EvenOddFill
-        
-        /// Render a line along the path.
-        case Stroke
-        
-        /// First fill and then stroke the path, using the nonzero winding number rule.
-        case FillStroke
-        
-        /// First fill and then stroke the path, using the even-odd rule.
-        case EvenOddFillStroke
-    }
-}

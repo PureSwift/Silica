@@ -10,11 +10,11 @@ import Silica
 
 // MARK: - Typealiases
 
-public typealias CGContext = CGContextRef
-public typealias CGContextRef = Silica.Context
+public typealias CGContext = Silica.Context
 public typealias CGFloat = Double
 public typealias CGLineJoin = Silica.LineJoin
 public typealias CGLineCap = Silica.LineCap
+public typealias CGTextDrawingMode = Silica.TextDrawingMode
 
 // MARK: - CGContext Functions
 
@@ -175,6 +175,36 @@ public func CGContextAddArc(_ context: CGContext, _ x: CGFloat, _ y: CGFloat, _ 
 public func CGContextAddArcToPoint(_ context: CGContext, _ x1: CGFloat, _ y1: CGFloat, _ x2: CGFloat, _ y2: CGFloat, _ radius: CGFloat) {
     
     context.arc(to: (first: Point(x: x1, y: y1), second: Point(x: x2, y: y2)), radius: radius)
+}
+
+public func CGContextAddPath(_ context: CGContext, _ path: CGPath) {
+    
+    context.add(path: path)
+}
+
+public func CGContextStrokePath(_ context: CGContext) {
+    
+    context.stroke()
+}
+
+public func CGContextFillPath(_ context: CGContext) {
+    
+    
+}
+
+public func CGContextClearPath(_ context: CGContext) {
+    
+    
+}
+
+public func CGContextEOFillPath(_ context: CGContext) {
+    
+    
+}
+
+public func CGContextDrawPath(_ context: CGContext, _ mode: CGPathDrawingMode) {
+    
+    
 }
 
 

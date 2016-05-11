@@ -19,7 +19,7 @@
 		6E572ED31CE0732B002E245A /* CGAffineTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E572ED11CE072FD002E245A /* CGAffineTransform.swift */; };
 		6EEFFEAF1CE0797900515526 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEAE1CE0797900515526 /* Color.swift */; };
 		6EEFFEB11CE07B6B00515526 /* Font.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB01CE07B6B00515526 /* Font.swift */; };
-		6EEFFEB31CE07BDE00515526 /* TextDrawingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB21CE07BDE00515526 /* TextDrawingMode.swift */; };
+		6EEFFEB31CE07BDE00515526 /* DrawingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB21CE07BDE00515526 /* DrawingMode.swift */; };
 		6EEFFEB71CE099D400515526 /* LineJoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB61CE099D400515526 /* LineJoin.swift */; };
 		6EEFFEB91CE09C9300515526 /* CairoConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB81CE09C9300515526 /* CairoConvertible.swift */; };
 		6EEFFEBB1CE09DE000515526 /* LineCap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEBA1CE09DE000515526 /* LineCap.swift */; };
@@ -57,7 +57,7 @@
 		6E572ED11CE072FD002E245A /* CGAffineTransform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGAffineTransform.swift; sourceTree = "<group>"; };
 		6EEFFEAE1CE0797900515526 /* Color.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		6EEFFEB01CE07B6B00515526 /* Font.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Font.swift; sourceTree = "<group>"; };
-		6EEFFEB21CE07BDE00515526 /* TextDrawingMode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextDrawingMode.swift; sourceTree = "<group>"; };
+		6EEFFEB21CE07BDE00515526 /* DrawingMode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DrawingMode.swift; sourceTree = "<group>"; };
 		6EEFFEB61CE099D400515526 /* LineJoin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineJoin.swift; sourceTree = "<group>"; };
 		6EEFFEB81CE09C9300515526 /* CairoConvertible.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CairoConvertible.swift; sourceTree = "<group>"; };
 		6EEFFEBA1CE09DE000515526 /* LineCap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineCap.swift; sourceTree = "<group>"; };
@@ -136,7 +136,7 @@
 				6E16EEA11CE2F0BF00DF76A0 /* Size.swift */,
 				6E16EEA31CE2F0C700DF76A0 /* Rect.swift */,
 				6E339B871CDFC67A008E399E /* Path.swift */,
-				6EEFFEB21CE07BDE00515526 /* TextDrawingMode.swift */,
+				6EEFFEB21CE07BDE00515526 /* DrawingMode.swift */,
 				6EEFFEBA1CE09DE000515526 /* LineCap.swift */,
 				6EEFFEB61CE099D400515526 /* LineJoin.swift */,
 			);
@@ -291,7 +291,7 @@
 				6E572EBA1CDFE21E002E245A /* AffineTransform.swift in Sources */,
 				6EEFFEB11CE07B6B00515526 /* Font.swift in Sources */,
 				6E16EEA01CE2F0B800DF76A0 /* Point.swift in Sources */,
-				6EEFFEB31CE07BDE00515526 /* TextDrawingMode.swift in Sources */,
+				6EEFFEB31CE07BDE00515526 /* DrawingMode.swift in Sources */,
 				6EEFFEAF1CE0797900515526 /* Color.swift in Sources */,
 				6E16EEA41CE2F0C700DF76A0 /* Rect.swift in Sources */,
 				6E339B861CDFC672008E399E /* Context.swift in Sources */,
