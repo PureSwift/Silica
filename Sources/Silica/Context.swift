@@ -111,6 +111,63 @@ public final class Context {
         set { internalContext.tolerance = newValue }
     }
     
+    /// Returns a `Path` built from the current path information in the graphics context.
+    public var path: Path {
+        
+        var path = Path()
+        
+        let cairoPath = internalContext.copyPath()
+        
+        var index = 0
+        
+        while index < cairoPath.count {
+            
+            let header = cairoPath[index].header
+            
+            let length = Int(header.length)
+            
+            let data = Array(cairoPath.data[index + 1 ..< length])
+            
+            let element: Path.Element
+            
+            switch header.type {
+                
+            case CAIRO_PATH_MOVE_TO:
+                
+                let point = Point(x: data[0].point.x, y: data[0].point.y)
+                
+                element = Path.Element.MoveToPoint(point)
+                
+            case CAIRO_PATH_LINE_TO:
+                
+                let point = Point(x: data[0].point.x, y: data[0].point.y)
+                
+                element = Path.Element.AddLineToPoint(point)
+                
+            case CAIRO_PATH_CURVE_TO:
+                
+                let control1 = Point(x: data[0].point.x, y: data[0].point.y)
+                let control2 = Point(x: data[1].point.x, y: data[1].point.y)
+                let destination = Point(x: data[2].point.x, y: data[2].point.y)
+                
+                element = Path.Element.AddCurveToPoint(control1, control2, destination)
+                
+            case CAIRO_PATH_CLOSE_PATH:
+                
+                element = Path.Element.CloseSubpath
+                
+            default: fatalError("Unknown Cairo Path data: \(header.type.rawValue)")
+            }
+            
+            path.elements.append(element)
+            
+            // increment
+            index += length
+        }
+        
+        return path
+    }
+    
     // MARK: - Methods
     
     // MARK: Defining Pages

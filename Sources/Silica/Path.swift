@@ -6,6 +6,8 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+import CCairo
+
 /// A graphics path is a mathematical description of a series of shapes or lines.
 public struct Path {
     
