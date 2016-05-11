@@ -168,6 +168,49 @@ public final class Context {
         return path
     }
     
+    public var fillColor: Color {
+        
+        get { return internalState.fill?.color ?? Color.black }
+        
+        set { internalState.fill = (newValue, Cairo.Pattern(color: newValue)) }
+    }
+    
+    public var strokeColor: Color {
+        
+        get { return internalState.stroke?.color ?? Color.black }
+        
+        set { internalState.stroke = (newValue, Cairo.Pattern(color: newValue)) }
+    }
+    
+    public var alpha: Double {
+        
+        get { return internalState.alpha }
+        
+        set {
+            
+            // store new value
+            internalState.alpha = newValue
+            
+            // update stroke
+            if var stroke = internalState.stroke {
+                
+                stroke.color.alpha = newValue
+                stroke.pattern = Pattern(color: stroke.color)
+                
+                internalState.stroke = stroke
+            }
+            
+            // update fill
+            if var fill = internalState.fill {
+                
+                fill.color.alpha = newValue
+                fill.pattern = Pattern(color: fill.color)
+                
+                internalState.fill = fill
+            }
+        }
+    }
+    
     // MARK: - Methods
     
     // MARK: Defining Pages
