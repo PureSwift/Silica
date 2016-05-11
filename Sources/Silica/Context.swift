@@ -283,6 +283,8 @@ public final class Context {
         
         self.add(arc: (center: center, radius: arcToPoint.radius, angle: angle, negative: (san < 0)))
     }
+    
+    public func add(path: Path) { }
 }
 
 // MARK: - Private

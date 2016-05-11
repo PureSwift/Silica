@@ -7,3 +7,7 @@
 //
 
 import Silica
+
+public typealias CGPath = Silica.Path
+public typealias CGPathElement = Silica.Path.Element
+public typealias CGPathElementType = Silica.Path.ElementType
