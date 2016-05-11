@@ -173,3 +173,10 @@ public func CGContextAddArc(_ context: CGContext, _ x: CGFloat, _ y: CGFloat, _ 
     
     context.add(arc: (center: Point(x: x, y: y), radius: radius, angle: (start: startAngle, end: endAngle), negative: negative))
 }
+
+public func CGContextAddArcToPoint(_ context: CGContext, _ x1: CGFloat, _ y1: CGFloat, _ x2: CGFloat, _ y2: CGFloat, _ radius: CGFloat) {
+    
+    context.add(arcToPoint: (tangent: (first: Point(x: x1, y: y1), second: Point(x: x2, y: y2)), radius: radius))
+}
+
+

@@ -228,9 +228,61 @@ public final class Context {
         internalContext.addArc(center: (x: arc.center.x, y: arc.center.y), radius: arc.radius, angle: arc.angle, negative: arc.negative)
     }
     
-    // MARK: - Private Methods
-    
-    
+    public func add(arcToPoint: (tangent: (first: Point, second: Point), radius: Double)) {
+        
+        let currentPoint = self.currentPoint ?? Point()
+        
+        // arguments
+        let x0 = currentPoint.x
+        let y0 = currentPoint.y
+        let x1 = arcToPoint.tangent.first.x
+        let y1 = arcToPoint.tangent.first.y
+        let x2 = arcToPoint.tangent.second.x
+        let y2 = arcToPoint.tangent.second.y
+        
+        // calculated
+        let dx0 = x0 - x1
+        let dy0 = y0 - y1
+        let dx2 = x2 - x1
+        let dy2 = y2 - y1
+        let xl0 = sqrt((dx0 * dx0) + (dy0 * dy0))
+        
+        guard xl0 != 0 else { return }
+        
+        let xl2 = sqrt((dx2 * dx2) + (dy2 * dy2))
+        let san = (dx2 * dy0) - (dx0 * dy2)
+        
+        guard san != 0 else {
+            
+            line(to: arcToPoint.tangent.first)
+            return
+        }
+        
+        let n0x: Double
+        let n0y: Double
+        let n2x: Double
+        let n2y: Double
+        
+        if san < 0 {
+            n0x = -dy0 / xl0
+            n0y = dx0 / xl0
+            n2x = dy2 / xl2
+            n2y = -dx2 / xl2
+            
+        } else {
+            n0x = dy0 / xl0
+            n0y = -dx0 / xl0
+            n2x = -dy2 / xl2
+            n2y = dx2 / xl2
+        }
+        
+        let t = (dx2*n2y - dx2*n0y - dy2*n2x + dy2*n0x) / san
+        
+        let center = Point(x: x1 + arcToPoint.radius * (t * dx0 + n0x), y: y1 + arcToPoint.radius * (t * dy0 + n0y))
+        let angle = (start: atan2(-n0y, -n0x), end: atan2(-n2y, -n2x))
+        
+        self.add(arc: (center: center, radius: arcToPoint.radius, angle: angle, negative: (san < 0)))
+    }
 }
 
 // MARK: - Private
