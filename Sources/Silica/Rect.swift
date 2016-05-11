@@ -7,7 +7,7 @@
 //
 
 /// A structure that contains the location and dimensions of a rectangle.
-public struct Rect {
+public struct Rect: Equatable {
     
     /// A point that specifies the coordinates of the rectangle’s origin.
     public var origin: Point
@@ -20,4 +20,9 @@ public struct Rect {
         self.origin = origin
         self.size = size
     }
+}
+
+public func == (lhs: Rect, rhs: Rect) -> Bool {
+    
+    return lhs.origin == rhs.origin && lhs.size == rhs.size
 }

@@ -7,7 +7,7 @@
 //
 
 /// A structure that contains a point in a two-dimensional coordinate system.
-public struct Point {
+public struct Point: Equatable {
     
     public var x: Double
     
@@ -18,4 +18,9 @@ public struct Point {
         self.x = x
         self.y = y
     }
+}
+
+public func == (lhs: Point, rhs: Point) -> Bool {
+    
+    return lhs.x == rhs.x && lhs.y == rhs.y
 }

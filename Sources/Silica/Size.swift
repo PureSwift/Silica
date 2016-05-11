@@ -7,7 +7,7 @@
 //
 
 /// A structure that contains width and height values.
-public struct Size {
+public struct Size: Equatable {
     
     public var width: Double
     
@@ -18,4 +18,9 @@ public struct Size {
         self.width = width
         self.height = height
     }
+}
+
+public func == (lhs: Size, rhs: Size) -> Bool {
+    
+    return lhs.width == rhs.width && lhs.height == rhs.height
 }
