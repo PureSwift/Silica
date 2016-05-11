@@ -470,6 +470,18 @@ public final class Context {
         }
     }
     
+    // MARK: - Drawing an Image to a Graphics Context
+    
+    /// Draws an image into a graphics context.
+    public func draw(image: Image) {
+        
+        
+    }
+    
+    // MARK: - Drawing Text
+    
+    
+    
     // MARK: - Private Functions
     
     private func fillPath(evenOdd: Bool, preserve: Bool) throws {
