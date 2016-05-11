@@ -8,8 +8,13 @@
 
 import Cairo
 
+/// Represents bitmap images and bitmap image masks, based on sample data that you supply. 
+/// A bitmap (or sampled) image is a rectangular array of pixels, 
+/// with each pixel representing a single sample or data point in a source image.
 public final class Image {
-    /*
+    
+    public static let imageSources = [ImageSourcePNG]()
+    
     // MARK: - Properties
     
     public let mask: Bool
@@ -32,5 +37,15 @@ public final class Image {
     
     // MARK: - Initialization
     
-    */
+    internal init(imageSource: ImageSource) {
+        
+        fatalError("Not implemented")
+    }
+}
+
+// MARK: - Supporting Types
+
+public protocol ImageSource {
+    
+    
 }

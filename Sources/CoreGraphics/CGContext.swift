@@ -14,6 +14,7 @@ public typealias CGContext = Silica.Context
 public typealias CGFloat = Double
 public typealias CGLineJoin = Silica.LineJoin
 public typealias CGLineCap = Silica.LineCap
+public typealias CGPathDrawingMode = Silica.DrawingMode
 public typealias CGTextDrawingMode = Silica.TextDrawingMode
 
 // MARK: - CGContext Functions
@@ -184,27 +185,27 @@ public func CGContextAddPath(_ context: CGContext, _ path: CGPath) {
 
 public func CGContextStrokePath(_ context: CGContext) {
     
-    context.stroke()
+    try! context.stroke()
 }
 
 public func CGContextFillPath(_ context: CGContext) {
     
-    
+    try! context.fill()
 }
 
 public func CGContextClearPath(_ context: CGContext) {
     
-    
+    try! context.clear()
 }
 
 public func CGContextEOFillPath(_ context: CGContext) {
     
-    
+    try! context.fill(evenOdd: true)
 }
 
 public func CGContextDrawPath(_ context: CGContext, _ mode: CGPathDrawingMode) {
     
-    
+    try! context.draw(mode)
 }
 
 

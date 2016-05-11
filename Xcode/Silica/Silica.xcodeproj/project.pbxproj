@@ -12,6 +12,7 @@
 		6E16EEA41CE2F0C700DF76A0 /* Rect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E16EEA31CE2F0C700DF76A0 /* Rect.swift */; };
 		6E16EEA61CE336DF00DF76A0 /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E16EEA51CE336DF00DF76A0 /* Image.swift */; };
 		6E16EEA81CE338B500DF76A0 /* BitmapInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E16EEA71CE338B500DF76A0 /* BitmapInfo.swift */; };
+		6E16EEAD1CE3429E00DF76A0 /* ImageSourcePNG.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E16EEAC1CE3429E00DF76A0 /* ImageSourcePNG.swift */; };
 		6E339B6D1CDFC492008E399E /* Silica.h in Headers */ = {isa = PBXBuildFile; fileRef = 6E339B6C1CDFC492008E399E /* Silica.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6E339B861CDFC672008E399E /* Context.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E339B851CDFC672008E399E /* Context.swift */; };
 		6E339B881CDFC67A008E399E /* Path.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E339B871CDFC67A008E399E /* Path.swift */; };
@@ -48,6 +49,7 @@
 		6E16EEA31CE2F0C700DF76A0 /* Rect.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Rect.swift; sourceTree = "<group>"; };
 		6E16EEA51CE336DF00DF76A0 /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
 		6E16EEA71CE338B500DF76A0 /* BitmapInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BitmapInfo.swift; sourceTree = "<group>"; };
+		6E16EEAC1CE3429E00DF76A0 /* ImageSourcePNG.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageSourcePNG.swift; sourceTree = "<group>"; };
 		6E339B691CDFC492008E399E /* Silica.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Silica.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6E339B6C1CDFC492008E399E /* Silica.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Silica.h; sourceTree = "<group>"; };
 		6E339B6E1CDFC492008E399E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -139,6 +141,7 @@
 				6EEFFEB21CE07BDE00515526 /* DrawingMode.swift */,
 				6EEFFEB01CE07B6B00515526 /* Font.swift */,
 				6E16EEA51CE336DF00DF76A0 /* Image.swift */,
+				6E16EEAC1CE3429E00DF76A0 /* ImageSourcePNG.swift */,
 				6EEFFEBA1CE09DE000515526 /* LineCap.swift */,
 				6EEFFEB61CE099D400515526 /* LineJoin.swift */,
 				6E339B871CDFC67A008E399E /* Path.swift */,
@@ -292,6 +295,7 @@
 				6EEFFEBB1CE09DE000515526 /* LineCap.swift in Sources */,
 				6E339B881CDFC67A008E399E /* Path.swift in Sources */,
 				6EEFFEB91CE09C9300515526 /* CairoConvertible.swift in Sources */,
+				6E16EEAD1CE3429E00DF76A0 /* ImageSourcePNG.swift in Sources */,
 				6EEFFEB71CE099D400515526 /* LineJoin.swift in Sources */,
 				6E16EEA81CE338B500DF76A0 /* BitmapInfo.swift in Sources */,
 				6E16EEA21CE2F0BF00DF76A0 /* Size.swift in Sources */,
