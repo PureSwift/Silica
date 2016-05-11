@@ -213,32 +213,40 @@ public final class Context {
         internalContext.line(to: (x: point.x, y: point.y))
     }
     
-    public func curve(to controlPoints: (first: Point, second: Point, end: Point)) {
+    public func curve(to points: (Point, Point), end: Point) {
         
-        internalContext.curve(to: ((x: controlPoints.first.x, y: controlPoints.first.y), (x: controlPoints.second.x, y: controlPoints.second.y), (x: controlPoints.end.x, y: controlPoints.end.y)))
+        internalContext.curve(to: ((x: points.0.x, y: points.0.y), (x: points.1.x, y: points.1.y), (x: end.x, y: end.y)))
     }
     
-    public func add(rect: Rect) {
+    public func quadCurve(to point: Point, end: Point) {
         
-        internalContext.addRectangle(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: rect.size.height)
+        let currentPoint = self.currentPoint ?? Point()
+        
+        let first = Point(x: (currentPoint.x / 3.0) + (2.0 * point.x / 3.0),
+                          y: (currentPoint.y / 3.0) + (2.0 * point.y / 3.0))
+        
+        let second = Point(x: (2.0 * currentPoint.x / 3.0) + (end.x / 3.0),
+                           y: (2.0 * currentPoint.y / 3.0) + (end.y / 3.0))
+        
+        curve(to: (first, second), end: end)
     }
     
-    public func add(arc: (center: Point, radius: Double, angle: (start: Double, end: Double), negative: Bool)) {
+    public func arc(center: Point, radius: Double, angle: (start: Double, end: Double), negative: Bool) {
         
-        internalContext.addArc(center: (x: arc.center.x, y: arc.center.y), radius: arc.radius, angle: arc.angle, negative: arc.negative)
+        internalContext.addArc(center: (x: center.x, y: center.y), radius: radius, angle: angle, negative: negative)
     }
     
-    public func add(arcToPoint: (tangent: (first: Point, second: Point), radius: Double)) {
+    public func arc(to points: (Point, Point), radius: Double) {
         
         let currentPoint = self.currentPoint ?? Point()
         
         // arguments
         let x0 = currentPoint.x
         let y0 = currentPoint.y
-        let x1 = arcToPoint.tangent.first.x
-        let y1 = arcToPoint.tangent.first.y
-        let x2 = arcToPoint.tangent.second.x
-        let y2 = arcToPoint.tangent.second.y
+        let x1 = points.0.x
+        let y1 = points.0.y
+        let x2 = points.1.x
+        let y2 = points.1.y
         
         // calculated
         let dx0 = x0 - x1
@@ -254,7 +262,7 @@ public final class Context {
         
         guard san != 0 else {
             
-            line(to: arcToPoint.tangent.first)
+            line(to: points.0)
             return
         }
         
@@ -278,13 +286,35 @@ public final class Context {
         
         let t = (dx2*n2y - dx2*n0y - dy2*n2x + dy2*n0x) / san
         
-        let center = Point(x: x1 + arcToPoint.radius * (t * dx0 + n0x), y: y1 + arcToPoint.radius * (t * dy0 + n0y))
+        let center = Point(x: x1 + radius * (t * dx0 + n0x), y: y1 + radius * (t * dy0 + n0y))
         let angle = (start: atan2(-n0y, -n0x), end: atan2(-n2y, -n2x))
         
-        self.add(arc: (center: center, radius: arcToPoint.radius, angle: angle, negative: (san < 0)))
+        self.arc(center: center, radius: radius, angle: angle, negative: (san < 0))
     }
     
-    public func add(path: Path) { }
+    public func add(rect: Rect) {
+        
+        internalContext.addRectangle(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: rect.size.height)
+    }
+    
+    public func add(path: Path) {
+        
+        for element in path.elements {
+            
+            switch element {
+                
+            case let .MoveToPoint(point): move(to: point)
+                
+            case let .AddLineToPoint(point): line(to: point)
+                
+            case let .AddQuadCurveToPoint(control, destination): quadCurve(to: control, end: destination)
+            
+            case let .AddCurveToPoint(control1, control2, destination): curve(to: (control1, control2), end: destination)
+            
+            case .CloseSubpath: closePath()
+            }
+        }
+    }
 }
 
 // MARK: - Private

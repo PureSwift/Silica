@@ -144,14 +144,12 @@ public func CGContextAddLines(_ context: CGContext, _ points: UnsafePointer<CGPo
 
 public func CGContextAddCurveToPoint(_ context: CGContext, _ cp1x: CGFloat, _ cp1y: CGFloat, _ cp2x: CGFloat, _ cp2y: CGFloat, _ x: CGFloat, _ y: CGFloat) {
     
-    context.curve(to: (first: Point(x: cp1x, y: cp1y), second: Point(x: cp2x, y: cp2y), end: Point(x: x, y: y)))
+    context.curve(to: (Point(x: cp1x, y: cp1y), Point(x: cp2x, y: cp2y)), end: Point(x: x, y: y))
 }
 
 public func CGContextAddQuadCurveToPoint(_ context: CGContext, _ cpx: CGFloat, _ cpy: CGFloat, _ x: CGFloat, _ y: CGFloat) {
     
-    let currentPoint = CGContextGetPathCurrentPoint(context)
-    
-    CGContextAddCurveToPoint(context, (currentPoint.x/3.0) + (2.0*cpx/3.0), (currentPoint.y/3.0) + (2.0*cpy/3.0), (2.0*cpx/3.0) + (x/3.0), (2.0*cpy/3.0) + (y/3.0), x, y)
+    context.quadCurve(to: Point(x: cpx, y: cpy), end: Point(x: x, y: y))
 }
 
 public func CGContextAddRect(_ context: CGContext, _ rect: CGRect) {
@@ -171,12 +169,12 @@ public func CGContextAddArc(_ context: CGContext, _ x: CGFloat, _ y: CGFloat, _ 
     
     let negative = clockwise != 0
     
-    context.add(arc: (center: Point(x: x, y: y), radius: radius, angle: (start: startAngle, end: endAngle), negative: negative))
+    context.arc(center: Point(x: x, y: y), radius: radius, angle: (start: startAngle, end: endAngle), negative: negative)
 }
 
 public func CGContextAddArcToPoint(_ context: CGContext, _ x1: CGFloat, _ y1: CGFloat, _ x2: CGFloat, _ y2: CGFloat, _ radius: CGFloat) {
     
-    context.add(arcToPoint: (tangent: (first: Point(x: x1, y: y1), second: Point(x: x2, y: y2)), radius: radius))
+    context.arc(to: (first: Point(x: x1, y: y1), second: Point(x: x2, y: y2)), radius: radius)
 }
 
 
