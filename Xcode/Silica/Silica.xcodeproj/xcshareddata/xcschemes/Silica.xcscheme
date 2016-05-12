@@ -32,7 +32,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "6E339B721CDFC492008E399E"
+               BlueprintIdentifier = "6E169A4A1CE404A200C60B0B"
                BuildableName = "SilicaTests.xctest"
                BlueprintName = "SilicaTests"
                ReferencedContainer = "container:Silica.xcodeproj">

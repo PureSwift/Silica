@@ -208,4 +208,13 @@ public func CGContextDrawPath(_ context: CGContext, _ mode: CGPathDrawingMode) {
     try! context.draw(mode)
 }
 
+public func CGContextSetRGBFillColor(_ context: CGContext, _ red: CGFloat, _ green: CGFloat, _ blue: CGFloat, _ alpha: CGFloat) {
+    
+    context.fillColor = Color(red: red, green: green, blue: blue, alpha: alpha)
+}
+
+public func CGContextSetRGBStrokeColor(_ context: CGContext, _ red: CGFloat, _ green: CGFloat, _ blue: CGFloat, _ alpha: CGFloat) {
+    
+    context.strokeColor = Color(red: red, green: green, blue: blue, alpha: alpha)
+}
 
