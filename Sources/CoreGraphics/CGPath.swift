@@ -8,9 +8,6 @@
 
 import Silica
 
-public typealias CGPath = Silica.Path
-public typealias CGPathApplierFunction = (UnsafeMutablePointer<Void>, UnsafePointer<CGPathElement>) -> ()
-
 public struct CGPathElement {
     
     public var type: CGPathElementType

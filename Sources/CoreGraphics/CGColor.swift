@@ -8,8 +8,6 @@
 
 import Silica
 
-public typealias CGColor = Silica.Color
-
 public func CGColorCreateGenericGray(_ grey: CGFloat, _ alpha: CGFloat) -> CGColor {
     
     return CGColor(grey: grey, alpha: alpha)

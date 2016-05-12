@@ -8,4 +8,3 @@
 
 import Silica
 
-public typealias CGPoint = Silica.Point

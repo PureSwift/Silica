@@ -45,3 +45,19 @@ public extension Path {
         case CloseSubpath
     }
 }
+
+// MARK: - Extensions
+
+public extension Path {
+    
+    mutating func add(rect: Rect) {
+        
+        let newElements: [Element] = [.MoveToPoint(Point(x: rect.minX, y: rect.minY)),
+                                      .AddLineToPoint(Point(x: rect.maxX, y: rect.minY)),
+                                      .AddLineToPoint(Point(x: rect.maxX, y: rect.maxY)),
+                                      .AddLineToPoint(Point(x: rect.minX, y: rect.maxY)),
+                                      .CloseSubpath]
+        
+        self.elements.append(contentsOf: newElements)
+    }
+}

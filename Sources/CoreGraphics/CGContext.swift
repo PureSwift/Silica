@@ -8,15 +8,6 @@
 
 import Silica
 
-// MARK: - Typealiases
-
-public typealias CGContext = Silica.Context
-public typealias CGFloat = Double
-public typealias CGLineJoin = Silica.LineJoin
-public typealias CGLineCap = Silica.LineCap
-public typealias CGPathDrawingMode = Silica.DrawingMode
-public typealias CGTextDrawingMode = Silica.TextDrawingMode
-
 // MARK: - CGContext Functions
 
 public func CGContextGetPathCurrentPoint(_ context: CGContext) -> CGPoint {
