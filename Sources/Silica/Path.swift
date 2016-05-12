@@ -58,6 +58,42 @@ public extension Path {
                                       .AddLineToPoint(Point(x: rect.minX, y: rect.maxY)),
                                       .CloseSubpath]
         
-        self.elements.append(contentsOf: newElements)
+        elements.append(contentsOf: newElements)
+    }
+    
+    mutating func add(ellipseInRect rect: Rect) {
+        
+        var p = Point()
+        var p1 = Point()
+        var p2 = Point()
+        
+        let hdiff = rect.width / 2 * KAPPA
+        let vdiff = rect.height / 2 * KAPPA
+        
+        p = Point(x: rect.origin.x + rect.width / 2, y: rect.origin.y + rect.height)
+        elements.append(.MoveToPoint(p))
+        
+        p = Point(x: rect.origin.x, y: rect.origin.y + rect.height / 2)
+        p1 = Point(x: rect.origin.x + rect.width / 2 - hdiff, y: rect.origin.y + rect.height)
+        p2 = Point(x: rect.origin.x, y: rect.origin.y + rect.height / 2 + vdiff)
+        elements.append(.AddCurveToPoint(p, p1, p2))
+        
+        p = Point(x: rect.origin.x + rect.size.width / 2, y: rect.origin.y)
+        p1 = Point(x: rect.origin.x, y: rect.origin.y + rect.size.height / 2 - vdiff)
+        p2 = Point(x: rect.origin.x + rect.size.width / 2 - hdiff, y: rect.origin.y)
+        elements.append(.AddCurveToPoint(p, p1, p2))
+        
+        p = Point(x: rect.origin.x + rect.size.width, y: rect.origin.y + rect.size.height / 2)
+        p1 = Point(x: rect.origin.x + rect.size.width / 2 + hdiff, y: rect.origin.y)
+        p2 = Point(x: rect.origin.x + rect.size.width, y: rect.origin.y + rect.size.height / 2 - vdiff)
+        elements.append(.AddCurveToPoint(p, p1, p2))
+        
+        p = Point(x: rect.origin.x + rect.size.width / 2, y: rect.origin.y + rect.size.height)
+        p1 = Point(x: rect.origin.x + rect.size.width, y: rect.origin.y + rect.size.height / 2 + vdiff)
+        p2 = Point(x: rect.origin.x + rect.size.width / 2 + hdiff, y: rect.origin.y + rect.size.height)
+        elements.append(.AddCurveToPoint(p, p1, p2))
     }
 }
+
+// This magic number is 4 *(sqrt(2) -1)/3
+private let KAPPA = 0.5522847498
