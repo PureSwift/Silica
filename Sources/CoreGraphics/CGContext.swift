@@ -218,3 +218,8 @@ public func CGContextBeginTransparencyLayerWithRect(_ context: CGContext!, _ rec
     
     try! context.beginTransparencyLayer(rect: rect)
 }
+
+public func CGContextEndTransparencyLayer(_ context: CGContext!) {
+    
+    try! context.endTransparencyLayer()
+}
