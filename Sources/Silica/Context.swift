@@ -470,12 +470,58 @@ public final class Context {
         }
     }
     
+    // MARK: - Using Transparency Layers
+    
+    public func beginTransparencyLayer(rect: Rect? = nil) throws {
+        
+        // in case we clip (for the rect)
+        internalContext.save()
+        
+        if let error = internalContext.status.toError() {
+            
+            throw error
+        }
+        
+        if let rect = rect {
+            
+            internalContext.newPath()
+            add(rect: rect)
+            internalContext.clip()
+        }
+        
+        try save()
+        alpha = 1.0
+        internalState.shadow = nil
+        
+        internalContext.pushGroup()
+    }
+    
+    public func endTransparencyLayer() throws {
+        
+        let group = internalContext.popGroup()
+        
+        // undo change to alpha and shadow state
+        try restore()
+        
+        // paint contents
+        internalContext.source = group
+        internalContext.paint(alpha: internalState.alpha)
+        
+        // undo clipping (if any)
+        internalContext.restore()
+        
+        if let error = internalContext.status.toError() {
+            
+            throw error
+        }
+    }
+    
     // MARK: - Drawing an Image to a Graphics Context
     
     /// Draws an image into a graphics context.
     public func draw(image: Image) {
         
-        
+        fatalError("Not implemented")
     }
     
     // MARK: - Drawing Text
