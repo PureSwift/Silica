@@ -209,7 +209,7 @@ public func CGContextSetRGBStrokeColor(_ context: CGContext!, _ red: CGFloat, _ 
     context.strokeColor = Color(red: red, green: green, blue: blue, alpha: alpha)
 }
 
-public func CGContextBeginTransparencyLayer(_ context: CGContext!) {
+public func CGContextBeginTransparencyLayer(_ context: CGContext!, _ auxiliaryInfo: [String: Any]?) {
     
     try! context.beginTransparencyLayer()
 }
