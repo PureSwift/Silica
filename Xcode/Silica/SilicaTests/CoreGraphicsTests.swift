@@ -31,7 +31,7 @@ final class CoreGraphicsTests: XCTestCase {
 
 let outputDirectory: String = {
     
-    let outputDirectory = NSTemporaryDirectory() + "SilicaTest" + "/"
+    let outputDirectory = NSTemporaryDirectory() + "SilicaTests" + "/"
     
     var isDirectory: ObjCBool = false
     

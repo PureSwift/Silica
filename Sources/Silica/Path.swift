@@ -76,22 +76,22 @@ public extension Path {
         p = Point(x: rect.origin.x, y: rect.origin.y + rect.height / 2)
         p1 = Point(x: rect.origin.x + rect.width / 2 - hdiff, y: rect.origin.y + rect.height)
         p2 = Point(x: rect.origin.x, y: rect.origin.y + rect.height / 2 + vdiff)
-        elements.append(.AddCurveToPoint(p, p1, p2))
+        elements.append(.AddCurveToPoint(p1, p2, p))
         
         p = Point(x: rect.origin.x + rect.size.width / 2, y: rect.origin.y)
         p1 = Point(x: rect.origin.x, y: rect.origin.y + rect.size.height / 2 - vdiff)
         p2 = Point(x: rect.origin.x + rect.size.width / 2 - hdiff, y: rect.origin.y)
-        elements.append(.AddCurveToPoint(p, p1, p2))
+        elements.append(.AddCurveToPoint(p1, p2, p))
         
         p = Point(x: rect.origin.x + rect.size.width, y: rect.origin.y + rect.size.height / 2)
         p1 = Point(x: rect.origin.x + rect.size.width / 2 + hdiff, y: rect.origin.y)
         p2 = Point(x: rect.origin.x + rect.size.width, y: rect.origin.y + rect.size.height / 2 - vdiff)
-        elements.append(.AddCurveToPoint(p, p1, p2))
+        elements.append(.AddCurveToPoint(p1, p2, p))
         
         p = Point(x: rect.origin.x + rect.size.width / 2, y: rect.origin.y + rect.size.height)
         p1 = Point(x: rect.origin.x + rect.size.width, y: rect.origin.y + rect.size.height / 2 + vdiff)
         p2 = Point(x: rect.origin.x + rect.size.width / 2 + hdiff, y: rect.origin.y + rect.size.height)
-        elements.append(.AddCurveToPoint(p, p1, p2))
+        elements.append(.AddCurveToPoint(p1, p2, p))
     }
 }
 
