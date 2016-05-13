@@ -470,6 +470,21 @@ public final class Context {
         }
     }
     
+    public func clip(evenOdd: Bool = false) {
+        
+        if evenOdd {
+            
+            internalContext.fillRule = CAIRO_FILL_RULE_EVEN_ODD
+        }
+        
+        internalContext.clip()
+        
+        if evenOdd {
+            
+            internalContext.fillRule = CAIRO_FILL_RULE_WINDING
+        }
+    }
+    
     // MARK: - Using Transparency Layers
     
     public func beginTransparencyLayer(rect: Rect? = nil) throws {
