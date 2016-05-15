@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		6E169A4E1CE404A200C60B0B /* SilicaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E169A4D1CE404A200C60B0B /* SilicaTests.swift */; };
 		6E169A501CE404A200C60B0B /* Silica.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E339B691CDFC492008E399E /* Silica.framework */; };
-		6E169A581CE404CA00C60B0B /* SwiftCoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E572EC31CE06E7D002E245A /* SwiftCoreGraphics.framework */; };
 		6E169A5A1CE405CF00C60B0B /* CoreGraphicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E169A591CE405CF00C60B0B /* CoreGraphicsTests.swift */; };
 		6E169A5E1CE4291F00C60B0B /* Cairo.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 6E169A5C1CE4290D00C60B0B /* Cairo.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6E16EEA01CE2F0B800DF76A0 /* Point.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E16EE9F1CE2F0B800DF76A0 /* Point.swift */; };
@@ -21,40 +20,22 @@
 		6E339B6D1CDFC492008E399E /* Silica.h in Headers */ = {isa = PBXBuildFile; fileRef = 6E339B6C1CDFC492008E399E /* Silica.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6E339B861CDFC672008E399E /* Context.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E339B851CDFC672008E399E /* Context.swift */; };
 		6E339B881CDFC67A008E399E /* Path.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E339B871CDFC67A008E399E /* Path.swift */; };
+		6E5041651CE8F13C0087E9A3 /* CGAffineTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5041601CE8F13C0087E9A3 /* CGAffineTransform.swift */; };
+		6E5041661CE8F13C0087E9A3 /* CGColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5041611CE8F13C0087E9A3 /* CGColor.swift */; };
+		6E5041671CE8F13C0087E9A3 /* CGContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5041621CE8F13C0087E9A3 /* CGContext.swift */; };
+		6E5041681CE8F13C0087E9A3 /* CGPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5041631CE8F13C0087E9A3 /* CGPath.swift */; };
+		6E5041691CE8F13C0087E9A3 /* CoreGraphics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5041641CE8F13C0087E9A3 /* CoreGraphics.swift */; };
 		6E572EBA1CDFE21E002E245A /* AffineTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E572EB91CDFE21E002E245A /* AffineTransform.swift */; };
-		6E572EC61CE06E7D002E245A /* SwiftCoreGraphics.h in Headers */ = {isa = PBXBuildFile; fileRef = 6E572EC51CE06E7D002E245A /* SwiftCoreGraphics.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		6E572ECD1CE06EE6002E245A /* CGContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E572ECB1CE06ED7002E245A /* CGContext.swift */; };
-		6E572ED31CE0732B002E245A /* CGAffineTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E572ED11CE072FD002E245A /* CGAffineTransform.swift */; };
-		6EC46E2D1CE46EE4002A1F52 /* Typealias.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EC46E2C1CE46EE4002A1F52 /* Typealias.swift */; };
 		6EEFFEAF1CE0797900515526 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEAE1CE0797900515526 /* Color.swift */; };
 		6EEFFEB11CE07B6B00515526 /* Font.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB01CE07B6B00515526 /* Font.swift */; };
 		6EEFFEB31CE07BDE00515526 /* DrawingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB21CE07BDE00515526 /* DrawingMode.swift */; };
 		6EEFFEB71CE099D400515526 /* LineJoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB61CE099D400515526 /* LineJoin.swift */; };
 		6EEFFEB91CE09C9300515526 /* CairoConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB81CE09C9300515526 /* CairoConvertible.swift */; };
 		6EEFFEBB1CE09DE000515526 /* LineCap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEBA1CE09DE000515526 /* LineCap.swift */; };
-		6EEFFEBF1CE0A49A00515526 /* CGColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEBE1CE0A49A00515526 /* CGColor.swift */; };
-		6EEFFEC11CE0A53E00515526 /* CGPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEC01CE0A53E00515526 /* CGPath.swift */; };
-		6EEFFEC31CE0A54D00515526 /* CGSize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEC21CE0A54D00515526 /* CGSize.swift */; };
-		6EEFFEC91CE10A8D00515526 /* CGPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEC81CE10A8D00515526 /* CGPoint.swift */; };
-		6EEFFECB1CE10BC400515526 /* CGRect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFECA1CE10BC400515526 /* CGRect.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		6E169A511CE404A200C60B0B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6E339B601CDFC492008E399E /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6E339B681CDFC492008E399E;
-			remoteInfo = Silica;
-		};
-		6E169A561CE404C400C60B0B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6E339B601CDFC492008E399E /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6E572EC21CE06E7D002E245A;
-			remoteInfo = SwiftCoreGraphics;
-		};
-		6EEFFEBC1CE0A24E00515526 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 6E339B601CDFC492008E399E /* Project object */;
 			proxyType = 1;
@@ -94,24 +75,20 @@
 		6E339B6E1CDFC492008E399E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6E339B851CDFC672008E399E /* Context.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Context.swift; sourceTree = "<group>"; };
 		6E339B871CDFC67A008E399E /* Path.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Path.swift; sourceTree = "<group>"; };
+		6E5041601CE8F13C0087E9A3 /* CGAffineTransform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGAffineTransform.swift; sourceTree = "<group>"; };
+		6E5041611CE8F13C0087E9A3 /* CGColor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGColor.swift; sourceTree = "<group>"; };
+		6E5041621CE8F13C0087E9A3 /* CGContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGContext.swift; sourceTree = "<group>"; };
+		6E5041631CE8F13C0087E9A3 /* CGPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPath.swift; sourceTree = "<group>"; };
+		6E5041641CE8F13C0087E9A3 /* CoreGraphics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreGraphics.swift; sourceTree = "<group>"; };
 		6E572EB91CDFE21E002E245A /* AffineTransform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AffineTransform.swift; sourceTree = "<group>"; };
-		6E572EC31CE06E7D002E245A /* SwiftCoreGraphics.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SwiftCoreGraphics.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6E572EC51CE06E7D002E245A /* SwiftCoreGraphics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwiftCoreGraphics.h; sourceTree = "<group>"; };
 		6E572EC71CE06E7D002E245A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		6E572ECB1CE06ED7002E245A /* CGContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGContext.swift; sourceTree = "<group>"; };
-		6E572ED11CE072FD002E245A /* CGAffineTransform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGAffineTransform.swift; sourceTree = "<group>"; };
-		6EC46E2C1CE46EE4002A1F52 /* Typealias.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Typealias.swift; sourceTree = "<group>"; };
 		6EEFFEAE1CE0797900515526 /* Color.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		6EEFFEB01CE07B6B00515526 /* Font.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Font.swift; sourceTree = "<group>"; };
 		6EEFFEB21CE07BDE00515526 /* DrawingMode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DrawingMode.swift; sourceTree = "<group>"; };
 		6EEFFEB61CE099D400515526 /* LineJoin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineJoin.swift; sourceTree = "<group>"; };
 		6EEFFEB81CE09C9300515526 /* CairoConvertible.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CairoConvertible.swift; sourceTree = "<group>"; };
 		6EEFFEBA1CE09DE000515526 /* LineCap.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LineCap.swift; sourceTree = "<group>"; };
-		6EEFFEBE1CE0A49A00515526 /* CGColor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGColor.swift; sourceTree = "<group>"; };
-		6EEFFEC01CE0A53E00515526 /* CGPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPath.swift; sourceTree = "<group>"; };
-		6EEFFEC21CE0A54D00515526 /* CGSize.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGSize.swift; sourceTree = "<group>"; };
-		6EEFFEC81CE10A8D00515526 /* CGPoint.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPoint.swift; sourceTree = "<group>"; };
-		6EEFFECA1CE10BC400515526 /* CGRect.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGRect.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,19 +96,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6E169A581CE404CA00C60B0B /* SwiftCoreGraphics.framework in Frameworks */,
 				6E169A501CE404A200C60B0B /* Silica.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6E339B651CDFC492008E399E /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6E572EBF1CE06E7D002E245A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -175,7 +144,6 @@
 			isa = PBXGroup;
 			children = (
 				6E339B691CDFC492008E399E /* Silica.framework */,
-				6E572EC31CE06E7D002E245A /* SwiftCoreGraphics.framework */,
 				6E169A4B1CE404A200C60B0B /* SilicaTests.xctest */,
 			);
 			name = Products;
@@ -194,7 +162,6 @@
 			isa = PBXGroup;
 			children = (
 				6E339B841CDFC663008E399E /* Silica */,
-				6E572EBD1CE06E0B002E245A /* CoreGraphics */,
 			);
 			name = Sources;
 			path = ../../Sources;
@@ -218,23 +185,21 @@
 				6E16EE9F1CE2F0B800DF76A0 /* Point.swift */,
 				6E16EEA31CE2F0C700DF76A0 /* Rect.swift */,
 				6E16EEA11CE2F0BF00DF76A0 /* Size.swift */,
+				6E50416A1CE8F1420087E9A3 /* CoreGraphics */,
 			);
 			path = Silica;
 			sourceTree = "<group>";
 		};
-		6E572EBD1CE06E0B002E245A /* CoreGraphics */ = {
+		6E50416A1CE8F1420087E9A3 /* CoreGraphics */ = {
 			isa = PBXGroup;
 			children = (
-				6EC46E2C1CE46EE4002A1F52 /* Typealias.swift */,
-				6E572ECB1CE06ED7002E245A /* CGContext.swift */,
-				6E572ED11CE072FD002E245A /* CGAffineTransform.swift */,
-				6EEFFEBE1CE0A49A00515526 /* CGColor.swift */,
-				6EEFFEC01CE0A53E00515526 /* CGPath.swift */,
-				6EEFFEC21CE0A54D00515526 /* CGSize.swift */,
-				6EEFFEC81CE10A8D00515526 /* CGPoint.swift */,
-				6EEFFECA1CE10BC400515526 /* CGRect.swift */,
+				6E5041641CE8F13C0087E9A3 /* CoreGraphics.swift */,
+				6E5041601CE8F13C0087E9A3 /* CGAffineTransform.swift */,
+				6E5041611CE8F13C0087E9A3 /* CGColor.swift */,
+				6E5041621CE8F13C0087E9A3 /* CGContext.swift */,
+				6E5041631CE8F13C0087E9A3 /* CGPath.swift */,
 			);
-			path = CoreGraphics;
+			name = CoreGraphics;
 			sourceTree = "<group>";
 		};
 		6E572EC41CE06E7D002E245A /* SwiftCoreGraphics */ = {
@@ -257,14 +222,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6E572EC01CE06E7D002E245A /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				6E572EC61CE06E7D002E245A /* SwiftCoreGraphics.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -280,7 +237,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				6E169A571CE404C400C60B0B /* PBXTargetDependency */,
 				6E169A521CE404A200C60B0B /* PBXTargetDependency */,
 			);
 			name = SilicaTests;
@@ -306,25 +262,6 @@
 			productReference = 6E339B691CDFC492008E399E /* Silica.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		6E572EC21CE06E7D002E245A /* SwiftCoreGraphics */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 6E572EC81CE06E7D002E245A /* Build configuration list for PBXNativeTarget "SwiftCoreGraphics" */;
-			buildPhases = (
-				6E572EBE1CE06E7D002E245A /* Sources */,
-				6E572EBF1CE06E7D002E245A /* Frameworks */,
-				6E572EC01CE06E7D002E245A /* Headers */,
-				6E572EC11CE06E7D002E245A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				6EEFFEBD1CE0A24E00515526 /* PBXTargetDependency */,
-			);
-			name = SwiftCoreGraphics;
-			productName = SwiftCoreGraphics;
-			productReference = 6E572EC31CE06E7D002E245A /* SwiftCoreGraphics.framework */;
-			productType = "com.apple.product-type.framework";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -339,9 +276,6 @@
 						CreatedOnToolsVersion = 7.3.1;
 					};
 					6E339B681CDFC492008E399E = {
-						CreatedOnToolsVersion = 7.3.1;
-					};
-					6E572EC21CE06E7D002E245A = {
 						CreatedOnToolsVersion = 7.3.1;
 					};
 				};
@@ -359,7 +293,6 @@
 			projectRoot = "";
 			targets = (
 				6E339B681CDFC492008E399E /* Silica */,
-				6E572EC21CE06E7D002E245A /* SwiftCoreGraphics */,
 				6E169A4A1CE404A200C60B0B /* SilicaTests */,
 			);
 		};
@@ -374,13 +307,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		6E339B671CDFC492008E399E /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6E572EC11CE06E7D002E245A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -404,35 +330,25 @@
 			buildActionMask = 2147483647;
 			files = (
 				6EEFFEBB1CE09DE000515526 /* LineCap.swift in Sources */,
+				6E5041651CE8F13C0087E9A3 /* CGAffineTransform.swift in Sources */,
 				6E339B881CDFC67A008E399E /* Path.swift in Sources */,
 				6EEFFEB91CE09C9300515526 /* CairoConvertible.swift in Sources */,
 				6E16EEAD1CE3429E00DF76A0 /* ImageSourcePNG.swift in Sources */,
 				6EEFFEB71CE099D400515526 /* LineJoin.swift in Sources */,
 				6E16EEA81CE338B500DF76A0 /* BitmapInfo.swift in Sources */,
 				6E16EEA21CE2F0BF00DF76A0 /* Size.swift in Sources */,
+				6E5041661CE8F13C0087E9A3 /* CGColor.swift in Sources */,
+				6E5041671CE8F13C0087E9A3 /* CGContext.swift in Sources */,
 				6E572EBA1CDFE21E002E245A /* AffineTransform.swift in Sources */,
 				6E16EEA61CE336DF00DF76A0 /* Image.swift in Sources */,
 				6EEFFEB11CE07B6B00515526 /* Font.swift in Sources */,
 				6E16EEA01CE2F0B800DF76A0 /* Point.swift in Sources */,
 				6EEFFEB31CE07BDE00515526 /* DrawingMode.swift in Sources */,
+				6E5041691CE8F13C0087E9A3 /* CoreGraphics.swift in Sources */,
+				6E5041681CE8F13C0087E9A3 /* CGPath.swift in Sources */,
 				6EEFFEAF1CE0797900515526 /* Color.swift in Sources */,
 				6E16EEA41CE2F0C700DF76A0 /* Rect.swift in Sources */,
 				6E339B861CDFC672008E399E /* Context.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6E572EBE1CE06E7D002E245A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				6EEFFEBF1CE0A49A00515526 /* CGColor.swift in Sources */,
-				6E572ED31CE0732B002E245A /* CGAffineTransform.swift in Sources */,
-				6EEFFEC31CE0A54D00515526 /* CGSize.swift in Sources */,
-				6EEFFEC11CE0A53E00515526 /* CGPath.swift in Sources */,
-				6EEFFEC91CE10A8D00515526 /* CGPoint.swift in Sources */,
-				6E572ECD1CE06EE6002E245A /* CGContext.swift in Sources */,
-				6EC46E2D1CE46EE4002A1F52 /* Typealias.swift in Sources */,
-				6EEFFECB1CE10BC400515526 /* CGRect.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -443,16 +359,6 @@
 			isa = PBXTargetDependency;
 			target = 6E339B681CDFC492008E399E /* Silica */;
 			targetProxy = 6E169A511CE404A200C60B0B /* PBXContainerItemProxy */;
-		};
-		6E169A571CE404C400C60B0B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 6E572EC21CE06E7D002E245A /* SwiftCoreGraphics */;
-			targetProxy = 6E169A561CE404C400C60B0B /* PBXContainerItemProxy */;
-		};
-		6EEFFEBD1CE0A24E00515526 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 6E339B681CDFC492008E399E /* Silica */;
-			targetProxy = 6EEFFEBC1CE0A24E00515526 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -613,44 +519,6 @@
 			};
 			name = Release;
 		};
-		6E572EC91CE06E7D002E245A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = $SRCROOT/../../Carthage/Build/Mac;
-				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = SwiftCoreGraphics/Info.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.pureswift.SwiftCoreGraphics;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = Debug;
-		};
-		6E572ECA1CE06E7D002E245A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = $SRCROOT/../../Carthage/Build/Mac;
-				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = SwiftCoreGraphics/Info.plist;
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.pureswift.SwiftCoreGraphics;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -677,15 +545,6 @@
 			buildConfigurations = (
 				6E339B7E1CDFC492008E399E /* Debug */,
 				6E339B7F1CDFC492008E399E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		6E572EC81CE06E7D002E245A /* Build configuration list for PBXNativeTarget "SwiftCoreGraphics" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				6E572EC91CE06E7D002E245A /* Debug */,
-				6E572ECA1CE06E7D002E245A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
