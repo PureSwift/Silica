@@ -19,3 +19,4 @@ public typealias CGPathApplierFunction = (UnsafeMutablePointer<Void>, UnsafePoin
 public typealias CGSize = Silica.Size
 public typealias CGPoint = Silica.Point
 public typealias CGRect = Silica.Rect
+public typealias CGFont = Silica.Font
