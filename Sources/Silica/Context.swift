@@ -21,8 +21,6 @@ public final class Context {
     
     public let size: Size
     
-    public let scaleFactor: Float = 1.0
-    
     // MARK: - Private Properties
     
     private let internalContext: Cairo.Context

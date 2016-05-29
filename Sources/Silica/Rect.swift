@@ -90,6 +90,14 @@ public struct Rect: Equatable {
         
         return (size.height < 0) ? origin.y : origin.y + size.height
     }
+    
+    // MARK: - Methods
+    
+    public func contains(point: Point) -> Bool {
+        
+        return (point.x >= minX && point.x <= maxX)
+            && (point.y >= minY && point.y <= maxY)
+    }
 }
 
 // MARK: - Equatable
