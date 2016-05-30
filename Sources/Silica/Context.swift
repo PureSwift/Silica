@@ -581,7 +581,7 @@ public final class Context {
     
     public func setFont(_ font: Font) {
         
-        internalContext.fontFace = font.internalFont.face
+        internalContext.fontFace = font.scaledFont.face
         internalState.font = font
     }
     

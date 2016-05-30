@@ -26,7 +26,7 @@ public struct Font: Equatable, Hashable {
     
     // MARK: - Internal Properties
     
-    internal let internalFont: Cairo.ScaledFont
+    public let scaledFont: Cairo.ScaledFont
     
     // MARK: - Initialization
     
@@ -50,7 +50,7 @@ public struct Font: Equatable, Hashable {
             
             self.name = name
             self.family = family
-            self.internalFont = ScaledFont(face: face, matrix: Matrix.identity, currentTransformation: Matrix.identity, options: options)
+            self.scaledFont = ScaledFont(face: face, matrix: Matrix.identity, currentTransformation: Matrix.identity, options: options)
             
             // cache
             Font.cache[name] = self
@@ -77,13 +77,6 @@ public extension Font {
 }
 
 // MARK: - Private
-
-private struct FontCache {
-    
-    let internalFont: Cairo.ScaledFont
-    
-    let family: String
-}
 
 /// Initialize a pointer to a `FcPattern` object created from the specified PostScript font name.
 private func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)? {
