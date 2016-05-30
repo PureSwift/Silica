@@ -221,3 +221,8 @@ public func CGContextEndTransparencyLayer(_ context: CGContext!) {
     
     try! context.endTransparencyLayer()
 }
+
+public func CGContextClipToRect(_ context: CGContext!, _ rect: CGRect) {
+    
+    context.clip(to: rect)
+}

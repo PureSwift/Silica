@@ -515,6 +515,14 @@ public final class Context {
         }
     }
     
+    @inline(__always)
+    public func clip(to rect: Rect) {
+        
+        beginPath()
+        add(rect: rect)
+        clip()
+    }
+    
     // MARK: - Using Transparency Layers
     
     public func beginTransparencyLayer(rect: Rect? = nil) throws {
