@@ -624,31 +624,17 @@ public final class Context {
         
         let advances = self.advances(for: glyphs)
         
-        var glyphAdvances = [(glyph: FontIndex, advance: Size)](repeating: (FontIndex(), Size()), count: glyphs.count)
-        
-        for (index, glyph) in glyphs.enumerated() {
-            
-            glyphAdvances[index].glyph = glyph
-            glyphAdvances[index].advance = advances[index]
-        }
-        
-        show(glyphs: glyphAdvances)
+        show(glyphs: glyphs.merge(advances) as! [(glyph: FontIndex, advance: Size)])
     }
     
-    public func show(glyphs: [(glyph: FontIndex, advance: Size)]) {
+    public func show(glyphs glyphAdvances: [(glyph: FontIndex, advance: Size)]) {
         
-        let advances = glyphs.map { $0.advance }
+        let advances = glyphAdvances.map { $0.advance }
+        let glyphs = glyphAdvances.map { $0.glyph }
         let positions = self.positions(for: advances)
         
-        var glyphPositions = [(glyph: FontIndex, position: Point)](repeating: (FontIndex(), Point()), count: glyphs.count)
-        for (index, glyphAdvance) in glyphs.enumerated() {
-            
-            glyphPositions[index].glyph = glyphAdvance.glyph
-            glyphPositions[index].position = positions[index]
-        }
-        
         // render
-        show(glyphs: glyphPositions)
+        show(glyphs: glyphs.merge(positions) as! [(glyph: FontIndex, position: Point)])
         
         // advance text position
         advances.forEach {
@@ -657,7 +643,7 @@ public final class Context {
         }
     }
     
-    public func show(glyphs: [(glyph: FontIndex, position: Point)]) {
+    public func show(glyphs glyphPositions: [(glyph: FontIndex, position: Point)]) {
         
         // actual rendering
         
