@@ -664,7 +664,7 @@ public final class Context {
             
             var cairoGlyph = cairo_glyph_t()
             
-            cairoGlyph.index = UInt(index)
+            cairoGlyph.index = UInt(element.glyph)
             
             let userSpacePoint = element.position.applied(transform: textMatrix)
             
