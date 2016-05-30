@@ -636,7 +636,7 @@ public final class Context {
         
         let advances = self.advances(for: glyphs)
         
-        show(glyphs: glyphs.merge(advances) as! [(glyph: FontIndex, advance: Size)])
+        show(glyphs: unsafeBitCast(glyphs.merge(advances), to: [(glyph: FontIndex, advance: Size)].self))
     }
     
     public func show(glyphs glyphAdvances: [(glyph: FontIndex, advance: Size)]) {
@@ -646,7 +646,7 @@ public final class Context {
         let positions = self.positions(for: advances)
         
         // render
-        show(glyphs: glyphs.merge(positions) as! [(glyph: FontIndex, position: Point)])
+        show(glyphs: unsafeBitCast(glyphs.merge(positions), to: [(glyph: FontIndex, position: Point)].self))
         
         // advance text position
         advances.forEach {
