@@ -215,6 +215,7 @@ public final class Context {
     
     public var fontSize: Double {
         
+        @inline(__always)
         get { return internalState.fontSize }
         
         set { internalState.fontSize = newValue }
@@ -596,7 +597,7 @@ public final class Context {
         
         var cairoTextMatrix = Matrix.identity
         
-        cairoTextMatrix.scale(x: internalState.fontSize, y: internalState.fontSize)
+        cairoTextMatrix.scale(x: fontSize, y: fontSize)
         
         cairoTextMatrix.multiply(a: cairoTextMatrix, b: textMatrix.toCairo())
         
@@ -618,6 +619,17 @@ public final class Context {
             
             internalContext.newPath()
         }
+    }
+    
+    @inline(__always)
+    public func show(text: String) {
+        
+        guard text.isEmpty == false
+            else { return }
+        
+        let glyphs = text.unicodeScalars.map { FontIndex($0.value) }
+        
+        show(glyphs: glyphs)
     }
     
     public func show(glyphs: [FontIndex]) {
@@ -647,6 +659,33 @@ public final class Context {
         
         // actual rendering
         
+        let cairoGlyphs: [cairo_glyph_t] = glyphPositions.indexedMap { (index, element) in
+            
+            var cairoGlyph = cairo_glyph_t()
+            
+            cairoGlyph.index = UInt(index)
+            
+            let userSpacePoint = element.position.applied(transform: textMatrix)
+            
+            cairoGlyph.x = userSpacePoint.x
+            
+            cairoGlyph.y = userSpacePoint.y
+            
+            return cairoGlyph
+        }
+        
+        var cairoTextMatrix = Matrix.identity
+        
+        cairoTextMatrix.scale(x: fontSize, y: fontSize)
+        
+        cairoTextMatrix.multiply(a: cairoTextMatrix, b: textMatrix.toCairo())
+        
+        internalContext.setFont(matrix: cairoTextMatrix)
+        
+        internalContext.source = internalState.fill?.pattern ?? DefaultPattern
+        
+        // show glyphs
+        cairoGlyphs.forEach { internalContext.show(glyph: $0) }
     }
     
     public func advances(for glyphs: [FontIndex]) -> [Size] {

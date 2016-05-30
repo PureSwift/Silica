@@ -44,6 +44,7 @@ public protocol AffineTransformMath {
 
 public extension AffineTransformMath {
     
+    @inline(__always)
     mutating func apply(transform: AffineTransform) {
         
         self = self.applied(transform: transform)
@@ -52,8 +53,18 @@ public extension AffineTransformMath {
 
 // Implementations
 
+extension Point: AffineTransformMath {
+    
+    @inline(__always)
+    public func applied(transform t: AffineTransform) -> Point {
+        
+        return Point(x: t.a * x + t.c * y + t.t.x, y: t.b * x + t.d * y + t.t.y)
+    }
+}
+
 extension Size: AffineTransformMath {
     
+    @inline(__always)
     public func applied(transform: AffineTransform) -> Size  {
         
         var newSize = Size(width:  transform.a * width + transform.c * height, height: transform.b * width + transform.d * height)
@@ -71,11 +82,13 @@ extension AffineTransform: CairoConvertible {
     
     public typealias CairoType = Cairo.Matrix
     
+    @inline(__always)
     public init(cairo matrix: CairoType) {
         
         self.init(a: matrix.xx, b: matrix.xy, c: matrix.yx, d: matrix.yy, t: (x: matrix.x0, y: matrix.y0))
     }
     
+    @inline(__always)
     public func toCairo() -> CairoType {
         
         var matrix = Matrix()
