@@ -11,7 +11,10 @@ import CCairo
 import CFontConfig
 
 /// Silica's `Font` type.
-public final class Font {
+public struct Font: Equatable, Hashable {
+    
+    /// Private font cache.
+    private static var cache = [String: Font]()
     
     // MARK: - Properties
     
@@ -29,31 +32,58 @@ public final class Font {
     
     public init?(name: String) {
         
-        // create or fetch from cache
-        guard let (fontConfigPattern, family) = FontConfigPatternCache[name] ?? FcPattern(name: name)
-            else { return nil }
-        
-        // cache new FcPattern
-        if FontConfigPatternCache[name] == nil {
+        if let cachedFont = Font.cache[name] {
             
-            FontConfigPatternCache[name] = (fontConfigPattern, family)
+            self = cachedFont
+            
+        } else {
+            
+            // create new font
+            guard let (fontConfigPattern, family) = FcPattern(name: name)
+                else { return nil }
+            
+            let face = FontFace(fontConfigPattern: fontConfigPattern)
+            
+            let options = FontOptions()
+            options.hintMetrics = CAIRO_HINT_METRICS_OFF
+            options.hintStyle = CAIRO_HINT_STYLE_NONE
+            
+            self.name = name
+            self.family = family
+            self.internalFont = ScaledFont(face: face, matrix: Matrix.identity, currentTransformation: Matrix.identity, options: options)
+            
+            // cache
+            Font.cache[name] = self
         }
+    }
+}
+
+// MARK: - Equatable
+
+public func == (lhs: Font, rhs: Font) -> Bool {
+    
+    // quick and easy way
+    return lhs.name == rhs.name
+}
+
+// MARK: - Hashable
+
+public extension Font {
+    
+    var hashValue: Int {
         
-        let face = FontFace(fontConfigPattern: fontConfigPattern)
-        
-        let options = FontOptions()
-        options.hintMetrics = CAIRO_HINT_METRICS_OFF
-        options.hintStyle = CAIRO_HINT_STYLE_NONE
-        
-        self.name = name
-        self.family = family
-        self.internalFont = ScaledFont(face: face, matrix: Matrix.identity, currentTransformation: Matrix.identity, options: options)
+        return name.hashValue
     }
 }
 
 // MARK: - Private
 
-private var FontConfigPatternCache = [String: (pointer: OpaquePointer, family: String)]()
+private struct FontCache {
+    
+    let internalFont: Cairo.ScaledFont
+    
+    let family: String
+}
 
 /// Initialize a pointer to a `FcPattern` object created from the specified PostScript font name.
 private func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)? {
