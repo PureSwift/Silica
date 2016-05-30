@@ -585,7 +585,8 @@ public final class Context {
         internalState.font = font
     }
     
-    public func show(text: String) {
+    /// Uses the Cairo toy text API.
+    public func show(toyText text: String) {
         
         let oldPoint = internalContext.currentPoint
         
@@ -621,15 +622,7 @@ public final class Context {
     
     public func show(glyphs: [FontIndex]) {
         
-        guard let font = internalState.font?.scaledFont
-            else { return }
-        
-        // only horizontal layout is supported
-        
-        // calculate advances
-        let glyphSpaceToTextSpace = internalState.fontSize / Double(font.unitsPerEm)
-        
-        let advances = font.advances(for: glyphs).map { Size(width: (Double($0) * glyphSpaceToTextSpace) + characterSpacing, height: 0).applied(transform: textMatrix) }
+        let advances = self.advances(for: glyphs)
         
         var glyphAdvances = [(glyph: FontIndex, advance: Size)](repeating: (FontIndex(), Size()), count: glyphs.count)
         
@@ -644,27 +637,59 @@ public final class Context {
     
     public func show(glyphs: [(glyph: FontIndex, advance: Size)]) {
         
-        var glyphPositions = [(glyph: FontIndex, position: Point)](repeating: (FontIndex(), Point()), count: glyphs.count)
+        let advances = glyphs.map { $0.advance }
+        let positions = self.positions(for: advances)
         
-        // first position is {0, 0}
-        for i in 1 ..< glyphPositions.count {
+        var glyphPositions = [(glyph: FontIndex, position: Point)](repeating: (FontIndex(), Point()), count: glyphs.count)
+        for (index, glyphAdvance) in glyphs.enumerated() {
             
-            glyphPositions[i].glyph = glyphPositions[i].glyph
-            
-            let textSpaceAdvance = glyphs[i-1].advance.applied(transform: textMatrix)
-            
-            glyphPositions[i].position = Point(x: glyphPositions[i-1].position.x + textSpaceAdvance.width,
-                                               y: glyphPositions[i-1].position.y + textSpaceAdvance.height)
+            glyphPositions[index].glyph = glyphAdvance.glyph
+            glyphPositions[index].position = positions[index]
         }
         
         // render
         show(glyphs: glyphPositions)
+        
+        // advance text position
+        advances.forEach {
+            textPosition.x += $0.width
+            textPosition.y += $0.height
+        }
     }
     
     public func show(glyphs: [(glyph: FontIndex, position: Point)]) {
         
         // actual rendering
         
+    }
+    
+    public func advances(for glyphs: [FontIndex]) -> [Size] {
+        
+        guard let font = internalState.font?.scaledFont
+            else { return [Size](repeating: Size(), count: glyphs.count) /* zeroed array */ }
+        
+        // only horizontal layout is supported
+        
+        // calculate advances
+        let glyphSpaceToTextSpace = internalState.fontSize / Double(font.unitsPerEm)
+        
+        return font.advances(for: glyphs).map { Size(width: (Double($0) * glyphSpaceToTextSpace) + characterSpacing, height: 0).applied(transform: textMatrix) }
+    }
+    
+    public func positions(for advances: [Size]) -> [Point] {
+        
+        var glyphPositions = [Point](repeating: Point(), count: advances.count)
+        
+        // first position is {0, 0}
+        for i in 1 ..< glyphPositions.count {
+            
+            let textSpaceAdvance = advances[i-1].applied(transform: textMatrix)
+            
+            glyphPositions[i] = Point(x: glyphPositions[i-1].x + textSpaceAdvance.width,
+                                      y: glyphPositions[i-1].y + textSpaceAdvance.height)
+        }
+        
+        return glyphPositions
     }
     
     // MARK: - Private Functions
@@ -776,4 +801,38 @@ private extension Silica.Context {
     }
 }
 
+// MARK: - Internal Extensions
 
+internal extension Collection {
+        
+    func indexedMap<T>(_ transform: @noescape (Index, Iterator.Element) throws -> T) rethrows -> [T] {
+        
+        let count: Int = numericCast(self.count)
+        if count == 0 {
+            return []
+        }
+        
+        var result = ContiguousArray<T>()
+        result.reserveCapacity(count)
+        
+        var i = self.startIndex
+        
+        for _ in 0..<count {
+            result.append(try transform(i, self[i]))
+            formIndex(after: &i)
+        }
+        
+        //_expectEnd(i, self)
+        return Array(result)
+    }
+    
+    @inline(__always)
+    func merge<C: Collection, T
+        where C.Iterator.Element == T, C.IndexDistance == IndexDistance, C.Index == Index>
+        (_ other: C) -> [(Iterator.Element, T)] {
+        
+        precondition(self.count == other.count, "The collection to merge must be of the same size")
+        
+        return self.indexedMap { ($0.1, other[$0.0]) }
+    }
+}
