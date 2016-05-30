@@ -15,7 +15,11 @@ public final class Font {
     
     // MARK: - Properties
     
+    /// Same as full name.
     public let name: String
+    
+    /// Font family name.
+    public let family: String
     
     // MARK: - Internal Properties
     
@@ -26,13 +30,13 @@ public final class Font {
     public init?(name: String) {
         
         // create or fetch from cache
-        guard let fontConfigPattern = FontConfigPatternCache[name] ?? FcPattern(name: name)
+        guard let (fontConfigPattern, family) = FontConfigPatternCache[name] ?? FcPattern(name: name)
             else { return nil }
         
         // cache new FcPattern
         if FontConfigPatternCache[name] == nil {
             
-            FontConfigPatternCache[name] = fontConfigPattern
+            FontConfigPatternCache[name] = (fontConfigPattern, family)
         }
         
         let face = FontFace(fontConfigPattern: fontConfigPattern)
@@ -42,16 +46,17 @@ public final class Font {
         options.hintStyle = CAIRO_HINT_STYLE_NONE
         
         self.name = name
+        self.family = family
         self.internalFont = ScaledFont(face: face, matrix: Matrix.identity, currentTransformation: Matrix.identity, options: options)
     }
 }
 
 // MARK: - Private
 
-private var FontConfigPatternCache = [String: OpaquePointer]()
+private var FontConfigPatternCache = [String: (pointer: OpaquePointer, family: String)]()
 
 /// Initialize a pointer to a `FcPattern` object created from the specified PostScript font name.
-private func FcPattern(name: String) -> OpaquePointer? {
+private func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)? {
     
     guard var pattern = FcPatternCreate()
         else { return nil }
@@ -146,7 +151,7 @@ private func FcPattern(name: String) -> OpaquePointer? {
     // success
     cleanup.shouldCleanup = false
     
-    return pattern
+    return (pattern, family)
 }
 
 // MARK: - String Extensions
