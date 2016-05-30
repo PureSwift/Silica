@@ -213,6 +213,34 @@ public final class Context {
         }
     }
     
+    public var fontSize: Double {
+        
+        get { return internalState.fontSize }
+        
+        set { internalState.fontSize = newValue }
+    }
+    
+    public var characterSpacing: Double {
+        
+        get { return internalState.characterSpacing }
+        
+        set { internalState.characterSpacing = newValue }
+    }
+    
+    public var textDrawingMode: TextDrawingMode {
+        
+        get { return internalState.textMode }
+        
+        set { internalState.textMode = newValue }
+    }
+    
+    public var textPosition: Point {
+        
+        get { return Point(x: textMatrix.t.x, y: textMatrix.t.y) }
+        
+        set { textMatrix.t = (newValue.x, newValue.y) }
+    }
+    
     // MARK: - Methods
     
     // MARK: Defining Pages
@@ -543,7 +571,45 @@ public final class Context {
     
     // MARK: - Drawing Text
     
+    public func setFont(_ font: Font) {
+        
+        internalContext.fontFace = font.internalFont.face
+        internalState.font = font
+    }
     
+    public func show(text: String) {
+        
+        let oldPoint = internalContext.currentPoint
+        
+        internalContext.move(to: (0, 0))
+        
+        // calculate text matrix
+        
+        var cairoTextMatrix = Matrix.identity
+        
+        cairoTextMatrix.scale(x: internalState.fontSize, y: internalState.fontSize)
+        
+        cairoTextMatrix.multiply(a: cairoTextMatrix, b: textMatrix.toCairo())
+        
+        internalContext.setFont(matrix: cairoTextMatrix)
+        
+        internalContext.source = internalState.fill?.pattern ?? DefaultPattern
+        
+        internalContext.show(text: text)
+        
+        let distance = internalContext.currentPoint ?? (0, 0)
+        
+        textPosition = Point(x: textPosition.x + distance.x, y: textPosition.y + distance.y)
+        
+        if let oldPoint = oldPoint {
+            
+            internalContext.move(to: oldPoint)
+            
+        } else {
+            
+            internalContext.newPath()
+        }
+    }
     
     // MARK: - Private Functions
     
