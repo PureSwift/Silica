@@ -31,6 +31,40 @@ public struct AffineTransform {
     public static let identity = AffineTransform(a: 1, b: 0, c: 0, d: 1, t: (x: 0, y: 0))
 }
 
+// MARK: - Geometry Math
+
+// Immutable math
+
+public protocol AffineTransformMath {
+    
+    func applied(transform: AffineTransform) -> Self
+}
+
+// Mutable versions
+
+public extension AffineTransformMath {
+    
+    mutating func apply(transform: AffineTransform) {
+        
+        self = self.applied(transform: transform)
+    }
+}
+
+// Implementations
+
+extension Size: AffineTransformMath {
+    
+    public func applied(transform: AffineTransform) -> Size  {
+        
+        var newSize = self
+        newSize.width = transform.a * width + transform.c * height
+        newSize.height = transform.b * width + transform.d * height
+        
+        if newSize.width < 0 { newSize.width = -newSize.width }
+        if newSize.height < 0 { newSize.height = -newSize.height }
+    }
+}
+
 // MARK: - Cairo Conversion
 
 extension AffineTransform: CairoConvertible {

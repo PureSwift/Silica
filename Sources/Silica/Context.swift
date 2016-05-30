@@ -619,6 +619,40 @@ public final class Context {
         }
     }
     
+    public func show(glyphs: [FontIndex], with advances: [Size]? = nil) {
+        
+        assert(glyphs.count == (advances?.count ?? glyphs.count), "Invalid number of advances")
+        
+        guard let font = internalState.font?.scaledFont
+            else { return }
+        
+        // only horizontal layout is supported
+        
+        // calculates default advances
+        func defaultAdvances() -> [Size] {
+            
+            let glyphSpaceToTextSpace = internalState.fontSize / Double(font.unitsPerEm)
+            
+            return font.advances(for: glyphs).map { Size(width: (Double($0) * glyphSpaceToTextSpace) + characterSpacing, height: 0).applied(transform: textMatrix) }
+        }
+        
+        let advances = advances ?? defaultAdvances()
+        
+        // calculate positions
+        var positions = [Point](repeating: Point(), count: 0)
+        
+        // first position is {0, 0}
+        for i in 1 ..< positions.count {
+            
+            var textSpaceAdvance = 
+        }
+    }
+    
+    public func show(glyphs: [(FontIndex, Point)]) {
+        
+        
+    }
+    
     // MARK: - Private Functions
     
     private func fillPath(evenOdd: Bool, preserve: Bool) throws {
