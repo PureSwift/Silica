@@ -619,38 +619,53 @@ public final class Context {
         }
     }
     
-    public func show(glyphs: [FontIndex], with advances: [Size]? = nil) {
-        
-        assert(glyphs.count == (advances?.count ?? glyphs.count), "Invalid number of advances")
+    public func show(glyphs: [FontIndex]) {
         
         guard let font = internalState.font?.scaledFont
             else { return }
         
         // only horizontal layout is supported
         
-        // calculates default advances
-        func defaultAdvances() -> [Size] {
+        // calculate advances
+        let glyphSpaceToTextSpace = internalState.fontSize / Double(font.unitsPerEm)
+        
+        let advances = font.advances(for: glyphs).map { Size(width: (Double($0) * glyphSpaceToTextSpace) + characterSpacing, height: 0).applied(transform: textMatrix) }
+        
+        var glyphAdvances = [(glyph: FontIndex, advance: Size)](repeating: (FontIndex(), Size()), count: glyphs.count)
+        
+        for (index, glyph) in glyphs.enumerated() {
             
-            let glyphSpaceToTextSpace = internalState.fontSize / Double(font.unitsPerEm)
-            
-            return font.advances(for: glyphs).map { Size(width: (Double($0) * glyphSpaceToTextSpace) + characterSpacing, height: 0).applied(transform: textMatrix) }
+            let advance = advances[index]
+            glyphAdvances[index] = (glyph, advance)
         }
         
-        let advances = advances ?? defaultAdvances()
+        show(glyphs: glyphAdvances)
+    }
+    
+    public func show(glyphs: [(glyph: FontIndex, advance: Size)]) {
         
         // calculate positions
-        var positions = [Point](repeating: Point(), count: 0)
+        var positions = [Point](repeating: Point(), count: glyphs.count)
         
         // first position is {0, 0}
         for i in 1 ..< positions.count {
             
-            var textSpaceAdvance = 
+            let textSpaceAdvance = glyphs[i-1].advance.applied(transform: textMatrix)
+            
+            positions[i] = Point(x: positions[i-1].x + textSpaceAdvance.width,
+                                 y: positions[i-1].y + textSpaceAdvance.height)
         }
+        
+        // render glyphs
+        var glyphPositionsPairs = [(FontIndex, Point)](repeating: (FontIndex(), Point()), count: glyphs.count)
+        for (index, glyph) in
+        
+        show(glyphs: glyphs.map { ($0, ) })
     }
     
     public func show(glyphs: [(FontIndex, Point)]) {
         
-        
+        // actual rendering
     }
     
     // MARK: - Private Functions
