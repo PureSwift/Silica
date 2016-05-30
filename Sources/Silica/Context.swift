@@ -624,10 +624,11 @@ public final class Context {
     @inline(__always)
     public func show(text: String) {
         
-        guard text.isEmpty == false
+        guard let font = internalState.font?.scaledFont
+            where fontSize > 0.0 && text.isEmpty == false
             else { return }
         
-        let glyphs = text.unicodeScalars.map { FontIndex($0.value) }
+        let glyphs = text.unicodeScalars.map { font[UInt($0.value)] }
         
         show(glyphs: glyphs)
     }
