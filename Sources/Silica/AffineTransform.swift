@@ -56,12 +56,12 @@ extension Size: AffineTransformMath {
     
     public func applied(transform: AffineTransform) -> Size  {
         
-        var newSize = self
-        newSize.width = transform.a * width + transform.c * height
-        newSize.height = transform.b * width + transform.d * height
+        var newSize = Size(width:  transform.a * width + transform.c * height, height: transform.b * width + transform.d * height)
         
         if newSize.width < 0 { newSize.width = -newSize.width }
         if newSize.height < 0 { newSize.height = -newSize.height }
+        
+        return newSize
     }
 }
 

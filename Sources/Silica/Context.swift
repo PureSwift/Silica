@@ -635,8 +635,8 @@ public final class Context {
         
         for (index, glyph) in glyphs.enumerated() {
             
-            let advance = advances[index]
-            glyphAdvances[index] = (glyph, advance)
+            glyphAdvances[index].glyph = glyph
+            glyphAdvances[index].advance = advances[index]
         }
         
         show(glyphs: glyphAdvances)
@@ -644,28 +644,27 @@ public final class Context {
     
     public func show(glyphs: [(glyph: FontIndex, advance: Size)]) {
         
-        // calculate positions
-        var positions = [Point](repeating: Point(), count: glyphs.count)
+        var glyphPositions = [(glyph: FontIndex, position: Point)](repeating: (FontIndex(), Point()), count: glyphs.count)
         
         // first position is {0, 0}
-        for i in 1 ..< positions.count {
+        for i in 1 ..< glyphPositions.count {
+            
+            glyphPositions[i].glyph = glyphPositions[i].glyph
             
             let textSpaceAdvance = glyphs[i-1].advance.applied(transform: textMatrix)
             
-            positions[i] = Point(x: positions[i-1].x + textSpaceAdvance.width,
-                                 y: positions[i-1].y + textSpaceAdvance.height)
+            glyphPositions[i].position = Point(x: glyphPositions[i-1].position.x + textSpaceAdvance.width,
+                                               y: glyphPositions[i-1].position.y + textSpaceAdvance.height)
         }
         
-        // render glyphs
-        var glyphPositionsPairs = [(FontIndex, Point)](repeating: (FontIndex(), Point()), count: glyphs.count)
-        for (index, glyph) in
-        
-        show(glyphs: glyphs.map { ($0, ) })
+        // render
+        show(glyphs: glyphPositions)
     }
     
-    public func show(glyphs: [(FontIndex, Point)]) {
+    public func show(glyphs: [(glyph: FontIndex, position: Point)]) {
         
         // actual rendering
+        
     }
     
     // MARK: - Private Functions
