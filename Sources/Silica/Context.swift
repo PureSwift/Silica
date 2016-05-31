@@ -599,9 +599,7 @@ public final class Context {
         
         cairoTextMatrix.scale(x: fontSize, y: fontSize)
         
-        let silicaTextMatrix = Matrix(a: textMatrix.a, b: textMatrix.b, c: textMatrix.c, d: textMatrix.d, t: (0, 0))
-        
-        cairoTextMatrix.multiply(a: cairoTextMatrix, b: silicaTextMatrix)
+        cairoTextMatrix.multiply(a: cairoTextMatrix, b: textMatrix.toCairo())
         
         internalContext.setFont(matrix: cairoTextMatrix)
         
