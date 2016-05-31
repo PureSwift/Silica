@@ -76,6 +76,37 @@ public extension Font {
     }
 }
 
+// MARK: - Text Math
+
+public extension Font {
+    
+    func advances(for glyphs: [FontIndex], fontSize: Double, textMatrix: AffineTransform = AffineTransform.identity, characterSpacing: Double = 0.0) -> [Size] {
+        
+        // only horizontal layout is supported
+        
+        // calculate advances
+        let glyphSpaceToTextSpace = fontSize / Double(scaledFont.unitsPerEm)
+        
+        return scaledFont.advances(for: glyphs).map { Size(width: (Double($0) * glyphSpaceToTextSpace) + characterSpacing, height: 0).applied(transform: textMatrix) }
+    }
+    
+    func positions(for advances: [Size], textMatrix: AffineTransform = AffineTransform.identity) -> [Point] {
+        
+        var glyphPositions = [Point](repeating: Point(), count: advances.count)
+        
+        // first position is {0, 0}
+        for i in 1 ..< glyphPositions.count {
+            
+            let textSpaceAdvance = advances[i-1].applied(transform: textMatrix)
+            
+            glyphPositions[i] = Point(x: glyphPositions[i-1].x + textSpaceAdvance.width,
+                                      y: glyphPositions[i-1].y + textSpaceAdvance.height)
+        }
+        
+        return glyphPositions
+    }
+}
+
 // MARK: - Private
 
 /// Initialize a pointer to a `FcPattern` object created from the specified PostScript font name.

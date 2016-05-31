@@ -635,16 +635,24 @@ public final class Context {
     
     public func show(glyphs: [FontIndex]) {
         
-        let advances = self.advances(for: glyphs)
+        guard let font = internalState.font
+            where fontSize > 0.0 && glyphs.isEmpty == false
+            else { return }
+        
+        let advances = font.advances(for: glyphs, fontSize: fontSize, textMatrix: textMatrix, characterSpacing: characterSpacing)
         
         show(glyphs: unsafeBitCast(glyphs.merge(advances), to: [(glyph: FontIndex, advance: Size)].self))
     }
     
     public func show(glyphs glyphAdvances: [(glyph: FontIndex, advance: Size)]) {
         
+        guard let font = internalState.font
+            where fontSize > 0.0 && glyphAdvances.isEmpty == false
+            else { return }
+        
         let advances = glyphAdvances.map { $0.advance }
         let glyphs = glyphAdvances.map { $0.glyph }
-        let positions = self.positions(for: advances)
+        let positions = font.positions(for: advances, textMatrix: textMatrix)
         
         // render
         show(glyphs: unsafeBitCast(glyphs.merge(positions), to: [(glyph: FontIndex, position: Point)].self))
@@ -695,35 +703,6 @@ public final class Context {
         
         // show glyphs
         cairoGlyphs.forEach { internalContext.show(glyph: $0) }
-    }
-    
-    public func advances(for glyphs: [FontIndex]) -> [Size] {
-        
-        guard let font = internalState.font?.scaledFont
-            else { return [Size](repeating: Size(), count: glyphs.count) /* zeroed array */ }
-        
-        // only horizontal layout is supported
-        
-        // calculate advances
-        let glyphSpaceToTextSpace = internalState.fontSize / Double(font.unitsPerEm)
-        
-        return font.advances(for: glyphs).map { Size(width: (Double($0) * glyphSpaceToTextSpace) + characterSpacing, height: 0).applied(transform: textMatrix) }
-    }
-    
-    public func positions(for advances: [Size]) -> [Point] {
-        
-        var glyphPositions = [Point](repeating: Point(), count: advances.count)
-        
-        // first position is {0, 0}
-        for i in 1 ..< glyphPositions.count {
-            
-            let textSpaceAdvance = advances[i-1].applied(transform: textMatrix)
-            
-            glyphPositions[i] = Point(x: glyphPositions[i-1].x + textSpaceAdvance.width,
-                                      y: glyphPositions[i-1].y + textSpaceAdvance.height)
-        }
-        
-        return glyphPositions
     }
     
     // MARK: - Private Functions
