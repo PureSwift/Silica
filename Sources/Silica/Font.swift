@@ -152,7 +152,8 @@ private func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)
         
         let trimmedCString = traitsCString.advanced(by: 1)
         
-        defer { free(traitsCString) }
+        // should free memory, but crashes
+        // defer { free(traitsCString) }
         
         let traitsString = String(utf8String: trimmedCString)!
         
