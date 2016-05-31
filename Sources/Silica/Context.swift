@@ -21,13 +21,13 @@ public final class Context {
     
     public let size: Size
     
+    public var textMatrix = AffineTransform.identity
+    
     // MARK: - Private Properties
     
     private let internalContext: Cairo.Context
     
     private var internalState: State = State()
-    
-    private var textMatrix = AffineTransform.identity
     
     // MARK: - Initialization
     
