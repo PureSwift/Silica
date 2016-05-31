@@ -121,7 +121,7 @@ public extension Font {
 /// Initialize a pointer to a `FcPattern` object created from the specified PostScript font name.
 private func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)? {
     
-    guard var pattern = FcPatternCreate()
+    guard let pattern = FcPatternCreate()
         else { return nil }
     
     /// hacky way to cleanup, `defer` will copy initial value of `Bool` so this is needed.
