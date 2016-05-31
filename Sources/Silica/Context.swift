@@ -658,6 +658,10 @@ public final class Context {
     
     public func show(glyphs glyphPositions: [(glyph: FontIndex, position: Point)]) {
         
+        guard let font = internalState.font?.scaledFont
+            where fontSize > 0.0 && glyphPositions.isEmpty == false
+            else { return }
+        
         // actual rendering
         
         let cairoGlyphs: [cairo_glyph_t] = glyphPositions.indexedMap { (index, element) in
@@ -679,7 +683,9 @@ public final class Context {
         
         cairoTextMatrix.scale(x: fontSize, y: fontSize)
         
-        let silicaTextMatrix = Matrix(a: textMatrix.a, b: textMatrix.b, c: textMatrix.c, d: textMatrix.d, t: (0, 0))
+        let ascender = (Double(font.ascent) * fontSize) / Double(font.unitsPerEm)
+        
+        let silicaTextMatrix = Matrix(a: textMatrix.a, b: textMatrix.b, c: textMatrix.c, d: textMatrix.d, t: (0, ascender))
         
         cairoTextMatrix.multiply(a: cairoTextMatrix, b: silicaTextMatrix)
         
