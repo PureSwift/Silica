@@ -105,6 +105,15 @@ public extension Font {
         
         return glyphPositions
     }
+    
+    func singleLineWidth(text: String, fontSize: Double, textMatrix: AffineTransform = AffineTransform.identity) -> Double {
+        
+        let glyphs = text.unicodeScalars.map { scaledFont[UInt($0.value)] }
+        
+        let textWidth = advances(for: glyphs, fontSize: fontSize, textMatrix: textMatrix).reduce(Double(0), combine: { $0.0 +  $0.1.width })
+        
+        return textWidth
+    }
 }
 
 // MARK: - Private
