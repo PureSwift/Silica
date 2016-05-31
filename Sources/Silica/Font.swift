@@ -52,6 +52,12 @@ public struct Font: Equatable, Hashable {
             self.family = family
             self.scaledFont = ScaledFont(face: face, matrix: Matrix.identity, currentTransformation: Matrix.identity, options: options)
             
+            // Default font is Verdana, make sure the name is correct
+            let defaultFontName = "Verdana"
+            
+            guard name == defaultFontName || scaledFont.fullName != defaultFontName
+                else { return nil }
+            
             // cache
             Font.cache[name] = self
         }
