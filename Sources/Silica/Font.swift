@@ -163,7 +163,7 @@ private func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)
         
         let traitsString = String(utf8String: trimmedCString)!
         
-        let familyLength = name.utf8.count - traitsString.utf8.count + 1 // for separator
+        let familyLength = name.utf8.count - traitsString.utf8.count - 1 // for separator
         
         family = name.substring(range: 0 ..< familyLength)!
         
