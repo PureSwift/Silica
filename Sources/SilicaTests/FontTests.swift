@@ -15,7 +15,7 @@ final class FontTests: XCTestCase {
     
     func testCreateSimpleFont() {
         
-        guard let font = Font(name: "MicrosoftSansSerif")
+        guard let font = Silica.Font(name: "MicrosoftSansSerif")
             else { XCTFail("Could not create font"); return }
         
         let expectedFullName = "Microsoft Sans Serif"
@@ -26,7 +26,7 @@ final class FontTests: XCTestCase {
     
     func testCreateTraitFont() {
         
-        guard let font = Font(name: "MicrosoftSansSerif-Bold")
+        guard let font = Silica.Font(name: "MicrosoftSansSerif-Bold")
             else { XCTFail("Could not create font"); return }
         
         let expectedFullName = "Microsoft Sans Serif"

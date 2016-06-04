@@ -85,6 +85,7 @@
 		6E5041631CE8F13C0087E9A3 /* CGPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPath.swift; sourceTree = "<group>"; };
 		6E5041641CE8F13C0087E9A3 /* CoreGraphics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreGraphics.swift; sourceTree = "<group>"; };
 		6E572EB91CDFE21E002E245A /* AffineTransform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AffineTransform.swift; sourceTree = "<group>"; };
+		6EC4D07E1D031435009E499F /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Package.swift; path = ../../Package.swift; sourceTree = "<group>"; };
 		6EEFFEAE1CE0797900515526 /* Color.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		6EEFFEB01CE07B6B00515526 /* Font.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Font.swift; sourceTree = "<group>"; };
 		6EEFFEB21CE07BDE00515526 /* DrawingMode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DrawingMode.swift; sourceTree = "<group>"; };
@@ -133,6 +134,7 @@
 		6E339B5F1CDFC492008E399E = {
 			isa = PBXGroup;
 			children = (
+				6EC4D07E1D031435009E499F /* Package.swift */,
 				6E169A5B1CE428ED00C60B0B /* Dependencies */,
 				6E339B831CDFC663008E399E /* Sources */,
 				6E339B6B1CDFC492008E399E /* Silica */,

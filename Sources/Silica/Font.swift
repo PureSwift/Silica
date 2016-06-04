@@ -161,7 +161,7 @@ private func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)
         // should free memory, but crashes
         // defer { free(traitsCString) }
         
-        let traitsString = String(utf8String: trimmedCString)!
+        let traitsString = String(cString: trimmedCString)
         
         let familyLength = name.utf8.count - traitsString.utf8.count - 1 // for separator
         
@@ -229,5 +229,13 @@ internal extension String {
     func substring(range: Range<Int>) -> String? {
         let indexRange = utf8.index(utf8.startIndex, offsetBy: range.lowerBound) ..< utf8.index(utf8.startIndex, offsetBy: range.upperBound)
         return String(utf8[indexRange])
+    }
+}
+
+internal extension String {
+    
+    func contains(_ other: String) -> Bool {
+        
+        return strstr(self, other) != nil
     }
 }
