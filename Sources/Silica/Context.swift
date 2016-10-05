@@ -678,7 +678,7 @@ public final class Context {
             
             cairoGlyph.index = UInt(element.glyph)
             
-            let userSpacePoint = element.position.applied(transform: textMatrix)
+            let userSpacePoint = element.position.applying(textMatrix)
             
             cairoGlyph.x = userSpacePoint.x
             

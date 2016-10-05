@@ -93,7 +93,7 @@ public extension Font {
         // calculate advances
         let glyphSpaceToTextSpace = fontSize / Double(scaledFont.unitsPerEm)
         
-        return scaledFont.advances(for: glyphs).map { Size(width: (Double($0) * glyphSpaceToTextSpace) + characterSpacing, height: 0).applied(transform: textMatrix) }
+        return scaledFont.advances(for: glyphs).map { Size(width: (Double($0) * glyphSpaceToTextSpace) + characterSpacing, height: 0).applying(textMatrix) }
     }
     
     func positions(for advances: [Size], textMatrix: AffineTransform = AffineTransform.identity) -> [Point] {
@@ -103,7 +103,7 @@ public extension Font {
         // first position is {0, 0}
         for i in 1 ..< glyphPositions.count {
             
-            let textSpaceAdvance = advances[i-1].applied(transform: textMatrix)
+            let textSpaceAdvance = advances[i-1].applying(textMatrix)
             
             glyphPositions[i] = Point(x: glyphPositions[i-1].x + textSpaceAdvance.width,
                                       y: glyphPositions[i-1].y + textSpaceAdvance.height)

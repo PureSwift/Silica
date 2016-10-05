@@ -24,6 +24,7 @@
 		6E5041661CE8F13C0087E9A3 /* CGColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5041611CE8F13C0087E9A3 /* CGColor.swift */; };
 		6E5041691CE8F13C0087E9A3 /* CoreGraphics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5041641CE8F13C0087E9A3 /* CoreGraphics.swift */; };
 		6E572EBA1CDFE21E002E245A /* AffineTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E572EB91CDFE21E002E245A /* AffineTransform.swift */; };
+		6E7C02A11DA594D30089CF26 /* CGContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E7C02A01DA594D30089CF26 /* CGContext.swift */; };
 		6EEFFEAF1CE0797900515526 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEAE1CE0797900515526 /* Color.swift */; };
 		6EEFFEB11CE07B6B00515526 /* Font.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB01CE07B6B00515526 /* Font.swift */; };
 		6EEFFEB31CE07BDE00515526 /* DrawingMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEB21CE07BDE00515526 /* DrawingMode.swift */; };
@@ -78,6 +79,7 @@
 		6E5041631CE8F13C0087E9A3 /* CGPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPath.swift; sourceTree = "<group>"; };
 		6E5041641CE8F13C0087E9A3 /* CoreGraphics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreGraphics.swift; sourceTree = "<group>"; };
 		6E572EB91CDFE21E002E245A /* AffineTransform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AffineTransform.swift; sourceTree = "<group>"; };
+		6E7C02A01DA594D30089CF26 /* CGContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGContext.swift; sourceTree = "<group>"; };
 		6EC4D07E1D031435009E499F /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Package.swift; path = ../../Package.swift; sourceTree = "<group>"; };
 		6EEFFEAE1CE0797900515526 /* Color.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		6EEFFEB01CE07B6B00515526 /* Font.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Font.swift; sourceTree = "<group>"; };
@@ -198,6 +200,7 @@
 			isa = PBXGroup;
 			children = (
 				6E5041641CE8F13C0087E9A3 /* CoreGraphics.swift */,
+				6E7C02A01DA594D30089CF26 /* CGContext.swift */,
 				6E5041601CE8F13C0087E9A3 /* CGAffineTransform.swift */,
 				6E5041611CE8F13C0087E9A3 /* CGColor.swift */,
 				6E5041631CE8F13C0087E9A3 /* CGPath.swift */,
@@ -263,7 +266,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = PureSwift;
 				TargetAttributes = {
 					6E169A4A1CE404A200C60B0B = {
@@ -330,6 +333,7 @@
 				6E339B881CDFC67A008E399E /* Path.swift in Sources */,
 				6EEFFEB91CE09C9300515526 /* CairoConvertible.swift in Sources */,
 				6E16EEAD1CE3429E00DF76A0 /* ImageSourcePNG.swift in Sources */,
+				6E7C02A11DA594D30089CF26 /* CGContext.swift in Sources */,
 				6EEFFEB71CE099D400515526 /* LineJoin.swift in Sources */,
 				6E16EEA81CE338B500DF76A0 /* BitmapInfo.swift in Sources */,
 				6E16EEA21CE2F0BF00DF76A0 /* Size.swift in Sources */,
@@ -399,8 +403,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -452,8 +458,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -488,6 +496,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -510,6 +519,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;

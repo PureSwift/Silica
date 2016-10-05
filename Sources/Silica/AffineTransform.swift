@@ -37,7 +37,7 @@ public struct AffineTransform {
 
 public protocol AffineTransformMath {
     
-    func applied(transform: AffineTransform) -> Self
+    func applying(_ transform: AffineTransform) -> Self
 }
 
 // Mutable versions
@@ -47,7 +47,7 @@ public extension AffineTransformMath {
     @inline(__always)
     mutating func apply(_ transform: AffineTransform) {
         
-        self = self.applied(transform: transform)
+        self = self.applying(transform)
     }
 }
 
@@ -56,7 +56,7 @@ public extension AffineTransformMath {
 extension Point: AffineTransformMath {
     
     @inline(__always)
-    public func applied(transform t: AffineTransform) -> Point {
+    public func applying(_ t: AffineTransform) -> Point {
         
         return Point(x: t.a * x + t.c * y + t.t.x, y: t.b * x + t.d * y + t.t.y)
     }
@@ -65,7 +65,7 @@ extension Point: AffineTransformMath {
 extension Size: AffineTransformMath {
     
     @inline(__always)
-    public func applied(transform: AffineTransform) -> Size  {
+    public func applying( _ transform: AffineTransform) -> Size  {
         
         var newSize = Size(width:  transform.a * width + transform.c * height, height: transform.b * width + transform.d * height)
         

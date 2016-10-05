@@ -49,7 +49,7 @@ public enum PathElement {
 
 public extension Path {
     
-    mutating func add(_ rect: Rect) {
+    mutating func add(rect: Rect) {
         
         let newElements: [Element] = [.moveToPoint(Point(x: rect.minX, y: rect.minY)),
                                       .addLineToPoint(Point(x: rect.maxX, y: rect.minY)),
@@ -60,7 +60,7 @@ public extension Path {
         elements.append(contentsOf: newElements)
     }
     
-    mutating func add(ellipseInRect rect: Rect) {
+    mutating func add(ellipseIn rect: Rect) {
         
         var p = Point()
         var p1 = Point()
