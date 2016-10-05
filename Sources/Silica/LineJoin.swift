@@ -11,11 +11,11 @@ import CCairo
 
 public enum LineJoin: UInt32 {
     
-    case Miter
-    case Round
-    case Bevel
+    case miter
+    case round
+    case bevel
     
-    public init() { self = .Miter }
+    public init() { self = .miter }
 }
 
 // MARK: - Cairo Conversion

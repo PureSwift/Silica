@@ -138,13 +138,13 @@ public final class Context {
                 
                 let point = Point(x: data[0].point.x, y: data[0].point.y)
                 
-                element = Path.Element.MoveToPoint(point)
+                element = Path.Element.moveToPoint(point)
                 
             case CAIRO_PATH_LINE_TO:
                 
                 let point = Point(x: data[0].point.x, y: data[0].point.y)
                 
-                element = Path.Element.AddLineToPoint(point)
+                element = Path.Element.addLineToPoint(point)
                 
             case CAIRO_PATH_CURVE_TO:
                 
@@ -152,11 +152,11 @@ public final class Context {
                 let control2 = Point(x: data[1].point.x, y: data[1].point.y)
                 let destination = Point(x: data[2].point.x, y: data[2].point.y)
                 
-                element = Path.Element.AddCurveToPoint(control1, control2, destination)
+                element = Path.Element.addCurveToPoint(control1, control2, destination)
                 
             case CAIRO_PATH_CLOSE_PATH:
                 
-                element = Path.Element.CloseSubpath
+                element = Path.Element.closeSubpath
                 
             default: fatalError("Unknown Cairo Path data: \(header.type.rawValue)")
             }
@@ -434,15 +434,15 @@ public final class Context {
             
             switch element {
                 
-            case let .MoveToPoint(point): move(to: point)
+            case let .moveToPoint(point): move(to: point)
                 
-            case let .AddLineToPoint(point): line(to: point)
+            case let .addLineToPoint(point): line(to: point)
                 
-            case let .AddQuadCurveToPoint(control, destination): quadCurve(to: control, end: destination)
+            case let .addQuadCurveToPoint(control, destination): quadCurve(to: control, end: destination)
             
-            case let .AddCurveToPoint(control1, control2, destination): curve(to: (control1, control2), end: destination)
+            case let .addCurveToPoint(control1, control2, destination): curve(to: (control1, control2), end: destination)
             
-            case .CloseSubpath: closePath()
+            case .closeSubpath: closePath()
             }
         }
     }
@@ -493,11 +493,11 @@ public final class Context {
     public func draw(_ mode: DrawingMode = DrawingMode()) throws {
         
         switch mode {
-        case .Fill: try fillPath(evenOdd: false, preserve: false)
-        case .EvenOddFill: try fillPath(evenOdd: true, preserve: false)
-        case .FillStroke: try fillPath(evenOdd: false, preserve: true)
-        case .EvenOddFillStroke: try fillPath(evenOdd: true, preserve: true)
-        case .Stroke: try stroke()
+        case .fill: try fillPath(evenOdd: false, preserve: false)
+        case .evenOddFill: try fillPath(evenOdd: true, preserve: false)
+        case .fillStroke: try fillPath(evenOdd: false, preserve: true)
+        case .evenOddFillStroke: try fillPath(evenOdd: true, preserve: true)
+        case .stroke: try stroke()
         }
     }
     
@@ -624,8 +624,8 @@ public final class Context {
     @inline(__always)
     public func show(text: String) {
         
-        guard let font = internalState.font?.scaledFont
-            where fontSize > 0.0 && text.isEmpty == false
+        guard let font = internalState.font?.scaledFont,
+            fontSize > 0.0 && text.isEmpty == false
             else { return }
         
         let glyphs = text.unicodeScalars.map { font[UInt($0.value)] }
@@ -635,8 +635,8 @@ public final class Context {
     
     public func show(glyphs: [FontIndex]) {
         
-        guard let font = internalState.font
-            where fontSize > 0.0 && glyphs.isEmpty == false
+        guard let font = internalState.font,
+            fontSize > 0.0 && glyphs.isEmpty == false
             else { return }
         
         let advances = font.advances(for: glyphs, fontSize: fontSize, textMatrix: textMatrix, characterSpacing: characterSpacing)
@@ -646,8 +646,8 @@ public final class Context {
     
     public func show(glyphs glyphAdvances: [(glyph: FontIndex, advance: Size)]) {
         
-        guard let font = internalState.font
-            where fontSize > 0.0 && glyphAdvances.isEmpty == false
+        guard let font = internalState.font,
+            fontSize > 0.0 && glyphAdvances.isEmpty == false
             else { return }
         
         let advances = glyphAdvances.map { $0.advance }
@@ -666,8 +666,8 @@ public final class Context {
     
     public func show(glyphs glyphPositions: [(glyph: FontIndex, position: Point)]) {
         
-        guard let font = internalState.font?.scaledFont
-            where fontSize > 0.0 && glyphPositions.isEmpty == false
+        guard let font = internalState.font?.scaledFont,
+            fontSize > 0.0 && glyphPositions.isEmpty == false
             else { return }
         
         // actual rendering
@@ -749,7 +749,7 @@ public final class Context {
         
         let radius = internalState.shadow!.radius
         
-        let alphaSurface = Surface(format: .A8,
+        let alphaSurface = Surface(format: .a8,
                                    width: Int(ceil(size.width + 2 * radius)),
                                    height: Int(ceil(size.height + 2 * radius)))
         
@@ -776,12 +776,12 @@ public final class Context {
 // MARK: - Private
 
 /// Default black pattern
-private let DefaultPattern = Cairo.Pattern(color: (red: 0, green: 0, blue: 0))
+fileprivate let DefaultPattern = Cairo.Pattern(color: (red: 0, green: 0, blue: 0))
 
-private extension Silica.Context {
+fileprivate extension Silica.Context {
     
     /// To save non-Cairo state variables
-    private final class State {
+    fileprivate final class State {
         
         var next: State?
         var alpha: Double = 1.0
@@ -818,7 +818,7 @@ private extension Silica.Context {
 
 internal extension Collection {
         
-    func indexedMap<T>(_ transform: @noescape (Index, Iterator.Element) throws -> T) rethrows -> [T] {
+    func indexedMap<T>(_ transform: (Index, Iterator.Element) throws -> T) rethrows -> [T] {
         
         let count: Int = numericCast(self.count)
         if count == 0 {
@@ -840,9 +840,9 @@ internal extension Collection {
     }
     
     @inline(__always)
-    func merge<C: Collection, T
-        where C.Iterator.Element == T, C.IndexDistance == IndexDistance, C.Index == Index>
-        (_ other: C) -> [(Iterator.Element, T)] {
+    func merge<C: Collection, T>
+        (_ other: C) -> [(Iterator.Element, T)]
+        where C.Iterator.Element == T, C.IndexDistance == IndexDistance, C.Index == Index {
         
         precondition(self.count == other.count, "The collection to merge must be of the same size")
         

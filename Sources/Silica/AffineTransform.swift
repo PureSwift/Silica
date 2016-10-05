@@ -45,7 +45,7 @@ public protocol AffineTransformMath {
 public extension AffineTransformMath {
     
     @inline(__always)
-    mutating func apply(transform: AffineTransform) {
+    mutating func apply(_ transform: AffineTransform) {
         
         self = self.applied(transform: transform)
     }

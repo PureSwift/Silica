@@ -8,6 +8,7 @@
 
 import XCTest
 import Silica
+import Cairo
 
 final class FontTests: XCTestCase {
     

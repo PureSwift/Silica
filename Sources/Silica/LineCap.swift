@@ -11,11 +11,11 @@ import CCairo
 
 public enum LineCap: UInt32 {
     
-    case Butt
-    case Round
-    case Square
+    case butt
+    case round
+    case square
     
-    public init() { self = .Butt }
+    public init() { self = .butt }
 }
 
 // MARK: - Cairo Conversion

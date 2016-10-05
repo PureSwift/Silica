@@ -116,7 +116,7 @@ public extension Font {
         
         let glyphs = text.unicodeScalars.map { scaledFont[UInt($0.value)] }
         
-        let textWidth = advances(for: glyphs, fontSize: fontSize, textMatrix: textMatrix).reduce(Double(0), combine: { $0.0 +  $0.1.width })
+        let textWidth = advances(for: glyphs, fontSize: fontSize, textMatrix: textMatrix).reduce(Double(0), { $0.0 +  $0.1.width })
         
         return textWidth
     }
@@ -140,7 +140,7 @@ private func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)
         
         deinit { if shouldCleanup { cleanup() } }
         
-        init(cleanup: () -> ()) {
+        init(cleanup: @escaping () -> ()) {
             
             self.cleanup = cleanup
         }

@@ -7,9 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6E169A4E1CE404A200C60B0B /* SilicaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E169A4D1CE404A200C60B0B /* SilicaTests.swift */; };
 		6E169A501CE404A200C60B0B /* Silica.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E339B691CDFC492008E399E /* Silica.framework */; };
-		6E169A5A1CE405CF00C60B0B /* CoreGraphicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E169A591CE405CF00C60B0B /* CoreGraphicsTests.swift */; };
 		6E169A5E1CE4291F00C60B0B /* Cairo.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = 6E169A5C1CE4290D00C60B0B /* Cairo.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		6E16EEA01CE2F0B800DF76A0 /* Point.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E16EE9F1CE2F0B800DF76A0 /* Point.swift */; };
 		6E16EEA21CE2F0BF00DF76A0 /* Size.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E16EEA11CE2F0BF00DF76A0 /* Size.swift */; };
@@ -24,8 +22,6 @@
 		6E4419EC1CFFB417002F74E1 /* FontTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4419EB1CFFB417002F74E1 /* FontTests.swift */; };
 		6E5041651CE8F13C0087E9A3 /* CGAffineTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5041601CE8F13C0087E9A3 /* CGAffineTransform.swift */; };
 		6E5041661CE8F13C0087E9A3 /* CGColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5041611CE8F13C0087E9A3 /* CGColor.swift */; };
-		6E5041671CE8F13C0087E9A3 /* CGContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5041621CE8F13C0087E9A3 /* CGContext.swift */; };
-		6E5041681CE8F13C0087E9A3 /* CGPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5041631CE8F13C0087E9A3 /* CGPath.swift */; };
 		6E5041691CE8F13C0087E9A3 /* CoreGraphics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5041641CE8F13C0087E9A3 /* CoreGraphics.swift */; };
 		6E572EBA1CDFE21E002E245A /* AffineTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E572EB91CDFE21E002E245A /* AffineTransform.swift */; };
 		6EEFFEAF1CE0797900515526 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEFFEAE1CE0797900515526 /* Color.swift */; };
@@ -62,9 +58,7 @@
 
 /* Begin PBXFileReference section */
 		6E169A4B1CE404A200C60B0B /* SilicaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SilicaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		6E169A4D1CE404A200C60B0B /* SilicaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SilicaTests.swift; sourceTree = "<group>"; };
 		6E169A4F1CE404A200C60B0B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		6E169A591CE405CF00C60B0B /* CoreGraphicsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreGraphicsTests.swift; sourceTree = "<group>"; };
 		6E169A5C1CE4290D00C60B0B /* Cairo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cairo.framework; path = ../../Carthage/Build/Mac/Cairo.framework; sourceTree = "<group>"; };
 		6E16EE9F1CE2F0B800DF76A0 /* Point.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Point.swift; sourceTree = "<group>"; };
 		6E16EEA11CE2F0BF00DF76A0 /* Size.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Size.swift; sourceTree = "<group>"; };
@@ -81,7 +75,6 @@
 		6E4419EB1CFFB417002F74E1 /* FontTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FontTests.swift; sourceTree = "<group>"; };
 		6E5041601CE8F13C0087E9A3 /* CGAffineTransform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGAffineTransform.swift; sourceTree = "<group>"; };
 		6E5041611CE8F13C0087E9A3 /* CGColor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGColor.swift; sourceTree = "<group>"; };
-		6E5041621CE8F13C0087E9A3 /* CGContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGContext.swift; sourceTree = "<group>"; };
 		6E5041631CE8F13C0087E9A3 /* CGPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CGPath.swift; sourceTree = "<group>"; };
 		6E5041641CE8F13C0087E9A3 /* CoreGraphics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreGraphics.swift; sourceTree = "<group>"; };
 		6E572EB91CDFE21E002E245A /* AffineTransform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AffineTransform.swift; sourceTree = "<group>"; };
@@ -116,8 +109,6 @@
 		6E169A4C1CE404A200C60B0B /* SilicaTests */ = {
 			isa = PBXGroup;
 			children = (
-				6E169A4D1CE404A200C60B0B /* SilicaTests.swift */,
-				6E169A591CE405CF00C60B0B /* CoreGraphicsTests.swift */,
 				6E169A4F1CE404A200C60B0B /* Info.plist */,
 			);
 			path = SilicaTests;
@@ -209,7 +200,6 @@
 				6E5041641CE8F13C0087E9A3 /* CoreGraphics.swift */,
 				6E5041601CE8F13C0087E9A3 /* CGAffineTransform.swift */,
 				6E5041611CE8F13C0087E9A3 /* CGColor.swift */,
-				6E5041621CE8F13C0087E9A3 /* CGContext.swift */,
 				6E5041631CE8F13C0087E9A3 /* CGPath.swift */,
 			);
 			name = CoreGraphics;
@@ -278,9 +268,11 @@
 				TargetAttributes = {
 					6E169A4A1CE404A200C60B0B = {
 						CreatedOnToolsVersion = 7.3.1;
+						LastSwiftMigration = 0800;
 					};
 					6E339B681CDFC492008E399E = {
 						CreatedOnToolsVersion = 7.3.1;
+						LastSwiftMigration = 0800;
 					};
 				};
 			};
@@ -325,8 +317,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				6E4419EC1CFFB417002F74E1 /* FontTests.swift in Sources */,
-				6E169A4E1CE404A200C60B0B /* SilicaTests.swift in Sources */,
-				6E169A5A1CE405CF00C60B0B /* CoreGraphicsTests.swift in Sources */,
 				6E4419EA1CFFB407002F74E1 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -344,14 +334,12 @@
 				6E16EEA81CE338B500DF76A0 /* BitmapInfo.swift in Sources */,
 				6E16EEA21CE2F0BF00DF76A0 /* Size.swift in Sources */,
 				6E5041661CE8F13C0087E9A3 /* CGColor.swift in Sources */,
-				6E5041671CE8F13C0087E9A3 /* CGContext.swift in Sources */,
 				6E572EBA1CDFE21E002E245A /* AffineTransform.swift in Sources */,
 				6E16EEA61CE336DF00DF76A0 /* Image.swift in Sources */,
 				6EEFFEB11CE07B6B00515526 /* Font.swift in Sources */,
 				6E16EEA01CE2F0B800DF76A0 /* Point.swift in Sources */,
 				6EEFFEB31CE07BDE00515526 /* DrawingMode.swift in Sources */,
 				6E5041691CE8F13C0087E9A3 /* CoreGraphics.swift in Sources */,
-				6E5041681CE8F13C0087E9A3 /* CGPath.swift in Sources */,
 				6EEFFEAF1CE0797900515526 /* Color.swift in Sources */,
 				6E16EEA41CE2F0C700DF76A0 /* Rect.swift in Sources */,
 				6E339B861CDFC672008E399E /* Context.swift in Sources */,
@@ -379,6 +367,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pureswift.SilicaTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -392,6 +381,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pureswift.SilicaTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -512,6 +502,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -532,6 +523,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.pureswift.Silica;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};

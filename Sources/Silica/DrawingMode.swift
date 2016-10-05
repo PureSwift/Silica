@@ -9,35 +9,35 @@
 /// Options for rendering text.
 public enum TextDrawingMode: CInt {
     
-    case Fill
-    case Stroke
-    case FillStroke
-    case Invisible
-    case FillClip
-    case StrokeClip
-    case FillStrokeClip
-    case Clip
+    case fill
+    case stroke
+    case fillStroke
+    case invisible
+    case fillClip
+    case strokeClip
+    case fillStrokeClip
+    case clip
     
-    public init() { self = .Fill }
+    public init() { self = .fill }
 }
 
 /// Options for rendering a path.
 public enum DrawingMode {
     
     /// Render the area contained within the path using the non-zero winding number rule.
-    case Fill
+    case fill
     
     /// Render the area within the path using the even-odd rule.
-    case EvenOddFill
+    case evenOddFill
     
     /// Render a line along the path.
-    case Stroke
+    case stroke
     
     /// First fill and then stroke the path, using the nonzero winding number rule.
-    case FillStroke
+    case fillStroke
     
     /// First fill and then stroke the path, using the even-odd rule.
-    case EvenOddFillStroke
+    case evenOddFillStroke
     
-    public init() { self = .Fill }
+    public init() { self = .fill }
 }

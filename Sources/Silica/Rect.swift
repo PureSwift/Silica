@@ -93,7 +93,7 @@ public struct Rect: Equatable {
     
     // MARK: - Methods
     
-    public func contains(point: Point) -> Bool {
+    public func contains(_ point: Point) -> Bool {
         
         return (point.x >= minX && point.x <= maxX)
             && (point.y >= minY && point.y <= maxY)
