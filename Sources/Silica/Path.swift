@@ -45,11 +45,11 @@ public enum PathElement {
     case closeSubpath
 }
 
-// MARK: - Extensions
+// MARK: - Constructing a Path
 
 public extension Path {
     
-    mutating func add(rect: Rect) {
+    mutating func addRect(_ rect: Rect) {
         
         let newElements: [Element] = [.moveToPoint(Point(x: rect.minX, y: rect.minY)),
                                       .addLineToPoint(Point(x: rect.maxX, y: rect.minY)),
@@ -60,7 +60,7 @@ public extension Path {
         elements.append(contentsOf: newElements)
     }
     
-    mutating func add(ellipseIn rect: Rect) {
+    mutating func addEllipse(in rect: Rect) {
         
         var p = Point()
         var p1 = Point()
@@ -91,6 +91,31 @@ public extension Path {
         p1 = Point(x: rect.origin.x + rect.size.width, y: rect.origin.y + rect.size.height / 2 + vdiff)
         p2 = Point(x: rect.origin.x + rect.size.width / 2 + hdiff, y: rect.origin.y + rect.size.height)
         elements.append(.addCurveToPoint(p1, p2, p))
+    }
+    
+    mutating func move(to point: Point) {
+        
+        elements.append(.moveToPoint(point))
+    }
+    
+    mutating func addLine(to point: Point) {
+        
+        elements.append(.addLineToPoint(point))
+    }
+    
+    mutating func addCurve(to endPoint: Point, control1: Point, control2: Point) {
+        
+        elements.append(.addCurveToPoint(control1, control2, endPoint))
+    }
+    
+    mutating func addQuadCurve(to endPoint: Point, control: Point) {
+        
+        elements.append(.addQuadCurveToPoint(control, endPoint))
+    }
+    
+    mutating func closeSubpath() {
+        
+        elements.append(.closeSubpath)
     }
 }
 
