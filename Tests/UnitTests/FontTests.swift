@@ -7,12 +7,12 @@
 //
 
 import XCTest
-import Silica
 import Cairo
+@testable import Silica
 
 final class FontTests: XCTestCase {
     
-    static let allTests: [(String, (FontTests) -> () throws -> Void)] = [("testCreateSimpleFont", testCreateSimpleFont), ("testCreateTraitFont", testCreateTraitFont)]
+    static let allTests: [(String, (FontTests) -> () throws -> ())] = [("testCreateSimpleFont", testCreateSimpleFont), ("testCreateTraitFont", testCreateTraitFont)]
     
     func testCreateSimpleFont() {
         

@@ -206,7 +206,9 @@ private func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)
         }
     }
     
-    guard FcConfigSubstitute(nil, pattern, FcMatchPattern) != 0
+    let matchPattern = FcMatchKind(rawValue: 0) // FcMatchPattern
+    
+    guard FcConfigSubstitute(nil, pattern, matchPattern) != 0
         else { return nil }
     
     FcDefaultSubstitute(pattern)

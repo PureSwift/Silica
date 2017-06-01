@@ -215,7 +215,6 @@ public final class Context {
     
     public var fontSize: Double {
         
-        @inline(__always)
         get { return internalState.fontSize }
         
         set { internalState.fontSize = newValue }
@@ -621,7 +620,6 @@ public final class Context {
         }
     }
     
-    @inline(__always)
     public func show(text: String) {
         
         guard let font = internalState.font?.scaledFont,

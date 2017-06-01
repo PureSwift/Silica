@@ -1,6 +1,4 @@
 Carthage
 .build
 Packages
-Xcode/Silica/Silica.xcodeproj/project.xcworkspace/xcuserdata/*
-Xcode/Silica/Silica.xcodeproj/xcuserdata/*
-
+Silica.xcodeproj
