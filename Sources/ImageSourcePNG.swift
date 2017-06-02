@@ -15,6 +15,8 @@ public final class ImageSourcePNG: ImageSource {
     
     private let data: Data
     
+    fileprivate var currentError: Error?
+    
     public init?(data: Data) {
         
         let headerSize = 8
@@ -31,17 +33,20 @@ public final class ImageSourcePNG: ImageSource {
     
     public func createImage(at index: Int) throws -> Image {
         
-        final class Reference<T> {
-            
-            var value: T?
-        }
+        // reset error
+        currentError = nil
         
-        let error = Reference<Error>()
+        let unmanaged = Unmanaged.passUnretained(self)
         
-        guard let pngStruct = png_create_read_struct(PNG_LIBPNG_VER_STRING, nil, pngErrorHandler, pngWarningHandler)
-            else {  }
+        let pointer = unmanaged.toOpaque()
         
+        guard var pngRead = png_create_read_struct(PNG_LIBPNG_VER_STRING, pointer, pngErrorHandler, nil)
+            else { throw currentError! }
         
+        guard var pngInfo = png_create_info_struct(pngRead)
+            else { png_destroy_read_struct(&pngRead, nil, nil); }
+        
+        defer { png_destroy_read_struct(&pngRead, &pngInfo, nil) }
     }
 }
 
@@ -49,7 +54,7 @@ public final class ImageSourcePNG: ImageSource {
 
 // dont use directly with libpng
 @inline(__always)
-private func pngError(_ type: ImageSourcePNG.ErrorType, _ png_ptr: png_structp?, _ error_msg: png_const_charp?) {
+private func pngErrorHandler(_ png_ptr: png_structp?, _ error_msg: png_const_charp?) {
     
     let message: String
     
@@ -62,19 +67,18 @@ private func pngError(_ type: ImageSourcePNG.ErrorType, _ png_ptr: png_structp?,
         message = ""
     }
     
-    let error = ImageSourcePNG.Error(message: message, type: type)
+    // create error
+    let error = ImageSourcePNG.Error(message: message)
     
+    // get reference to image source
+    let pointer = png_get_error_ptr(png_ptr)!
     
-}
-
-private func pngErrorHandler(_ png_ptr: png_structp?, _ error_msg: png_const_charp?) {
+    let unmanaged = Unmanaged<ImageSourcePNG>.fromOpaque(pointer)
     
-    pngError(.fatal, png_ptr, error_msg)
-}
-
-private func pngWarningHandler(_ png_ptr: png_structp?, _ error_msg: png_const_charp?) {
+    let imageSource = unmanaged.takeUnretainedValue()
     
-    pngError(.warning, png_ptr, error_msg)
+    // assign error to object
+    imageSource.currentError = error
 }
 
 // MARK: - Supporting Types
@@ -84,14 +88,6 @@ public extension ImageSourcePNG {
     public struct Error: Swift.Error {
         
         public let message: String
-        
-        public let type: ErrorType
-    }
-    
-    public enum ErrorType: Int {
-        
-        case warning
-        case fatal
     }
 }
 

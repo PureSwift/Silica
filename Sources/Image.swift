@@ -13,8 +13,6 @@ import Cairo
 /// with each pixel representing a single sample or data point in a source image.
 public final class Image {
     
-    //public static let imageSources = [ImageSourcePNG]()
-    
     // MARK: - Properties
     
     public let mask: Bool
@@ -35,10 +33,8 @@ public final class Image {
     
     internal let surface: Cairo.Surface
     
-    // MARK: - Initialization
-    
-    internal init(imageSource: ImageSource) {
+    init() {
         
-        fatalError("Not implemented")
+        fatalError()
     }
 }
