@@ -6,6 +6,7 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+import struct Foundation.Data
 import Cairo
 
 /// Represents bitmap images and bitmap image masks, based on sample data that you supply. 
@@ -25,7 +26,7 @@ public final class Image {
     
     public let bytesPerRow: Int
     
-    public let data: [UInt8]
+    public let shouldInterpolate: Bool
     
     public let bitmapInfo: BitmapInfo
     
@@ -33,7 +34,15 @@ public final class Image {
     
     internal let surface: Cairo.Surface
     
-    init() {
+    init(width: Int,
+         height: Int,
+         bitsPerComponent: Int,
+         bitsPerPixel: Int,
+         bytesPerRow: Int,
+         colorSpace: ColorSpace,
+         bitmapInfo: BitmapInfo,
+         data: Data,
+         shouldInterpolate: Bool) {
         
         fatalError()
     }

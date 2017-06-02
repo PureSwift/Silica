@@ -15,7 +15,7 @@ public final class ImageSourcePNG: ImageSource {
     
     private let data: Data
     
-    fileprivate var currentError: Error?
+    fileprivate var currentError = Error()
     
     public init?(data: Data) {
         
@@ -34,19 +34,91 @@ public final class ImageSourcePNG: ImageSource {
     public func createImage(at index: Int) throws -> Image {
         
         // reset error
-        currentError = nil
+        currentError = Error()
         
         let unmanaged = Unmanaged.passUnretained(self)
         
-        let pointer = unmanaged.toOpaque()
+        let objectPointer = unmanaged.toOpaque()
         
-        guard var pngRead = png_create_read_struct(PNG_LIBPNG_VER_STRING, pointer, pngErrorHandler, nil)
-            else { throw currentError! }
+        var pngRead: png_structp? = nil
+        var pngInfo: png_infop? = nil
+        var pngEndInfo: png_infop? = nil
         
-        guard var pngInfo = png_create_info_struct(pngRead)
-            else { png_destroy_read_struct(&pngRead, nil, nil); }
+        defer { png_destroy_read_struct(&pngRead, &pngInfo, &pngEndInfo) }
         
-        defer { png_destroy_read_struct(&pngRead, &pngInfo, nil) }
+        // create read handle
+        pngRead = png_create_read_struct(PNG_LIBPNG_VER_STRING, objectPointer, pngErrorHandler, nil)
+        
+        guard pngRead != nil
+            else { throw currentError }
+        
+        // get info
+        pngInfo = png_create_info_struct(pngRead)
+        
+        guard pngInfo != nil
+            else { throw currentError }
+        
+        // get info
+        pngEndInfo = png_create_info_struct(pngRead)
+        
+        guard pngEndInfo != nil
+            else { throw currentError }
+        
+        let width = png_get_image_width(pngRead, pngInfo)
+        let height = Int(png_get_image_height(pngRead, pngInfo))
+        let bytesPerRow = Int(png_get_rowbytes(pngRead, pngInfo))
+        let type = CInt(png_get_color_type(pngRead, pngInfo))
+        let channels = png_get_channels(pngRead, pngInfo) // includes alpha
+        let depth = png_get_bit_depth(pngRead, pngInfo)
+        
+        let alpha: Bool
+        let colorspace: ColorSpace
+        
+        switch CInt(type) {
+            
+        case PNG_COLOR_TYPE_GRAY_ALPHA:
+            
+            alpha = true
+            colorspace = .genericGray
+            
+        case PNG_COLOR_TYPE_GRAY:
+            
+            alpha = false
+            colorspace = .genericGray
+            
+        case PNG_COLOR_TYPE_RGB_ALPHA:
+            
+            alpha = true
+            colorspace = .genericRGB
+            
+        case PNG_COLOR_TYPE_RGB:
+            
+            alpha = false
+            colorspace = .genericRGB
+            
+        case PNG_COLOR_TYPE_PALETTE:
+            
+            png_set_palette_to_rgb(pngRead)
+            
+            if png_get_valid(pngRead, pngInfo, png_uint_32(PNG_INFO_tRNS)) != 0 {
+                
+                alpha = true
+                png_set_tRNS_to_alpha(pngRead)
+            }
+            
+            colorspace = .genericRGB
+            
+        default:
+            
+            alpha = false
+            colorspace = .genericRGB
+            
+            throw currentError
+        }
+        
+        let imageData = Data(count: height * bytesPerRow)
+        
+        
     }
 }
 
@@ -88,6 +160,11 @@ public extension ImageSourcePNG {
     public struct Error: Swift.Error {
         
         public let message: String
+        
+        fileprivate init(message: String = "") {
+            
+            self.message = message
+        }
     }
 }
 
