@@ -7,7 +7,7 @@
 //
 
 /// CoreGraphics compatible wrapper for `Silica.Context`.
-public final class CGContextWrapper {
+public final class CGContext {
     
     public let silicaContext: Silica.Context
     

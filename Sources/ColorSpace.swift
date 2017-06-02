@@ -12,16 +12,27 @@ public final class ColorSpace {
     
     public let name: String
     
-    private let profile: OpaquePointer
+    fileprivate let profile: OpaquePointer
     
     public init() {
         
         fatalError()
     }
     
-    public var numberOfComponents: Int {
+    public var numberOfComponents: UInt {
         
         return 0 // _cmsChannelsOf(cmsGetColorSpace(profile))
+    }
+}
+
+// MARK: - Equatable
+
+extension ColorSpace: Equatable {
+    
+    public static func == (lhs: ColorSpace, rhs: ColorSpace) -> Bool {
+        
+        // FIXME
+        return lhs.profile == rhs.profile
     }
 }
 

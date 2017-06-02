@@ -6,6 +6,12 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+#if os(macOS)
+    import Darwin.C.math
+#elseif os(Linux)
+    import Glibc
+#endif
+
 /// A structure that contains the location and dimensions of a rectangle.
 public struct Rect: Equatable {
     
@@ -90,6 +96,45 @@ public struct Rect: Equatable {
         
         return (size.height < 0) ? origin.y : origin.y + size.height
     }
+
+    /// Returns a rectangle with a positive width and height.
+    public var standardized: Rect {
+        
+        var rect = self
+        
+        if (rect.size.width < 0) {
+            rect.origin.x += rect.size.width
+            rect.size.width = -rect.size.width
+        }
+        
+        if (rect.size.height < 0) {
+            rect.origin.y += rect.size.height
+            rect.size.height = -rect.size.height
+        }
+        
+        return rect;
+    }
+    
+    /// Returns the smallest rectangle that results from converting the source rectangle values to integers.
+    public var integral: Rect {
+        
+        var rect = self.standardized
+        
+        rect.size.width = ceil(rect.origin.x + rect.size.width)
+        rect.size.height = ceil(rect.origin.y + rect.size.height)
+        rect.origin.x = floor(rect.origin.x)
+        rect.origin.y = floor(rect.origin.y)
+        rect.size.width -= rect.origin.x
+        rect.size.height -= rect.origin.y
+        
+        return rect;
+    }
+    
+    /// Returns whether a rectangle has zero width or height, or is a null rectangle.
+    public var isEmpty: Bool {
+        
+        return size.width == 0 || size.height == 0
+    }
     
     // MARK: - Methods
     
@@ -97,6 +142,45 @@ public struct Rect: Equatable {
         
         return (point.x >= minX && point.x <= maxX)
             && (point.y >= minY && point.y <= maxY)
+    }
+    
+    /// Returns the intersection of two rectangles.
+    public func intersection(_ other: Rect) -> Rect? {
+        
+        var r1 = self
+        var r2 = other
+        
+        var rect = Rect()
+        
+        guard r1.isEmpty == false else { return r2 }
+        guard r2.isEmpty == false else { return r1 }
+        
+        r1 = r1.standardized
+        r2 = r2.standardized
+        
+        guard (r1.origin.x + r1.size.width <= r2.origin.x ||
+            r2.origin.x + r2.size.width <= r1.origin.x ||
+            r1.origin.y + r1.size.height <= r2.origin.y ||
+            r2.origin.y + r2.size.height <= r1.origin.y) == false
+            else { return nil }
+        
+        rect.origin.x = (r1.origin.x > r2.origin.x ? r1.origin.x : r2.origin.x)
+        rect.origin.y = (r1.origin.y > r2.origin.y ? r1.origin.y : r2.origin.y)
+        
+        if (r1.origin.x + r1.size.width < r2.origin.x + r2.size.width) {
+            rect.size.width = r1.origin.x + r1.size.width - rect.origin.x
+        } else {
+            rect.size.width = r2.origin.x + r2.size.width - rect.origin.x
+        }
+        
+        
+        if (r1.origin.y + r1.size.height < r2.origin.y + r2.size.height) {
+            rect.size.height = r1.origin.y + r1.size.height - rect.origin.y
+        } else {
+            rect.size.height = r2.origin.y + r2.size.height - rect.origin.y
+        }
+        
+        return rect;
     }
 }
 

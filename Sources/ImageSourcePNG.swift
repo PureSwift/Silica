@@ -13,9 +13,9 @@ public final class ImageSourcePNG: ImageSource {
     
     public static let typeIdentifier = "public.png"
     
-    private let data: Data
+    public static var warning: (String) -> () = { debugPrint("ImageSourcePNG Warning: " + $0) }
     
-    fileprivate var currentError = Error()
+    public let data: Data
     
     public init?(data: Data) {
         
@@ -31,14 +31,7 @@ public final class ImageSourcePNG: ImageSource {
         self.data = data
     }
     
-    public func createImage(at index: Int) throws -> Image {
-        
-        // reset error
-        currentError = Error()
-        
-        let unmanaged = Unmanaged.passUnretained(self)
-        
-        let objectPointer = unmanaged.toOpaque()
+    public func createImage(at index: Int) -> Image? {
         
         var pngRead: png_structp? = nil
         var pngInfo: png_infop? = nil
@@ -47,22 +40,22 @@ public final class ImageSourcePNG: ImageSource {
         defer { png_destroy_read_struct(&pngRead, &pngInfo, &pngEndInfo) }
         
         // create read handle
-        pngRead = png_create_read_struct(PNG_LIBPNG_VER_STRING, objectPointer, pngFatalError, pngWarning)
+        pngRead = png_create_read_struct(PNG_LIBPNG_VER_STRING, nil, pngFatalError, pngWarning)
         
         guard pngRead != nil
-            else { throw currentError }
+            else { return nil }
         
         // get info
         pngInfo = png_create_info_struct(pngRead)
         
         guard pngInfo != nil
-            else { throw currentError }
+            else { return nil }
         
         // get info
         pngEndInfo = png_create_info_struct(pngRead)
         
         guard pngEndInfo != nil
-            else { throw currentError }
+            else { return nil }
         
         let width = UInt(png_get_image_width(pngRead, pngInfo))
         let height = UInt(png_get_image_height(pngRead, pngInfo))
@@ -119,7 +112,7 @@ public final class ImageSourcePNG: ImageSource {
             colorspace = .genericRGB
             
             // invalid image
-            throw currentError
+            return nil
         }
         
         // create row buffer bound to image data
@@ -140,7 +133,7 @@ public final class ImageSourcePNG: ImageSource {
         png_read_image(pngRead, rowPointers)
         
         // generate bitmap info
-        let bitmapInfo = BitmapInfo(floatComponents: false, alpha: alpha ? .last : nil, byteOrder: .default)
+        let bitmapInfo = BitmapInfo(floatComponents: false, alpha: alpha ? .last : .none, byteOrder: .default)
         
         // create image
         let image = Image(width: width,
@@ -148,7 +141,7 @@ public final class ImageSourcePNG: ImageSource {
                           bitsPerComponent: depth,
                           bitsPerPixel: channels * depth,
                           bytesPerRow: bytesPerRow,
-                          colorSpace: colorspace,
+                          colorspace: colorspace,
                           bitmapInfo: bitmapInfo,
                           data: imageData as Data,
                           shouldInterpolate: true,
@@ -179,37 +172,14 @@ private func pngString(_ msg: png_const_charp?) -> String {
 
 private func pngFatalError(_ png_ptr: png_structp?, _ error_msg: png_const_charp?) {
     
-    fatalError(pngString(error_msg))
+    let message = pngString(error_msg)
+    
+    fatalError("Fatal error in libPNG " + message)
 }
 
 private func pngWarning(_ png_ptr: png_structp?, _ error_msg: png_const_charp?) {
     
-    // create error
-    let error = ImageSourcePNG.Error(message: pngString(error_msg))
+    let message = pngString(error_msg)
     
-    // get reference to image source
-    let pointer = png_get_error_ptr(png_ptr)!
-    
-    let unmanaged = Unmanaged<ImageSourcePNG>.fromOpaque(pointer)
-    
-    let imageSource = unmanaged.takeUnretainedValue()
-    
-    // assign error to object
-    imageSource.currentError = error
+    ImageSourcePNG.warning(message)
 }
-
-// MARK: - Supporting Types
-
-public extension ImageSourcePNG {
-    
-    public struct Error: Swift.Error {
-        
-        public let message: String
-        
-        fileprivate init(message: String = "") {
-            
-            self.message = message
-        }
-    }
-}
-

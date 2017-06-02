@@ -22,6 +22,8 @@ public final class Image {
     
     public let height: UInt
     
+    public let bitsPerComponent: UInt
+    
     public let bitsPerPixel: UInt
     
     public let bytesPerRow: UInt
@@ -32,22 +34,32 @@ public final class Image {
     
     public let renderingIntent: ColorRenderingIntent
     
+    public let colorspace: ColorSpace
+    
+    public let data: Data
+    
     // MARK: - Internal Properties
     
-    internal let surface: Cairo.Surface
+    /// The crop rect for this cropped image.
+    private var crop: Rect?
+    
+    /// The cached Cairo surface for this image.
+    private var surfaceCache: Cairo.Surface?
+    
+    // MARK: - Initialization
     
     public init?(width: UInt,
          height: UInt,
          bitsPerComponent: UInt,
          bitsPerPixel: UInt,
          bytesPerRow: UInt,
-         colorSpace: ColorSpace,
+         colorspace: ColorSpace,
          bitmapInfo: BitmapInfo,
          data: Data,
          shouldInterpolate: Bool,
          renderingIntent: ColorRenderingIntent) {
         
-        let numberOfComponents = bitmapInfo.alpha == .alphaOnly ? 0 : colorSpace.numberOfComponents
+        let numberOfComponents: UInt = bitmapInfo.alpha == .alphaOnly ? 0 : UInt(colorspace.numberOfComponents)
         
         let hasAlpha: Bool
         
@@ -68,9 +80,96 @@ public final class Image {
             hasAlpha = true
         }
         
-        let numberOfComponentsIncludingAlpha = numberOfComponents + (hasAlpha ? 1 : 0)
+        let numberOfComponentsIncludingAlpha: UInt = numberOfComponents + (hasAlpha ? 1 : 0)
         
-        guard (bitsPerComponent < 1 || bitsPerComponent > 32) == false
-            else { return false }
+        // sanity checks
+        guard (bitsPerComponent < 1 || bitsPerComponent > 32) == false // Unsupported bitsPerComponent
+            && (bitmapInfo.floatComponents && bitsPerComponent != 32) == false // Only 32 bits supported for float components
+            && (bitsPerPixel < bitsPerComponent * numberOfComponentsIncludingAlpha) == false // Too few bitsPerPixel
+            else { return nil }
+        
+        self.mask = false
+        self.width = width
+        self.height = height
+        self.bitsPerComponent = bitsPerComponent
+        self.bitsPerPixel = bitsPerPixel
+        self.bytesPerRow = bytesPerRow
+        self.data = data
+        self.shouldInterpolate = shouldInterpolate
+        self.bitmapInfo = bitmapInfo
+        self.colorspace = colorspace
+        self.renderingIntent = renderingIntent
+        self.crop = nil
+        self.surfaceCache = nil
+    }
+    
+    /// Creates a bitmap image using the data contained within a subregion of an existing bitmap image.
+    ///
+    /// - Parameter image: The image to extract the subimage from.
+    ///
+    /// - Parameter rect: A rectangle whose coordinates specify the area to create an image from.
+    ///
+    /// - Returns: An `Image` that specifies a subimage of the provided image. 
+    /// If the `rect` parameter defines an area that is not in the image, returns `nil`.
+    public convenience init?(image: Image, in rect: Rect) {
+        
+        self.init(width: image.width,
+                     height: image.height,
+                     bitsPerComponent: image.bitsPerComponent,
+                     bitsPerPixel: image.bitsPerPixel,
+                     bytesPerRow: image.bytesPerRow,
+                     colorspace: image.colorspace,
+                     bitmapInfo: image.bitmapInfo,
+                     data: image.data,
+                     shouldInterpolate: image.shouldInterpolate,
+                     renderingIntent: image.renderingIntent)
+        
+        // set crop rect
+        let sourceRect = Rect(x: 0, y: 0, width: Double(image.width), height: Double(image.height))
+        self.crop = rect.integral.intersection(sourceRect)
+        
+        /// hold reference to original surface
+        if let originalSurface = image.surfaceCache {
+            
+            self.surfaceCache = originalSurface
+        }
+    }
+    
+    // MARK: - Methods
+    
+    /// Generates a copy of the image.
+    public var copy: Image {
+        
+        return Image(width: width,
+                     height: height,
+                     bitsPerComponent: bitsPerComponent,
+                     bitsPerPixel: bitsPerPixel,
+                     bytesPerRow: bytesPerRow,
+                     colorspace: colorspace,
+                     bitmapInfo: bitmapInfo,
+                     data: data,
+                     shouldInterpolate: shouldInterpolate,
+                     renderingIntent: renderingIntent)!
+    }
+    
+    public var surface: Cairo.Surface {
+        
+        // return existing surface
+        if let surface = self.surfaceCache {
+            
+            return surface
+        }
+        
+        // create new surface
+        let surface = Surface(format: .argb32, width: Int(width), height: Int(height))
+        
+        surface.flush()
+        
+        
+        
+        // cache and return value
+        self.surfaceCache = surface
+        
+        return surface
     }
 }

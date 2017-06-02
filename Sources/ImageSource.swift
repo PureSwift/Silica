@@ -9,7 +9,7 @@
 import struct Foundation.Data
 
 /// This object abstracts the data-reading task. 
-/// An image source can read image data from a `URL` or `Data`.
+/// An image source can read image data from a `Data` instance.
 public protocol ImageSource: class, RandomAccessCollection {
     
     associatedtype Index = Int
@@ -18,18 +18,23 @@ public protocol ImageSource: class, RandomAccessCollection {
     
     static var typeIdentifier: String { get }
     
+    var data: Data { get }
+    
     init?(data: Data)
         
-    func createImage(at index: Int) throws -> Image
+    func createImage(at index: Int) -> Image?
 }
 
 public extension ImageSource {
     
-    public var count: Int { return 1 } // only formats like GIF have multiple images
+    public var count: Int { return 1 } // only some formats like GIF have multiple images
     
     public subscript (index: Int) -> Image {
         
-        return try! createImage(at: index)
+        guard let image = createImage(at: index)
+            else { fatalError("No image at index \(index)") }
+        
+        return image
     }
     
     public subscript(bounds: Range<Self.Index>) -> RandomAccessSlice<Self> {

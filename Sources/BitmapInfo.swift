@@ -31,6 +31,18 @@ public struct BitmapInfo {
     }
 }
 
+// MARK: - Equatable
+
+extension BitmapInfo: Equatable {
+    
+    public static func == (lhs: BitmapInfo, rhs: BitmapInfo) -> Bool {
+        
+        return lhs.floatComponents == rhs.floatComponents
+            && lhs.alpha == rhs.alpha
+            && lhs.byteOrder == rhs.byteOrder
+    }
+}
+
 // MARK: - Supporting Types
 
 public extension BitmapInfo {
