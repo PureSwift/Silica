@@ -82,7 +82,9 @@ fileprivate extension Image {
             
             self.colorComponents = colorspace.numberOfComponents
             self.hasAlpha = bitmapInfo.alpha != .none && actualComponents > colorspace.numberOfComponents
-            self.isAlphaPremultiplied = bitmapInfo
+            self.isAlphaPremultiplied = bitmapInfo.alpha == .premultipliedFirst || bitmapInfo.alpha == .premultipliedLast
+            self.isAlphaLast = bitmapInfo.alpha == .premultipliedLast || bitmapInfo.alpha == .last
+            self.needs32Swap = bitmapInfo.byteOrder == .little32
         }
     }
 }
