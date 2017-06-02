@@ -13,7 +13,7 @@ import Cairo
 /// with each pixel representing a single sample or data point in a source image.
 public final class Image {
     
-    public static let imageSources = [ImageSourcePNG]()
+    //public static let imageSources = [ImageSourcePNG]()
     
     // MARK: - Properties
     
@@ -41,11 +41,4 @@ public final class Image {
         
         fatalError("Not implemented")
     }
-}
-
-// MARK: - Supporting Types
-
-public protocol ImageSource {
-    
-    
 }

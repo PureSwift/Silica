@@ -20,6 +20,12 @@
       "version": "1.0.3"
     },
     {
+      "package": "CPNG",
+      "reason": null,
+      "repositoryURL": "https://github.com/rfdickerson/CPNG.git",
+      "version": "0.0.1"
+    },
+    {
       "package": "Cairo",
       "reason": null,
       "repositoryURL": "https://github.com/PureSwift/Cairo.git",
