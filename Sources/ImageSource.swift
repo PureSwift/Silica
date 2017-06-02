@@ -58,9 +58,8 @@ public extension ImageSource {
         return i + 1
     }
     
-    public func makeIterator() -> Self.Iterator {
+    public func makeIterator() -> IndexingIterator<Self> {
         
-        // FIXME: How can I make this type-safe to appease the POP gods?
-        return IndexingIterator(_elements: self) as! Self.Iterator
+        return IndexingIterator(_elements: self)
     }
 }

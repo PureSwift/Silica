@@ -36,7 +36,7 @@ public final class Image {
     
     internal let surface: Cairo.Surface
     
-    internal init(width: UInt,
+    public init?(width: UInt,
          height: UInt,
          bitsPerComponent: UInt,
          bitsPerPixel: UInt,
@@ -47,6 +47,30 @@ public final class Image {
          shouldInterpolate: Bool,
          renderingIntent: ColorRenderingIntent) {
         
-        fatalError()
+        let numberOfComponents = bitmapInfo.alpha == .alphaOnly ? 0 : colorSpace.numberOfComponents
+        
+        let hasAlpha: Bool
+        
+        switch bitmapInfo.alpha {
+            
+        case .none,
+             .noneSkipLast,
+             .noneSkipFirst:
+            
+            hasAlpha = false
+            
+        case .premultipliedLast,
+             .premultipliedFirst,
+             .last,
+             .first,
+             .alphaOnly:
+            
+            hasAlpha = true
+        }
+        
+        let numberOfComponentsIncludingAlpha = numberOfComponents + (hasAlpha ? 1 : 0)
+        
+        guard (bitsPerComponent < 1 || bitsPerComponent > 32) == false
+            else { return false }
     }
 }

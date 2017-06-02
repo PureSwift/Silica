@@ -18,12 +18,12 @@ public struct BitmapInfo {
     
     /// Alpha information that specifies whether a bitmap contains an alpha channel
     /// and how the alpha channel is generated.
-    public var alpha: Alpha?
+    public var alpha: Alpha
     
     /// /// The byte ordering of pixel formats.
     public var byteOrder: ByteOrder
     
-    public init(floatComponents: Bool = false, alpha: Alpha? = nil, byteOrder: ByteOrder = .default) {
+    public init(floatComponents: Bool = false, alpha: Alpha = .none, byteOrder: ByteOrder = .default) {
         
         self.floatComponents = floatComponents
         self.alpha = alpha
@@ -51,14 +51,25 @@ public extension BitmapInfo {
     /// You should not premultiply any other color values specified in Silica.
     public enum Alpha {
         
-        /// The alpha component is stored in the most significant bits of each pixel. For example, non-premultiplied ARGB.
-        case first
+        /// There is no alpha channel.
+        case none
+        
+        /// The alpha component is stored in the least significant bits of each pixel and the color components
+        /// have already been multiplied by this alpha value. For example, premultiplied RGBA.
+        case premultipliedLast
+        
+        /// The alpha component is stored in the most significant bits of each pixel and the color components
+        /// have already been multiplied by this alpha value. For example, premultiplied ARGB.
+        case premultipliedFirst
         
         /// The alpha component is stored in the least significant bits of each pixel. For example, non-premultiplied RGBA.
         case last
         
+        /// The alpha component is stored in the most significant bits of each pixel. For example, non-premultiplied ARGB.
+        case first
+        
         /// There is no alpha channel.
-        case none
+        case noneSkipLast
         
         /// There is no alpha channel. 
         /// If the total size of the pixel is greater than the space required for the number of color components 
@@ -67,17 +78,6 @@ public extension BitmapInfo {
         
         /// There is no color data, only an alpha channel.
         case alphaOnly
-        
-        /// There is no alpha channel.
-        case noneSkipLast
-        
-        /// The alpha component is stored in the most significant bits of each pixel and the color components 
-        /// have already been multiplied by this alpha value. For example, premultiplied ARGB.
-        case premultipliedFirst
-        
-        /// The alpha component is stored in the least significant bits of each pixel and the color components 
-        /// have already been multiplied by this alpha value. For example, premultiplied RGBA.
-        case premultipliedLast
     }
     
     /// The byte ordering of pixel formats.

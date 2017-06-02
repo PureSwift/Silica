@@ -74,7 +74,7 @@ public final class ImageSourcePNG: ImageSource {
         let alpha: Bool
         let colorspace: ColorSpace
         
-        switch CInt(type) {
+        switch type {
             
         case PNG_COLOR_TYPE_GRAY_ALPHA:
             
@@ -139,8 +139,8 @@ public final class ImageSourcePNG: ImageSource {
         
         png_read_image(pngRead, rowPointers)
         
-        // get bitmap info
-        let bitmapInfo = BitmapInfo(alpha: alpha ? .last : nil)
+        // generate bitmap info
+        let bitmapInfo = BitmapInfo(floatComponents: false, alpha: alpha ? .last : nil, byteOrder: .default)
         
         // create image
         let image = Image(width: width,
