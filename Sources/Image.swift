@@ -18,31 +18,34 @@ public final class Image {
     
     public let mask: Bool
     
-    public let width: Int
+    public let width: UInt
     
-    public let height: Int
+    public let height: UInt
     
-    public let bitsPerPixel: Int
+    public let bitsPerPixel: UInt
     
-    public let bytesPerRow: Int
+    public let bytesPerRow: UInt
     
     public let shouldInterpolate: Bool
     
     public let bitmapInfo: BitmapInfo
     
+    public let renderingIntent: ColorRenderingIntent
+    
     // MARK: - Internal Properties
     
     internal let surface: Cairo.Surface
     
-    init(width: Int,
-         height: Int,
-         bitsPerComponent: Int,
-         bitsPerPixel: Int,
-         bytesPerRow: Int,
+    internal init(width: UInt,
+         height: UInt,
+         bitsPerComponent: UInt,
+         bitsPerPixel: UInt,
+         bytesPerRow: UInt,
          colorSpace: ColorSpace,
          bitmapInfo: BitmapInfo,
          data: Data,
-         shouldInterpolate: Bool) {
+         shouldInterpolate: Bool,
+         renderingIntent: ColorRenderingIntent) {
         
         fatalError()
     }

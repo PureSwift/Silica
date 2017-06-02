@@ -6,7 +6,7 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
-import struct Foundation.Data
+import Foundation
 import CPNG
 
 public final class ImageSourcePNG: ImageSource {
@@ -47,7 +47,7 @@ public final class ImageSourcePNG: ImageSource {
         defer { png_destroy_read_struct(&pngRead, &pngInfo, &pngEndInfo) }
         
         // create read handle
-        pngRead = png_create_read_struct(PNG_LIBPNG_VER_STRING, objectPointer, pngErrorHandler, nil)
+        pngRead = png_create_read_struct(PNG_LIBPNG_VER_STRING, objectPointer, pngFatalError, pngWarning)
         
         guard pngRead != nil
             else { throw currentError }
@@ -64,12 +64,12 @@ public final class ImageSourcePNG: ImageSource {
         guard pngEndInfo != nil
             else { throw currentError }
         
-        let width = png_get_image_width(pngRead, pngInfo)
-        let height = Int(png_get_image_height(pngRead, pngInfo))
-        let bytesPerRow = Int(png_get_rowbytes(pngRead, pngInfo))
+        let width = UInt(png_get_image_width(pngRead, pngInfo))
+        let height = UInt(png_get_image_height(pngRead, pngInfo))
+        let bytesPerRow = UInt(png_get_rowbytes(pngRead, pngInfo))
         let type = CInt(png_get_color_type(pngRead, pngInfo))
-        let channels = png_get_channels(pngRead, pngInfo) // includes alpha
-        let depth = png_get_bit_depth(pngRead, pngInfo)
+        let channels = UInt(png_get_channels(pngRead, pngInfo)) // includes alpha
+        let depth = UInt(png_get_bit_depth(pngRead, pngInfo))
         
         let alpha: Bool
         let colorspace: ColorSpace
@@ -104,33 +104,68 @@ public final class ImageSourcePNG: ImageSource {
                 
                 alpha = true
                 png_set_tRNS_to_alpha(pngRead)
+                
+            } else {
+                
+                alpha = false
             }
             
             colorspace = .genericRGB
             
         default:
             
+            // just to satisfy compiler
             alpha = false
             colorspace = .genericRGB
             
+            // invalid image
             throw currentError
         }
         
-        let imageData = Data(count: height * bytesPerRow)
+        // create row buffer bound to image data
         
+        let imageData = NSMutableData(length: Int(height * bytesPerRow))!
         
+        let rowPointers = png_bytepp.allocate(capacity: Int(height))
+        
+        for index in 0 ..< Int(height) {
+            
+            let offset = index * Int(bytesPerRow)
+            
+            let rowBuffer = imageData.mutableBytes.advanced(by: offset).assumingMemoryBound(to: png_byte.self)
+            
+            rowPointers[index] = rowBuffer
+        }
+        
+        png_read_image(pngRead, rowPointers)
+        
+        // get bitmap info
+        let bitmapInfo = BitmapInfo(alpha: alpha ? .last : nil)
+        
+        // create image
+        let image = Image(width: width,
+                          height: height,
+                          bitsPerComponent: depth,
+                          bitsPerPixel: channels * depth,
+                          bytesPerRow: bytesPerRow,
+                          colorSpace: colorspace,
+                          bitmapInfo: bitmapInfo,
+                          data: imageData as Data,
+                          shouldInterpolate: true,
+                          renderingIntent: .default)
+        
+        return image
     }
 }
 
 // MARK: - Private Functions
 
-// dont use directly with libpng
 @inline(__always)
-private func pngErrorHandler(_ png_ptr: png_structp?, _ error_msg: png_const_charp?) {
+private func pngString(_ msg: png_const_charp?) -> String {
     
     let message: String
     
-    if let cString = error_msg {
+    if let cString = msg {
         
         message = String(cString: cString)
         
@@ -139,8 +174,18 @@ private func pngErrorHandler(_ png_ptr: png_structp?, _ error_msg: png_const_cha
         message = ""
     }
     
+    return message
+}
+
+private func pngFatalError(_ png_ptr: png_structp?, _ error_msg: png_const_charp?) {
+    
+    fatalError(pngString(error_msg))
+}
+
+private func pngWarning(_ png_ptr: png_structp?, _ error_msg: png_const_charp?) {
+    
     // create error
-    let error = ImageSourcePNG.Error(message: message)
+    let error = ImageSourcePNG.Error(message: pngString(error_msg))
     
     // get reference to image source
     let pointer = png_get_error_ptr(png_ptr)!
