@@ -572,7 +572,7 @@ public final class Context {
     // MARK: - Drawing an Image to a Graphics Context
     
     /// Draws an image into a graphics context.
-    public func draw(image: Image) {
+    public func draw(_ image: Image, in rect: Rect) {
         
         fatalError("Not implemented")
     }

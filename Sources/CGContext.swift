@@ -45,4 +45,22 @@ public final class CGContext {
         
         silicaContext.clip(to: rect)
     }
+    
+    @inline(__always)
+    public func translateBy(x: CGFloat, y: CGFloat) {
+        
+        silicaContext.translate(x: x, y: y)
+    }
+    
+    @inline(__always)
+    public func scaleBy(x: CGFloat, y: CGFloat) {
+        
+        silicaContext.scale(x: x, y: y)
+    }
+    
+    @inline(__always)
+    public func draw(_ image: CGImage, in rect: CGRect) {
+        
+        silicaContext.draw(image, in: rect)
+    }
 }

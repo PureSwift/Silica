@@ -14,7 +14,8 @@ import Cairo
 final class StyleKitTests: XCTestCase {
     
     static let allTests = [("testSimpleShapes", testSimpleShapes),
-                           ("testAdvancedShapes", testAdvancedShapes)]
+                           ("testAdvancedShapes", testAdvancedShapes),
+                           ("testImagePNG", testImagePNG)]
     
     private func draw(_ drawingMethod: () -> (), _ name: String, _ size: Size) {
         
@@ -43,6 +44,11 @@ final class StyleKitTests: XCTestCase {
     func testAdvancedShapes() {
         
         draw(TestStyleKit.drawAdvancedShapes, "advancedShapes", Size(width: 240, height: 120))
+    }
+    
+    func testImagePNG() {
+        
+        draw(TestStyleKit.drawImagePNG, "imagePNG", Size(width: 240, height: 120))
     }
 }
 

@@ -393,4 +393,102 @@ public final class TestStyleKit : NSObject {
         black.setFill()
         bezier6Path.fill()
     }
+    
+    public class func drawImagePNG() {
+        
+        //// General Declarations
+        let context = UIGraphicsGetCurrentContext()!
+        
+        //// Image Declarations
+        let png = UIImage(url: URL(string: "https://httpbin.org/image/png")!)
+        let basn0g01 = UIImage(url: URL(string: "http://www.schaik.com/pngsuite/basn0g01.png")!)
+        let basn0g02 = UIImage(url: URL(string: "http://www.schaik.com/pngsuite/basn0g02.png")!)
+        let basn0g04 = UIImage(url: URL(string: "http://www.schaik.com/pngsuite/basn0g04.png")!)
+        let basn0g08 = UIImage(url: URL(string: "http://www.schaik.com/pngsuite/basn0g08.png")!)
+        let basn0g16 = UIImage(url: URL(string: "http://www.schaik.com/pngsuite/basn0g16.png")!)
+        
+        //// Pig Drawing
+        context.saveGState()
+        context.translateBy(x: -1, y: -16.31)
+        
+        let pigPath = UIBezierPath(rect: CGRect(x: 1, y: 16.31, width: 101, height: 104))
+        context.saveGState()
+        pigPath.addClip()
+        context.translateBy(x: 1, y: 16)
+        context.scaleBy(x: 1, y: -1)
+        context.translateBy(x: 0, y: -png.size.height)
+        context.draw(png.cgImage, in: CGRect(x: 0, y: 0, width: png.size.width, height: png.size.height))
+        context.restoreGState()
+        
+        context.restoreGState()
+        
+        
+        //// test1 Drawing
+        let test1Path = UIBezierPath(rect: CGRect(x: 0, y: 104, width: 32, height: 32))
+        context.saveGState()
+        test1Path.addClip()
+        context.translateBy(x: 0, y: 104)
+        context.scaleBy(x: 1, y: -1)
+        context.translateBy(x: 0, y: -basn0g01.size.height)
+        context.draw(basn0g01.cgImage, in: CGRect(x: 0, y: 0, width: basn0g01.size.width, height: basn0g01.size.height))
+        context.restoreGState()
+        
+        
+        //// test2 Drawing
+        let test2Path = UIBezierPath(rect: CGRect(x: 32, y: 104, width: 32, height: 32))
+        context.saveGState()
+        test2Path.addClip()
+        context.translateBy(x: 32, y: 104)
+        context.scaleBy(x: 1, y: -1)
+        context.translateBy(x: 0, y: -basn0g02.size.height)
+        context.draw(basn0g02.cgImage, in: CGRect(x: 0, y: 0, width: basn0g02.size.width, height: basn0g02.size.height))
+        context.restoreGState()
+        
+        
+        //// test3 Drawing
+        let test3Path = UIBezierPath(rect: CGRect(x: 64, y: 104, width: 32, height: 32))
+        context.saveGState()
+        test3Path.addClip()
+        context.translateBy(x: 64, y: 104)
+        context.scaleBy(x: 1, y: -1)
+        context.translateBy(x: 0, y: -basn0g04.size.height)
+        context.draw(basn0g04.cgImage, in: CGRect(x: 0, y: 0, width: basn0g04.size.width, height: basn0g04.size.height))
+        context.restoreGState()
+        
+        
+        //// test4 Drawing
+        let test4Path = UIBezierPath(rect: CGRect(x: 96, y: 104, width: 32, height: 32))
+        context.saveGState()
+        test4Path.addClip()
+        context.translateBy(x: 96, y: 104)
+        context.scaleBy(x: 1, y: -1)
+        context.translateBy(x: 0, y: -basn0g08.size.height)
+        context.draw(basn0g08.cgImage, in: CGRect(x: 0, y: 0, width: basn0g08.size.width, height: basn0g08.size.height))
+        context.restoreGState()
+        
+        
+        //// test5 Drawing
+        let test5Path = UIBezierPath(rect: CGRect(x: 128, y: 104, width: 32, height: 32))
+        context.saveGState()
+        test5Path.addClip()
+        context.translateBy(x: 128, y: 104)
+        context.scaleBy(x: 1, y: -1)
+        context.translateBy(x: 0, y: -basn0g16.size.height)
+        context.draw(basn0g16.cgImage, in: CGRect(x: 0, y: 0, width: basn0g16.size.width, height: basn0g16.size.height))
+        context.restoreGState()
+    }
+}
+
+extension UIImage {
+    
+    convenience init(url: URL) {
+        
+        let data = try! Data(contentsOf: url)
+        
+        let imageSource = ImageSourcePNG(data: data)!
+        
+        let image = imageSource[0]
+        
+        self.init(cgImage: image)
+    }
 }
