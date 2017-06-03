@@ -57,6 +57,14 @@ public final class ImageSourcePNG: ImageSource {
         guard pngEndInfo != nil
             else { return nil }
         
+        let unmanaged = Unmanaged.passUnretained(self)
+        
+        let objectPointer = unmanaged.toOpaque()
+        
+        png_set_read_fn(pngRead, objectPointer, pngReader)
+        
+        png_read_info(pngRead, pngInfo);
+        
         let width = UInt(png_get_image_width(pngRead, pngInfo))
         let height = UInt(png_get_image_height(pngRead, pngInfo))
         let bytesPerRow = UInt(png_get_rowbytes(pngRead, pngInfo))
@@ -182,4 +190,15 @@ private func pngWarning(_ png_ptr: png_structp?, _ error_msg: png_const_charp?) 
     let message = pngString(error_msg)
     
     ImageSourcePNG.warning(message)
+}
+
+private func pngReader(_ pngRead: png_structp?, _ data: png_bytep?, _ length: png_size_t) {
+    
+    let pointer = png_get_io_ptr(pngRead)!
+    
+    let unmanaged = Unmanaged<ImageSourcePNG>.fromOpaque(pointer)
+    
+    let imageSource = unmanaged.takeUnretainedValue()
+    
+    imageSource.data.withUnsafeBytes { data?.assign(from: $0.advanced(by: length), count: 1) }
 }
