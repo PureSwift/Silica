@@ -44,7 +44,7 @@ public final class Image {
     private var crop: Rect?
     
     /// The cached Cairo surface for this image.
-    private var surfaceCache: Cairo.Surface?
+    private var surfaceCache: Cairo.ImageSurface?
     
     // MARK: - Initialization
     
@@ -161,15 +161,21 @@ public final class Image {
         }
         
         // create new surface
-        let surface = Surface(format: .argb32, width: Int(width), height: Int(height))
+        let inMemorySurface = ImageSurface(format: .argb32, width: Int(width), height: Int(height))!
         
-        surface.flush()
+        inMemorySurface.flush()
         
-        
+        // destination value
+        //inMemorySurface.
         
         // cache and return value
-        self.surfaceCache = surface
+        self.surfaceCache = inMemorySurface
         
-        return surface
+        return inMemorySurface
+    }
+    
+    internal var sourceRect: Rect {
+        
+        return crop ?? Rect(x: 0, y: 0, width: Double(width), height: Double(height))
     }
 }

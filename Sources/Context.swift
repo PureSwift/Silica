@@ -574,7 +574,7 @@ public final class Context {
     /// Draws an image into a graphics context.
     public func draw(_ image: Image, in rect: Rect) {
         
-        fatalError("Not implemented")
+        
     }
     
     // MARK: - Drawing Text
@@ -747,9 +747,9 @@ public final class Context {
         
         let radius = internalState.shadow!.radius
         
-        let alphaSurface = Surface(format: .a8,
-                                   width: Int(ceil(size.width + 2 * radius)),
-                                   height: Int(ceil(size.height + 2 * radius)))
+        let alphaSurface = ImageSurface(format: .a8,
+                                        width: Int(ceil(size.width + 2 * radius)),
+                                        height: Int(ceil(size.height + 2 * radius)))!
         
         let alphaContext = Cairo.Context(surface: alphaSurface)
         
