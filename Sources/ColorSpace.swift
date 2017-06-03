@@ -68,16 +68,28 @@ public final class ColorSpace {
     
     // MARK: - Accessors
     
-    public var name: String? {
-        
-        // FIXME: Is this correct?
-        
-        return self[cmsSigProfileDescriptionTag]
-    }
-    
     public var numberOfComponents: UInt {
         
         return UInt(cmsChannelsOf(cmsGetColorSpace(profile)))
+    }
+    
+    public var model: Model {
+        
+        let signature = cmsGetColorSpace(profile)
+        
+        switch signature {
+            
+        case cmsSigGrayData:
+            return .monochrome
+        case cmsSigRgbData:
+            return .rgb
+        case cmsSigCmykData:
+            return .cmyk
+        case cmsSigLabData:
+            return .lab
+        default:
+            return .unknown
+        }
     }
     
     // MARK: - Subscript
@@ -139,29 +151,18 @@ extension ColorSpace: Equatable {
 
 public extension ColorSpace {
     
-    /// Grayscale color space with gamma 2.2 and a D65 white point.
-    static let genericRGB: ColorSpace = ColorSpace(gray: ((0.9504, 1.0000, 1.0888), (0,0,0)), gamma: 2.2)
+    /// Device-independent RGB color space.
+    static let genericRGB: ColorSpace =  ColorSpace(profile: cmsCreate_sRGBProfile())
     
-    static let genericGray: ColorSpace = ColorSpace(profile: cmsCreate_sRGBProfile()) // fixme
+    /// Grayscale color space with gamma 2.2 and a D65 white point.
+    static let genericGray: ColorSpace = ColorSpace(gray: ((0.9504, 1.0000, 1.0888), (0,0,0)), gamma: 2.2)
 }
 
 // MARK: - Supporting Types
 
 public extension ColorSpace {
     
-    public enum ProfileInfo {
-        
-        case description
-        case manufacturer
-        case model
-        case copyright
-    }
-    
-    public enum FileAccess: String {
-        
-        case read = "r"
-        case write = "w"
-    }
+    // CoreGraphics API
     
     /// Models for color spaces.
     public enum Model {
@@ -189,6 +190,22 @@ public extension ColorSpace {
         
         /// A pattern color space model.
         case pattern
+    }
+    
+    // LittleCMS API
+    
+    public enum ProfileInfo {
+        
+        case description
+        case manufacturer
+        case model
+        case copyright
+    }
+    
+    public enum FileAccess: String {
+        
+        case read = "r"
+        case write = "w"
     }
 }
 
