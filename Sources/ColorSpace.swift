@@ -14,7 +14,7 @@ public final class ColorSpace {
     
     // MARK: - Properties
     
-    /// The data this color space was created from.
+    /// ICC profile data for color spaces created from ICC profiles.
     public let data: Data?
     
     fileprivate let profile: cmsHPROFILE
@@ -55,16 +55,15 @@ public final class ColorSpace {
         
         var whiteCIExyY = cmsCIExyY(CIEXYZ: gray.white)
         
-        let context = cmsCreateContext(nil, nil)
-        
         let table = cmsBuildGamma(nil, gamma)
         
-        defer { cmsFreeGamma(table) }
+        defer { cmsFreeToneCurve(table) }
         
-        guard let profile = cmsCreateGrayProfile(&whiteCIExyY, nil)
+        guard let profile = cmsCreateGrayProfile(&whiteCIExyY, table)
             else { fatalError("Could not create calibrated grey color space") }
         
-        
+        self.profile = profile
+        self.data = nil
     }
     
     // MARK: - Accessors
@@ -128,7 +127,8 @@ extension ColorSpace: Equatable {
 
 public extension ColorSpace {
     
-    static let genericRGB: ColorSpace = ColorSpace(profile: cmsCreate_sRGBProfile())
+    /// Grayscale color space with gamma 2.2 and a D65 white point.
+    static let genericRGB: ColorSpace = ColorSpace(gray: ((0.9504, 1.0000, 1.0888), (0,0,0)), gamma: 2.2)
     
     static let genericGray: ColorSpace = ColorSpace(profile: cmsCreate_sRGBProfile()) // fixme
 }
@@ -205,6 +205,8 @@ extension cmsCIExyY {
     init(CIEXYZ point: (Double, Double, Double)) {
         
         var XYZ = cmsCIEXYZ(X: point.0, Y: point.1, Z: point.2)
+        
+        self.init()
         
         cmsXYZ2xyY(&self, &XYZ)
     }
