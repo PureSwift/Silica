@@ -71,7 +71,8 @@ public final class ColorSpace {
     public var name: String? {
         
         // FIXME: Is this correct?
-        return profileInfo(.description)
+        
+        return self[cmsSigProfileDescriptionTag]
     }
     
     public var numberOfComponents: UInt {
@@ -79,10 +80,15 @@ public final class ColorSpace {
         return UInt(cmsChannelsOf(cmsGetColorSpace(profile)))
     }
     
-    // MARK: - Methods
+    // MARK: - Subscript
     
-    public func profileInfo(_ infoType: ProfileInfo, for locale: (languageCode: String, countryCode: String) = (cmsNoLanguage, cmsNoCountry)) -> String? {
+    public subscript (infoType: ProfileInfo) -> String? {
         
+        return self[infoType, (cmsNoLanguage, cmsNoCountry)]
+    }
+    
+    public subscript (infoType: ProfileInfo, locale: (languageCode: String, countryCode: String)) -> String? {
+    
         let info = cmsInfoType(infoType)
         
         // get buffer size
@@ -97,18 +103,24 @@ public final class ColorSpace {
         
         assert(wchar_t.self == Int32.self, "wchar_t is \(wchar_t.self)")
         
-        // try to decode data into string
-        let possibleEncodings: [String.Encoding] = [.utf32, .utf32LittleEndian, .utf32BigEndian]
+        return String(littleCMS: data)
+    }
+    
+    public subscript (tag: cmsTagSignature) -> String? {
         
-        for encoding in possibleEncodings {
-            
-            guard let string = String(data: data, encoding: encoding)
-                else { continue }
-            
-            return string
-        }
+        // get buffer size
+        let bufferSize = cmsReadRawTag(profile, tag, nil, 0)
         
-        return nil
+        guard bufferSize > 0 else { return nil }
+        
+        // allocate buffer and get data
+        var data = Data(repeating: 0, count: Int(bufferSize))
+        
+        guard data.withUnsafeMutableBytes({ cmsReadRawTag(profile, tag, UnsafeMutablePointer<wchar_t>($0), cmsUInt32Number(bufferSize)) }) != 0 else { fatalError("Cannot get data for tag \(tag)") }
+        
+        assert(wchar_t.self == Int32.self, "wchar_t is \(wchar_t.self)")
+        
+        return String(littleCMS: data)
     }
 }
 
@@ -181,6 +193,34 @@ public extension ColorSpace {
 }
 
 // MARK: - Little CMS Extensions / Helpers
+
+extension String {
+    
+    init?(littleCMS data: Data) {
+        
+        // try to decode data into string
+        let possibleEncodings: [String.Encoding] = [.utf32, .utf32LittleEndian, .utf32BigEndian]
+        
+        var value: String?
+        
+        for encoding in possibleEncodings {
+            
+            guard let string = String(data: data, encoding: encoding)
+                else { continue }
+            
+            value = string
+        }
+        
+        if let value = value {
+            
+            self = value
+            
+        } else {
+            
+            return nil
+        }
+    }
+}
 
 extension cmsInfoType {
     
