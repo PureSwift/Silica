@@ -20,10 +20,16 @@
       "version": "1.0.3"
     },
     {
+      "package": "CLCMS",
+      "reason": null,
+      "repositoryURL": "https://github.com/PureSwift/CLCMS.git",
+      "version": "1.0.0"
+    },
+    {
       "package": "CPNG",
       "reason": null,
-      "repositoryURL": "https://github.com/rfdickerson/CPNG.git",
-      "version": "0.0.1"
+      "repositoryURL": "https://github.com/PureSwift/CPNG.git",
+      "version": "1.0.0"
     },
     {
       "package": "Cairo",

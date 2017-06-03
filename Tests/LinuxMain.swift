@@ -8,6 +8,6 @@
 
 import XCTest
 @testable import Silica
-@testable import UnitTests
+@testable import SilicaTests
 
 XCTMain([testCase(FontTests.allTests)])
