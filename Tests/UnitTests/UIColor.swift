@@ -6,7 +6,7 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
-import Silica
+@testable import Silica
 
 public final class UIColor {
     

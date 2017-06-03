@@ -9,7 +9,7 @@
 import XCTest
 import Foundation
 import Cairo
-import Silica
+@testable import Silica
 
 final class StyleKitTests: XCTestCase {
     
@@ -35,7 +35,7 @@ final class StyleKitTests: XCTestCase {
         print("Wrote to \(filename)")
     }
     
-    func testDrawing() {
+    func testSimpleShapes() {
         
         draw(TestStyleKit.drawSimpleShapes, "simpleShapes", Size(width: 240, height: 120))
     }

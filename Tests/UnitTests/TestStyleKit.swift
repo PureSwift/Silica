@@ -13,7 +13,7 @@
 #endif
 
 import Foundation
-import Silica
+@testable import Silica
 
 public final class TestStyleKit : NSObject {
 
