@@ -6,16 +6,30 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+#if os(macOS)
+    import Darwin.C.math
+#elseif os(Linux)
+    import Glibc
+#endif
+
 import Foundation
 import CPNG
 
 public final class ImageSourcePNG: ImageSource {
     
+    // MARK: - Class Properties
+    
     public static let typeIdentifier = "public.png"
     
     public static var warning: (String) -> () = { debugPrint("ImageSourcePNG Warning: " + $0) }
     
+     // MARK: - Properties
+    
     public let data: Data
+    
+    private var currentPosition = 0
+    
+    // MARK: - Initialization
     
     public init?(data: Data) {
         
@@ -30,6 +44,8 @@ public final class ImageSourcePNG: ImageSource {
         
         self.data = data
     }
+    
+    // MARK: - Methods
     
     public func createImage(at index: Int) -> Image? {
         
@@ -57,7 +73,9 @@ public final class ImageSourcePNG: ImageSource {
         guard pngEndInfo != nil
             else { return nil }
         
-        let unmanaged = Unmanaged.passUnretained(self)
+        let dataProvider = DataProvider(data: data)
+        
+        let unmanaged = Unmanaged.passUnretained(dataProvider)
         
         let objectPointer = unmanaged.toOpaque()
         
@@ -159,6 +177,38 @@ public final class ImageSourcePNG: ImageSource {
     }
 }
 
+// MARK: - Supporting Types
+
+private extension ImageSourcePNG {
+    
+    final class DataProvider {
+        
+        let data: Data
+        private(set) var position: Int
+        
+        init(data: Data) {
+            self.data = data
+            self.position = 0
+        }
+        
+        func copyBytes(to pointer: UnsafeMutablePointer<UInt8>, length: Int) {
+            
+            var size = length
+            
+            if (position + size) > data.count {
+                
+                size = data.count - position;
+            }
+            
+            let byteRange = Range<Data.Index>(position ..< position + size)
+            
+            let _ = data.copyBytes(to: pointer, from: byteRange)
+            
+            position += size
+        }
+    }
+}
+
 // MARK: - Private Functions
 
 @inline(__always)
@@ -182,7 +232,7 @@ private func pngFatalError(_ png_ptr: png_structp?, _ error_msg: png_const_charp
     
     let message = pngString(error_msg)
     
-    fatalError("Fatal error in libPNG " + message)
+    fatalError("libpng error: " + message)
 }
 
 private func pngWarning(_ png_ptr: png_structp?, _ error_msg: png_const_charp?) {
@@ -192,13 +242,13 @@ private func pngWarning(_ png_ptr: png_structp?, _ error_msg: png_const_charp?) 
     ImageSourcePNG.warning(message)
 }
 
-private func pngReader(_ pngRead: png_structp?, _ data: png_bytep?, _ length: png_size_t) {
+private func pngReader(_ pngRead: png_structp?, _ dataPointer: png_bytep?, _ length: png_size_t) {
     
-    let pointer = png_get_io_ptr(pngRead)!
+    let userPointer = png_get_io_ptr(pngRead)!
     
-    let unmanaged = Unmanaged<ImageSourcePNG>.fromOpaque(pointer)
+    let unmanaged = Unmanaged<ImageSourcePNG.DataProvider>.fromOpaque(userPointer)
     
-    let imageSource = unmanaged.takeUnretainedValue()
+    let dataProvider = unmanaged.takeUnretainedValue()
     
-    imageSource.data.withUnsafeBytes { data?.assign(from: $0.advanced(by: length), count: 1) }
+    dataProvider.copyBytes(to: dataPointer!, length: length)
 }
