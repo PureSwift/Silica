@@ -7,7 +7,7 @@ let package = Package(
     ],
     dependencies: [
         .Package(url: "https://github.com/PureSwift/Cairo.git", majorVersion: 1),
-        .Package(url: "https://github.com/PureSwift/CPNG.git", majorVersion: 1),
-        .Package(url: "https://github.com/PureSwift/CLCMS.git", majorVersion: 1)
+        .Package(url: "https://github.com/PureSwift/LittleCMS.git", majorVersion: 1),
+        .Package(url: "https://github.com/PureSwift/CPNG.git", majorVersion: 1)
     ]
 )
