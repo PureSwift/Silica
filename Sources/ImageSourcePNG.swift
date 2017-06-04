@@ -12,7 +12,7 @@
     import Glibc
 #endif
 
-import Foundation
+import struct Foundation.Data
 import CPNG
 
 public final class ImageSourcePNG: ImageSource {
@@ -143,17 +143,23 @@ public final class ImageSourcePNG: ImageSource {
         
         // create row buffer bound to image data
         
-        let imageData = NSMutableData(length: Int(height * bytesPerRow))!
+        var imageData = Data(count: Int(height * bytesPerRow))
         
         let rowPointers = png_bytepp.allocate(capacity: Int(height))
         
-        for index in 0 ..< Int(height) {
+        // only dealloc list of pointers, the individual pointers are managed by `Data`
+        defer { rowPointers.deallocate(capacity: Int(height)) }
+        
+        imageData.withUnsafeMutableBytes { (mutableBytes: UnsafeMutablePointer<png_byte>) in
             
-            let offset = index * Int(bytesPerRow)
-            
-            let rowBuffer = imageData.mutableBytes.advanced(by: offset).assumingMemoryBound(to: png_byte.self)
-            
-            rowPointers[index] = rowBuffer
+            for index in 0 ..< Int(height) {
+                
+                let offset = index * Int(bytesPerRow)
+                
+                let rowBuffer = mutableBytes.advanced(by: offset)
+                
+                rowPointers[index] = rowBuffer
+            }
         }
         
         png_read_image(pngRead, rowPointers)
