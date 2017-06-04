@@ -6,8 +6,10 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
-#if os(Linux)
-import Glibc
+#if os(macOS)
+    import Darwin.C.math
+#elseif os(Linux)
+    import Glibc
 #endif
 
 import Cairo
@@ -747,7 +749,7 @@ public final class Context {
         
         let radius = internalState.shadow!.radius
         
-        let alphaSurface = ImageSurface(format: .a8,
+        let alphaSurface = Surface.Image(format: .a8,
                                         width: Int(ceil(size.width + 2 * radius)),
                                         height: Int(ceil(size.height + 2 * radius)))!
         
