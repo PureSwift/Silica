@@ -29,13 +29,13 @@
       "package": "CPNG",
       "reason": null,
       "repositoryURL": "https://github.com/PureSwift/CPNG.git",
-      "version": "1.0.0"
+      "version": "1.0.1"
     },
     {
-      "package": "Cairo",
+      "package": "LittleCMS",
       "reason": null,
-      "repositoryURL": "https://github.com/PureSwift/Cairo.git",
-      "version": "1.1.3"
+      "repositoryURL": "https://github.com/PureSwift/LittleCMS.git",
+      "version": "1.0.0"
     }
   ],
   "version": 1
