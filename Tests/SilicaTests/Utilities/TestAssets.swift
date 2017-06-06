@@ -44,7 +44,7 @@ final class TestAssetManager {
     
     let cacheDirectory: URL
     
-    let httpClient = HTTP.Client()
+    let httpClient = HTTP.Client(session: URLSession(configuration: URLSessionConfiguration()))
     
     private(set) var downloadedAssets = [TestAsset]()
     
@@ -85,7 +85,7 @@ final class TestAssetManager {
             
             downloadedAssets.append(asset)
             
-            print("Downloaded \(asset.url)")
+            print("Downloaded \(asset.url.absoluteString)")
         }
     }
     

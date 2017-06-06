@@ -10,4 +10,7 @@ import XCTest
 @testable import Silica
 @testable import SilicaTests
 
-XCTMain([testCase(FontTests.allTests)])
+XCTMain([
+    testCase(FontTests.allTests),
+    testCase(StyleKitTests.allTests)
+    ])

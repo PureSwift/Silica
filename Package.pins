@@ -29,13 +29,13 @@
       "package": "Cairo",
       "reason": null,
       "repositoryURL": "https://github.com/PureSwift/Cairo.git",
-      "version": "1.2.1"
+      "version": "1.2.2"
     },
     {
       "package": "LittleCMS",
       "reason": null,
       "repositoryURL": "https://github.com/PureSwift/LittleCMS.git",
-      "version": "1.0.0"
+      "version": "1.0.1"
     }
   ],
   "version": 1

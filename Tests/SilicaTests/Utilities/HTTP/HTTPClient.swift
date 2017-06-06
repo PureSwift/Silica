@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Dispatch
 
 // Dot notation syntax for class
 public extension HTTP {
