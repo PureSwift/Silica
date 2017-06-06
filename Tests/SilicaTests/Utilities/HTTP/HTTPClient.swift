@@ -15,9 +15,20 @@ public extension HTTP {
     /// Loads HTTP requests
     public final class Client {
         
-        public init(session: URLSession = URLSession.shared) {
+        public init(session: URLSession? = nil) {
             
-            self.session = session
+            if let session = session {
+                
+                self.session = session
+                
+            } else {
+                
+                #if os(macOS)
+                    self.session = URLSession.shared
+                #else
+                    self.session = URLSession(configuration: URLSessionConfiguration())
+                #endif
+            }
         }
         
         /// The backing ```NSURLSession```.
