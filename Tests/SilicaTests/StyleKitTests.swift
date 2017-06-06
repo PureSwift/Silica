@@ -23,7 +23,7 @@ final class StyleKitTests: XCTestCase {
         
         let frame = Rect(size: size)
         
-        let surface = Surface.PDF(pdf: filename, width: frame.width, height: frame.height)
+        let surface = try! Surface.PDF(filename: filename, width: frame.width, height: frame.height)
         
         let context = try! Silica.Context(surface: surface, size: frame.size)
         
@@ -48,7 +48,7 @@ final class StyleKitTests: XCTestCase {
     
     func testImagePNG() {
         
-        draw(TestStyleKit.drawImagePNG, "imagePNG", Size(width: 240, height: 120))
+        draw(TestStyleKit.drawImagePNG, "imagePNG", Size(width: 240, height: 180))
     }
 }
 
@@ -62,6 +62,11 @@ let outputDirectory: String = {
         
         try! FileManager.default.createDirectory(atPath: outputDirectory, withIntermediateDirectories: false)
     }
+    
+    // remove all files in directory (previous test cache)
+    let contents = try! FileManager.default.contentsOfDirectory(atPath: outputDirectory)
+    
+    contents.forEach { try! FileManager.default.removeItem(atPath: outputDirectory + $0) }
     
     return outputDirectory
 }()

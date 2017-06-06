@@ -576,7 +576,40 @@ public final class Context {
     /// Draws an image into a graphics context.
     public func draw(_ image: Image, in rect: Rect) {
         
+        internalContext.save()
         
+        let imageSurface = image.surface
+        
+        let sourceRect = Rect(x: 0, y: 0, width: Double(image.width), height: Double(image.height))
+        
+        let pattern = Pattern(surface: imageSurface)
+        
+        var patternMatrix = Matrix.identity
+        
+        patternMatrix.translate(x: rect.origin.x, y: rect.origin.y)
+        
+        patternMatrix.scale(x: rect.size.width / sourceRect.size.width,
+                            y: rect.size.height / sourceRect.size.height)
+        
+        patternMatrix.scale(x: 1, y: -1)
+        
+        patternMatrix.translate(x: 0, y: -sourceRect.size.height)
+        
+        patternMatrix.invert()
+        
+        pattern.matrix = patternMatrix
+        
+        pattern.extend = .pad
+        
+        internalContext.operator = CAIRO_OPERATOR_OVER
+        
+        internalContext.source = pattern
+        
+        internalContext.addRectangle(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: rect.size.height)
+        
+        internalContext.fill()
+        
+        internalContext.restore()
     }
     
     // MARK: - Drawing Text

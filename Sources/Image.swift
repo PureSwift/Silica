@@ -16,6 +16,16 @@ public final class Image {
     
     // MARK: - Properties
     
+    public var width: Int {
+        
+        return surface.width
+    }
+    
+    public var height: Int {
+        
+        return surface.height
+    }
+    
     /// The cached Cairo surface for this image.
     internal let surface: Cairo.Surface.Image
     
