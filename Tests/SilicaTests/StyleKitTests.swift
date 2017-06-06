@@ -23,7 +23,7 @@ final class StyleKitTests: XCTestCase {
         
         let frame = Rect(size: size)
         
-        let surface = Surface(pdf: filename, width: frame.width, height: frame.height)
+        let surface = Surface.PDF(pdf: filename, width: frame.width, height: frame.height)
         
         let context = try! Silica.Context(surface: surface, size: frame.size)
         

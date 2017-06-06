@@ -21,3 +21,4 @@ public typealias CGRect = Silica.Rect
 public typealias CGFont = Silica.Font
 public typealias CGImage = Silica.Image
 public typealias CGImageSource = Silica.ImageSource
+public typealias CGColorSpace = Silica.ColorSpace

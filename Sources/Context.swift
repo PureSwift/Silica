@@ -749,9 +749,9 @@ public final class Context {
         
         let radius = internalState.shadow!.radius
         
-        let alphaSurface = Surface.Image(format: .a8,
+        let alphaSurface = try! Surface.Image(format: .a8,
                                         width: Int(ceil(size.width + 2 * radius)),
-                                        height: Int(ceil(size.height + 2 * radius)))!
+                                        height: Int(ceil(size.height + 2 * radius)))
         
         let alphaContext = Cairo.Context(surface: alphaSurface)
         

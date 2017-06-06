@@ -17,9 +17,7 @@ public protocol ImageSource: class, RandomAccessCollection {
     associatedtype Iterator = IndexingIterator<Self>
     
     static var typeIdentifier: String { get }
-    
-    var data: Data { get }
-    
+        
     init?(data: Data)
         
     func createImage(at index: Int) -> Image?
