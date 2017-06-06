@@ -19,7 +19,7 @@ final class StyleKitTests: XCTestCase {
     
     private func draw(_ drawingMethod: () -> (), _ name: String, _ size: Size) {
         
-        let filename = outputDirectory + name + ".pdf"
+        let filename = TestPath.testData + name + ".pdf"
         
         let frame = Rect(size: size)
         
@@ -48,25 +48,12 @@ final class StyleKitTests: XCTestCase {
     
     func testImagePNG() {
         
+        do { try TestAssetManager.shared.fetchAssets() }
+        
+        catch { XCTFail("Could not get test assets (\(error))"); return }
+        
         draw(TestStyleKit.drawImagePNG, "imagePNG", Size(width: 240, height: 180))
     }
 }
 
-let outputDirectory: String = {
-    
-    let outputDirectory = NSTemporaryDirectory() + "SilicaTests" + "/"
-    
-    var isDirectory: ObjCBool = false
-    
-    if FileManager.default.fileExists(atPath: outputDirectory, isDirectory: &isDirectory) == false {
-        
-        try! FileManager.default.createDirectory(atPath: outputDirectory, withIntermediateDirectories: false)
-    }
-    
-    // remove all files in directory (previous test cache)
-    let contents = try! FileManager.default.contentsOfDirectory(atPath: outputDirectory)
-    
-    contents.forEach { try! FileManager.default.removeItem(atPath: outputDirectory + $0) }
-    
-    return outputDirectory
-}()
+

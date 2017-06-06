@@ -399,13 +399,13 @@ public final class TestStyleKit : NSObject {
         //// General Declarations
         let context = UIGraphicsGetCurrentContext()!
         
-        //// Image Declarations
-        let png = UIImage(url: URL(string: "https://httpbin.org/image/png")!)
-        let basn0g01 = UIImage(url: URL(string: "http://www.schaik.com/pngsuite/basn0g01.png")!)
-        let basn0g02 = UIImage(url: URL(string: "http://www.schaik.com/pngsuite/basn0g02.png")!)
-        let basn0g04 = UIImage(url: URL(string: "http://www.schaik.com/pngsuite/basn0g04.png")!)
-        let basn0g08 = UIImage(url: URL(string: "http://www.schaik.com/pngsuite/basn0g08.png")!)
-        let basn0g16 = UIImage(url: URL(string: "http://www.schaik.com/pngsuite/basn0g16.png")!)
+        ///// Image Declarations
+        let png = UIImage(named: "png.png")!
+        let basn0g01 = UIImage(named: "basn0g01.png")!
+        let basn0g02 = UIImage(named: "basn0g02.png")!
+        let basn0g04 = UIImage(named: "basn0g04.png")!
+        let basn0g08 = UIImage(named: "basn0g08.png")!
+        let basn0g16 = UIImage(named: "basn0g16.png")!
         
         //// Pig Drawing
         context.saveGState()
@@ -476,19 +476,5 @@ public final class TestStyleKit : NSObject {
         context.translateBy(x: 0, y: -basn0g16.size.height)
         context.draw(basn0g16.cgImage, in: CGRect(x: 0, y: 0, width: basn0g16.size.width, height: basn0g16.size.height))
         context.restoreGState()
-    }
-}
-
-extension UIImage {
-    
-    convenience init(url: URL) {
-        
-        let data = try! Data(contentsOf: url)
-        
-        let imageSource = ImageSourcePNG(data: data)!
-        
-        let image = imageSource[0]
-        
-        self.init(cgImage: image)
     }
 }
