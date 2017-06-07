@@ -116,7 +116,7 @@ public extension Font {
         
         let glyphs = text.unicodeScalars.map { scaledFont[UInt($0.value)] }
         
-        let textWidth = advances(for: glyphs, fontSize: fontSize, textMatrix: textMatrix).reduce(Double(0), { $0.0 +  $0.1.width })
+        let textWidth = advances(for: glyphs, fontSize: fontSize, textMatrix: textMatrix).reduce(Double(0), { $0 +  $1.width })
         
         return textWidth
     }

@@ -879,6 +879,6 @@ internal extension Collection {
         
         precondition(self.count == other.count, "The collection to merge must be of the same size")
         
-        return self.indexedMap { ($0.1, other[$0.0]) }
+        return self.indexedMap { ($1, other[$0]) }
     }
 }
