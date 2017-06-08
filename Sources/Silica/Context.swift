@@ -882,3 +882,19 @@ internal extension Collection {
         return self.indexedMap { ($1, other[$0]) }
     }
 }
+
+#if os(macOS) && Xcode
+    
+    import Foundation
+    import AppKit
+    
+    public extension Context {
+        
+        @objc(debugQuickLookObject)
+        public var debugQuickLookObject: AnyObject {
+            
+            return surface.debugQuickLookObject
+        }
+    }
+    
+#endif
