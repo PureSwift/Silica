@@ -7,7 +7,6 @@
 //
 
 public typealias CGColor = Silica.Color
-public typealias CGFloat = Double
 public typealias CGLineCap = Silica.LineCap
 public typealias CGLineJoin = Silica.LineJoin
 public typealias CGPathDrawingMode = Silica.DrawingMode
@@ -15,9 +14,6 @@ public typealias CGTextDrawingMode = Silica.TextDrawingMode
 public typealias CGAffineTransform = Silica.AffineTransform
 public typealias CGPath = Silica.Path
 public typealias CGPathApplierFunction = (UnsafeMutableRawPointer, UnsafePointer<CGPathElement>) -> ()
-public typealias CGSize = Silica.Size
-public typealias CGPoint = Silica.Point
-public typealias CGRect = Silica.Rect
 public typealias CGFont = Silica.Font
 public typealias CGImage = Silica.Image
 public typealias CGImageSource = Silica.ImageSource

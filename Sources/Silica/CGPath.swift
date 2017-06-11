@@ -6,6 +6,8 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+import struct Foundation.CGPoint
+
 public struct CGPathElement {
     
     public var type: CGPathElementType

@@ -12,24 +12,9 @@
     import Glibc
 #endif
 
-/// A structure that contains the location and dimensions of a rectangle.
-public struct Rect: Equatable {
-    
-    // MARK: - Properties
-    
-    /// A point that specifies the coordinates of the rectangle’s origin.
-    public var origin: Point
-    
-    /// A size that specifies the height and width of the rectangle.
-    public var size: Size
-    
-    // MARK: - Initialization
-    
-    public init(origin: Point = Point(), size: Size = Size()) {
-        
-        self.origin = origin
-        self.size = size
-    }
+import struct Foundation.CGRect
+
+public extension CGRect {
     
     public init(x: Double, y: Double, width: Double, height: Double) {
         
@@ -96,7 +81,7 @@ public struct Rect: Equatable {
         
         return (size.height < 0) ? origin.y : origin.y + size.height
     }
-
+    
     /// Returns a rectangle with a positive width and height.
     public var standardized: Rect {
         
@@ -182,11 +167,4 @@ public struct Rect: Equatable {
         
         return rect;
     }
-}
-
-// MARK: - Equatable
-
-public func == (lhs: Rect, rhs: Rect) -> Bool {
-    
-    return lhs.origin == rhs.origin && lhs.size == rhs.size
 }
