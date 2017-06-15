@@ -93,5 +93,5 @@ public func CGImageSourceGetType<T: CGImageSource>(_ imageSource: T) -> String {
 
 public func CGImageSourceCopyTypeIdentifiers() -> [String] {
     
-    return [ImageSourcePNG.typeIdentifier]
+    return [CGImageSourcePNG.typeIdentifier]
 }

@@ -30,6 +30,8 @@ public enum CGDrawingMode {
     /// Render the area within the path using the even-odd rule.
     case evenOddFill
     
+    public static let eoFill = CGDrawingMode.evenOddFill
+    
     /// Render a line along the path.
     case stroke
     
@@ -38,6 +40,8 @@ public enum CGDrawingMode {
     
     /// First fill and then stroke the path, using the even-odd rule.
     case evenOddFillStroke
+    
+    public static let eoFillStroke = CGDrawingMode.evenOddFillStroke
     
     public init() { self = .fill }
 }

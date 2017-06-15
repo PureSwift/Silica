@@ -14,6 +14,7 @@
 
 import struct Foundation.CGFloat
 import struct Foundation.CGPoint
+import struct Foundation.CGSize
 import struct Foundation.CGRect
 
 public extension CGRect {
@@ -137,7 +138,7 @@ public extension CGRect {
         var r1 = self
         var r2 = other
         
-        var rect = Rect()
+        var rect = CGRect()
         
         guard r1.isEmpty == false else { return r2 }
         guard r2.isEmpty == false else { return r1 }

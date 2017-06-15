@@ -497,7 +497,7 @@ public final class CGContext {
                 
             case let .addLineToPoint(point): addLine(to: point)
                 
-            case let .addQuadCurveToPoint(control, destination): addQuadCurve(to: end, control: destination)
+            case let .addQuadCurveToPoint(control, destination): addQuadCurve(to: destination, control: control)
             
             case let .addCurveToPoint(control1, control2, destination): addCurve(to: destination, control1: control1, control2: control2)
             
@@ -509,7 +509,7 @@ public final class CGContext {
     // MARK: - Painting Paths
     
     /// Paints a line along the current path.
-    public func stroke() throws {
+    public func strokePath() {
         
         if internalState.shadow != nil {
             
@@ -524,39 +524,37 @@ public final class CGContext {
             
             endShadow()
         }
+    }
+    
+    /// Paints the area within the current path, as determined by the specified fill rule.
+    public func fillPath(using rule: CGPathFillRule = .winding) {
         
-        if let error = internalContext.status.toError() {
-            
-            throw error
+        let evenOdd: Bool
+        
+        switch rule {
+        case .evenOdd: evenOdd = true
+        case .winding: evenOdd = false
         }
-    }
-    
-    public func fill(evenOdd: Bool = false) throws {
         
-        try fillPath(evenOdd: evenOdd, preserve: false)
+        try! fillPath(evenOdd: evenOdd, preserve: false)
     }
     
-    public func clear() throws {
+    public func clear() {
         
         internalContext.source = internalState.fill?.pattern ?? DefaultPattern
         
         internalContext.clip()
         internalContext.clipPreserve()
-        
-        if let error = internalContext.status.toError() {
-            
-            throw error
-        }
     }
     
-    public func draw(_ mode: CGDrawingMode = DrawingMode()) throws {
+    public func drawPath(using mode: CGDrawingMode = CGDrawingMode()) {
         
         switch mode {
-        case .fill: try fillPath(evenOdd: false, preserve: false)
-        case .evenOddFill: try fillPath(evenOdd: true, preserve: false)
-        case .fillStroke: try fillPath(evenOdd: false, preserve: true)
-        case .evenOddFillStroke: try fillPath(evenOdd: true, preserve: true)
-        case .stroke: try stroke()
+        case .fill: try! fillPath(evenOdd: false, preserve: false)
+        case .evenOddFill: try! fillPath(evenOdd: true, preserve: false)
+        case .fillStroke: try! fillPath(evenOdd: false, preserve: true)
+        case .evenOddFillStroke: try! fillPath(evenOdd: true, preserve: true)
+        case .stroke: strokePath()
         }
     }
     
@@ -634,14 +632,15 @@ public final class CGContext {
         
         var patternMatrix = Matrix.identity
         
-        patternMatrix.translate(x: rect.origin.x, y: rect.origin.y)
+        patternMatrix.translate(x: Double(rect.origin.x),
+                                y: Double(rect.origin.y))
         
-        patternMatrix.scale(x: rect.size.width / sourceRect.size.width,
-                            y: rect.size.height / sourceRect.size.height)
+        patternMatrix.scale(x: Double(rect.size.width / sourceRect.size.width),
+                            y: Double(rect.size.height / sourceRect.size.height))
         
         patternMatrix.scale(x: 1, y: -1)
         
-        patternMatrix.translate(x: 0, y: -sourceRect.size.height)
+        patternMatrix.translate(x: 0, y: Double(-sourceRect.size.height))
         
         patternMatrix.invert()
         
@@ -653,7 +652,10 @@ public final class CGContext {
         
         internalContext.source = pattern
         
-        internalContext.addRectangle(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: rect.size.height)
+        internalContext.addRectangle(x: Double(rect.origin.x),
+                                     y: Double(rect.origin.y),
+                                     width: Double(rect.size.width),
+                                     height: Double(rect.size.height))
         
         internalContext.fill()
         
@@ -679,7 +681,7 @@ public final class CGContext {
         
         var cairoTextMatrix = Matrix.identity
         
-        cairoTextMatrix.scale(x: fontSize, y: fontSize)
+        cairoTextMatrix.scale(x: Double(fontSize), y: Double(fontSize))
         
         cairoTextMatrix.multiply(a: cairoTextMatrix, b: textMatrix.toCairo())
         
@@ -691,7 +693,7 @@ public final class CGContext {
         
         let distance = internalContext.currentPoint ?? (0, 0)
         
-        textPosition = Point(x: textPosition.x + distance.x, y: textPosition.y + distance.y)
+        textPosition = CGPoint(x: textPosition.x + CGFloat(distance.x), y: textPosition.y + CGFloat(distance.y))
         
         if let oldPoint = oldPoint {
             
@@ -722,7 +724,7 @@ public final class CGContext {
         
         let advances = font.advances(for: glyphs, fontSize: fontSize, textMatrix: textMatrix, characterSpacing: characterSpacing)
         
-        show(glyphs: unsafeBitCast(glyphs.merge(advances), to: [(glyph: FontIndex, advance: Size)].self))
+        show(glyphs: unsafeBitCast(glyphs.merge(advances), to: [(glyph: FontIndex, advance: CGSize)].self))
     }
     
     public func show(glyphs glyphAdvances: [(glyph: FontIndex, advance: CGSize)]) {
@@ -736,7 +738,7 @@ public final class CGContext {
         let positions = font.positions(for: advances, textMatrix: textMatrix)
         
         // render
-        show(glyphs: unsafeBitCast(glyphs.merge(positions), to: [(glyph: FontIndex, position: Point)].self))
+        show(glyphs: unsafeBitCast(glyphs.merge(positions), to: [(glyph: FontIndex, position: CGPoint)].self))
         
         // advance text position
         advances.forEach {
@@ -761,9 +763,9 @@ public final class CGContext {
             
             let userSpacePoint = element.position.applying(textMatrix)
             
-            cairoGlyph.x = userSpacePoint.x
+            cairoGlyph.x = Double(userSpacePoint.x)
             
-            cairoGlyph.y = userSpacePoint.y
+            cairoGlyph.y = Double(userSpacePoint.y)
             
             return cairoGlyph
         }
@@ -772,9 +774,13 @@ public final class CGContext {
         
         cairoTextMatrix.scale(x: Double(fontSize), y: Double(fontSize))
         
-        let ascender = (Double(font.ascent) * fontSize) / Double(font.unitsPerEm)
+        let ascender = (Double(font.ascent) * Double(fontSize)) / Double(font.unitsPerEm)
         
-        let silicaTextMatrix = Matrix(a: textMatrix.a, b: textMatrix.b, c: textMatrix.c, d: textMatrix.d, t: (0, ascender))
+        let silicaTextMatrix = Matrix(a: Double(textMatrix.a),
+                                      b: Double(textMatrix.b),
+                                      c: Double(textMatrix.c),
+                                      d: Double(textMatrix.d),
+                                      t: (0, ascender))
         
         cairoTextMatrix.multiply(a: cairoTextMatrix, b: silicaTextMatrix)
         
@@ -844,7 +850,9 @@ public final class CGContext {
         
         internalContext.source = internalState.shadow!.pattern
         
-        internalContext.mask(surface: alphaSurface, at: (internalState.shadow!.offset.width, internalState.shadow!.offset.height))
+        internalContext.mask(surface: alphaSurface,
+                             at: (Double(internalState.shadow!.offset.width),
+                                  Double(internalState.shadow!.offset.height)))
         
         // draw content
         internalContext.source = pattern
