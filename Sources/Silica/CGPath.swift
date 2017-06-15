@@ -11,7 +11,7 @@ import struct Foundation.CGPoint
 import struct Foundation.CGRect
 
 /// A graphics path is a mathematical description of a series of shapes or lines.
-public struct Path {
+public struct CGPath {
     
     public typealias Element = PathElement
     
@@ -49,7 +49,7 @@ public enum PathElement {
 
 // MARK: - Constructing a Path
 
-public extension Path {
+public extension CGPath {
     
     mutating func addRect(_ rect: CGRect) {
         
@@ -165,7 +165,7 @@ public enum CGPathElementType {
 
 public extension CGPathElement {
     
-    init(_ element: Silica.Path.Element) {
+    init(_ element: Silica.PathElement) {
         
         switch element {
             
@@ -197,7 +197,7 @@ public extension CGPathElement {
     }
 }
 
-public extension Silica.Path.Element {
+public extension Silica.PathElement {
     
     init(_ element: CGPathElement) {
         

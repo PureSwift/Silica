@@ -114,20 +114,20 @@ public final class CGContext {
         }
         
         set { 
-            internalContext.lineDash = newValue }
+            internalContext.lineDash = (Double(newValue.phase), newValue.lengths.map({ Double($0) })) }
     }
     
     public var tolerance: CGFloat {
         
-        get { return internalContext.tolerance }
+        get { return CGFloat(internalContext.tolerance) }
         
-        set { internalContext.tolerance = newValue }
+        set { internalContext.tolerance = Double(newValue) }
     }
     
     /// Returns a `Path` built from the current path information in the graphics context.
     public var path: CGPath {
         
-        var path = Path()
+        var path = CGPath()
         
         let cairoPath = internalContext.copyPath()
         
@@ -141,33 +141,38 @@ public final class CGContext {
             
             let data = Array(cairoPath.data[index + 1 ..< length])
             
-            let element: Path.Element
+            let element: PathElement
             
             switch header.type {
                 
             case CAIRO_PATH_MOVE_TO:
                 
-                let point = Point(x: data[0].point.x, y: data[0].point.y)
+                let point = CGPoint(x: CGFloat(data[0].point.x),
+                                    y: CGFloat(data[0].point.y))
                 
-                element = Path.Element.moveToPoint(point)
+                element = PathElement.moveToPoint(point)
                 
             case CAIRO_PATH_LINE_TO:
                 
-                let point = Point(x: data[0].point.x, y: data[0].point.y)
+                let point = CGPoint(x: CGFloat(data[0].point.x),
+                                    y: CGFloat(data[0].point.y))
                 
-                element = Path.Element.addLineToPoint(point)
+                element = PathElement.addLineToPoint(point)
                 
             case CAIRO_PATH_CURVE_TO:
                 
-                let control1 = Point(x: data[0].point.x, y: data[0].point.y)
-                let control2 = Point(x: data[1].point.x, y: data[1].point.y)
-                let destination = Point(x: data[2].point.x, y: data[2].point.y)
+                let control1 = CGPoint(x: CGFloat(data[0].point.x),
+                                       y: CGFloat(data[0].point.y))
+                let control2 = CGPoint(x: CGFloat(data[1].point.x),
+                                       y: CGFloat(data[1].point.y))
+                let destination = CGPoint(x: CGFloat(data[2].point.x),
+                                          y: CGFloat(data[2].point.y))
                 
-                element = Path.Element.addCurveToPoint(control1, control2, destination)
+                element = PathElement.addCurveToPoint(control1, control2, destination)
                 
             case CAIRO_PATH_CLOSE_PATH:
                 
-                element = Path.Element.closeSubpath
+                element = PathElement.closeSubpath
                 
             default: fatalError("Unknown Cairo Path data: \(header.type.rawValue)")
             }
@@ -183,14 +188,14 @@ public final class CGContext {
     
     public var fillColor: CGColor {
         
-        get { return internalState.fill?.color ?? Color.black }
+        get { return internalState.fill?.color ?? CGColor.black }
         
         set { internalState.fill = (newValue, Cairo.Pattern(color: newValue)) }
     }
     
     public var strokeColor: CGColor {
         
-        get { return internalState.stroke?.color ?? Color.black }
+        get { return internalState.stroke?.color ?? CGColor.black }
         
         set { internalState.stroke = (newValue, Cairo.Pattern(color: newValue)) }
     }
@@ -243,6 +248,12 @@ public final class CGContext {
         set { internalState.characterSpacing = newValue }
     }
     
+    @inline(__always)
+    public func setTextDrawingMode(_ newValue: CGTextDrawingMode) {
+        
+        self.textDrawingMode = newValue
+    }
+    
     public var textDrawingMode: CGTextDrawingMode {
         
         get { return internalState.textMode }
@@ -285,7 +296,7 @@ public final class CGContext {
     
     public func rotateBy(_ angle: CGFloat) {
         
-        internalContext.rotate(angle)
+        internalContext.rotate(Double(angle))
     }
     
     /// Transforms the user coordinate system in a context using a specified matrix.
@@ -352,52 +363,67 @@ public final class CGContext {
     
     // MARK: Constructing Paths
     
+    /// Creates a new empty path in a graphics context.
     public func beginPath() {
         
         internalContext.newPath()
     }
     
+    /// Closes and terminates the current path’s subpath.
     public func closePath() {
         
         internalContext.closePath()
     }
     
+    /// Begins a new subpath at the specified point.
     public func move(to point: CGPoint) {
         
-        internalContext.move(to: (x: point.x, y: point.y))
+        internalContext.move(to: (x: Double(point.x), y: Double(point.y)))
     }
     
-    public func line(to point: CGPoint) {
+    /// Appends a straight line segment from the current point to the specified point.
+    public func addLine(to point: CGPoint) {
         
-        internalContext.line(to: (x: point.x, y: point.y))
+        internalContext.line(to: (x: Double(point.x), y: Double(point.y)))
     }
     
-    public func curve(to points: (Point, Point), end: Point) {
+    /// Adds a cubic Bézier curve to the current path, with the specified end point and control points.
+    func addCurve(to end: CGPoint, control1: CGPoint, control2: CGPoint) {
         
-        internalContext.curve(to: ((x: points.0.x, y: points.0.y), (x: points.1.x, y: points.1.y), (x: end.x, y: end.y)))
+        internalContext.curve(to: ((x: Double(control1.x), y: Double(control1.y)),
+                                   (x: Double(control2.x), y: Double(control2.y)),
+                                   (x: Double(end.x), y: Double(end.y))))
     }
     
-    public func quadCurve(to point: Point, end: Point) {
+    /// Adds a quadratic Bézier curve to the current path, with the specified end point and control point.
+    public func addQuadCurve(to end: CGPoint, control point: CGPoint) {
         
-        let currentPoint = self.currentPoint ?? Point()
+        let currentPoint = self.currentPoint ?? CGPoint()
         
-        let first = Point(x: (currentPoint.x / 3.0) + (2.0 * point.x / 3.0),
-                          y: (currentPoint.y / 3.0) + (2.0 * point.y / 3.0))
+        let first = CGPoint(x: (currentPoint.x / 3.0) + (2.0 * point.x / 3.0),
+                            y: (currentPoint.y / 3.0) + (2.0 * point.y / 3.0))
         
-        let second = Point(x: (2.0 * currentPoint.x / 3.0) + (end.x / 3.0),
-                           y: (2.0 * currentPoint.y / 3.0) + (end.y / 3.0))
+        let second = CGPoint(x: (2.0 * currentPoint.x / 3.0) + (end.x / 3.0),
+                             y: (2.0 * currentPoint.y / 3.0) + (end.y / 3.0))
         
-        curve(to: (first, second), end: end)
+        addCurve(to: end, control1: first, control2: second)
     }
     
-    public func arc(center: Point, radius: Double, angle: (start: Double, end: Double), negative: Bool) {
+    /// Adds an arc of a circle to the current path, specified with a radius and angles.
+    public func addArc(center: CGPoint, radius: CGFloat, startAngle: CGFloat, endAngle: CGFloat, clockwise: Bool) {
         
-        internalContext.addArc(center: (x: center.x, y: center.y), radius: radius, angle: angle, negative: negative)
+        internalContext.addArc(center: (x: Double(center.x), y: Double(center.y)),
+                               radius: Double(radius),
+                               angle: (Double(startAngle), Double(endAngle)),
+                               negative: clockwise)
     }
     
-    public func arc(to points: (Point, Point), radius: Double) {
+    /// Adds an arc of a circle to the current path, specified with a radius and two tangent lines.
+    public func addArc(tangent1End: CGPoint, tangent2End: CGPoint, radius: CGFloat) {
         
-        let currentPoint = self.currentPoint ?? Point()
+        let points: (CGPoint, CGPoint) = (tangent1End, tangent2End)
+        
+        let currentPoint = self.currentPoint ?? CGPoint()
         
         // arguments
         let x0 = currentPoint.x
@@ -421,14 +447,14 @@ public final class CGContext {
         
         guard san != 0 else {
             
-            line(to: points.0)
+            addLine(to: points.0)
             return
         }
         
-        let n0x: Double
-        let n0y: Double
-        let n2x: Double
-        let n2y: Double
+        let n0x: CGFloat
+        let n0y: CGFloat
+        let n2x: CGFloat
+        let n2y: CGFloat
         
         if san < 0 {
             n0x = -dy0 / xl0
@@ -445,18 +471,23 @@ public final class CGContext {
         
         let t = (dx2*n2y - dx2*n0y - dy2*n2x + dy2*n0x) / san
         
-        let center = Point(x: x1 + radius * (t * dx0 + n0x), y: y1 + radius * (t * dy0 + n0y))
+        let center = CGPoint(x: x1 + radius * (t * dx0 + n0x), y: y1 + radius * (t * dy0 + n0y))
         let angle = (start: atan2(-n0y, -n0x), end: atan2(-n2y, -n2x))
         
-        self.arc(center: center, radius: radius, angle: angle, negative: (san < 0))
+        self.addArc(center: center, radius: radius, startAngle: angle.start, endAngle: angle.end, clockwise: (san < 0))
     }
     
-    public func add(rect: Rect) {
+    /// Adds a rectangular path to the current path.
+    public func addRect(_ rect: CGRect) {
         
-        internalContext.addRectangle(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: rect.size.height)
+        internalContext.addRectangle(x: Double(rect.origin.x),
+                                     y: Double(rect.origin.y),
+                                     width: Double(rect.size.width),
+                                     height: Double(rect.size.height))
     }
     
-    public func add(path: Path) {
+    /// Adds a previously created path object to the current path in a graphics context.
+    public func addPath(_ path: CGPath) {
         
         for element in path.elements {
             
@@ -464,11 +495,11 @@ public final class CGContext {
                 
             case let .moveToPoint(point): move(to: point)
                 
-            case let .addLineToPoint(point): line(to: point)
+            case let .addLineToPoint(point): addLine(to: point)
                 
-            case let .addQuadCurveToPoint(control, destination): quadCurve(to: control, end: destination)
+            case let .addQuadCurveToPoint(control, destination): addQuadCurve(to: end, control: destination)
             
-            case let .addCurveToPoint(control1, control2, destination): curve(to: (control1, control2), end: destination)
+            case let .addCurveToPoint(control1, control2, destination): addCurve(to: destination, control1: control1, control2: control2)
             
             case .closeSubpath: closePath()
             }
@@ -518,7 +549,7 @@ public final class CGContext {
         }
     }
     
-    public func draw(_ mode: DrawingMode = DrawingMode()) throws {
+    public func draw(_ mode: CGDrawingMode = DrawingMode()) throws {
         
         switch mode {
         case .fill: try fillPath(evenOdd: false, preserve: false)
@@ -545,16 +576,16 @@ public final class CGContext {
     }
     
     @inline(__always)
-    public func clip(to rect: Rect) {
+    public func clip(to rect: CGRect) {
         
         beginPath()
-        add(rect: rect)
+        addRect(rect)
         clip()
     }
     
     // MARK: - Using Transparency Layers
     
-    public func beginTransparencyLayer(in rect: Rect? = nil, auxiliaryInfo: [String: Any]? = nil) {
+    public func beginTransparencyLayer(in rect: CGRect? = nil, auxiliaryInfo: [String: Any]? = nil) {
         
         // in case we clip (for the rect)
         internalContext.save()
@@ -562,11 +593,11 @@ public final class CGContext {
         if let rect = rect {
             
             internalContext.newPath()
-            add(rect: rect)
+            addRect(rect)
             internalContext.clip()
         }
         
-        try save()
+        saveGState()
         alpha = 1.0
         internalState.shadow = nil
         
@@ -582,7 +613,7 @@ public final class CGContext {
         
         // paint contents
         internalContext.source = group
-        internalContext.paint(alpha: internalState.alpha)
+        internalContext.paint(alpha: Double(internalState.alpha))
         
         // undo clipping (if any)
         internalContext.restore()
@@ -631,7 +662,7 @@ public final class CGContext {
     
     // MARK: - Drawing Text
     
-    public func setFont(_ font: Font) {
+    public func setFont(_ font: CGFont) {
         
         internalContext.fontFace = font.scaledFont.face
         internalState.font = font
@@ -694,7 +725,7 @@ public final class CGContext {
         show(glyphs: unsafeBitCast(glyphs.merge(advances), to: [(glyph: FontIndex, advance: Size)].self))
     }
     
-    public func show(glyphs glyphAdvances: [(glyph: FontIndex, advance: Size)]) {
+    public func show(glyphs glyphAdvances: [(glyph: FontIndex, advance: CGSize)]) {
         
         guard let font = internalState.font,
             fontSize > 0.0 && glyphAdvances.isEmpty == false
@@ -714,7 +745,7 @@ public final class CGContext {
         }
     }
     
-    public func show(glyphs glyphPositions: [(glyph: FontIndex, position: Point)]) {
+    public func show(glyphs glyphPositions: [(glyph: FontIndex, position: CGPoint)]) {
         
         guard let font = internalState.font?.scaledFont,
             fontSize > 0.0 && glyphPositions.isEmpty == false
@@ -739,7 +770,7 @@ public final class CGContext {
         
         var cairoTextMatrix = Matrix.identity
         
-        cairoTextMatrix.scale(x: fontSize, y: fontSize)
+        cairoTextMatrix.scale(x: Double(fontSize), y: Double(fontSize))
         
         let ascender = (Double(font.ascent) * fontSize) / Double(font.unitsPerEm)
         

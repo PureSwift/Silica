@@ -33,7 +33,7 @@
         "repositoryURL": "https://github.com/PureSwift/CLCMS.git",
         "state": {
           "branch": "master",
-          "revision": "20d18d62ebc642e52758512cab59af06f2d3655e",
+          "revision": "4808ad3fa6d244eb5a328a1b3fe0439f5954a831",
           "version": null
         }
       },
@@ -42,7 +42,7 @@
         "repositoryURL": "https://github.com/PureSwift/Cairo.git",
         "state": {
           "branch": "master",
-          "revision": "5bf2c328f0437f5d5859bba55beae1472b156a29",
+          "revision": "9fa92e223d8f596e3c545f320f1235178dec79d2",
           "version": null
         }
       },
@@ -51,7 +51,7 @@
         "repositoryURL": "https://github.com/PureSwift/LittleCMS.git",
         "state": {
           "branch": "master",
-          "revision": "32871723c3bd58d1dc3532125bd2c21e5acec5e1",
+          "revision": "5bfebf596b080f8c7dc5f403f2f0784cef130906",
           "version": null
         }
       }

@@ -10,7 +10,7 @@ import struct Foundation.Data
 
 /// This object abstracts the data-reading task. 
 /// An image source can read image data from a `Data` instance.
-public protocol ImageSource: class, RandomAccessCollection {
+public protocol CGImageSource: class, RandomAccessCollection {
     
     associatedtype Index = Int
     associatedtype Indices = DefaultRandomAccessIndices<Self>
@@ -20,14 +20,14 @@ public protocol ImageSource: class, RandomAccessCollection {
         
     init?(data: Data)
         
-    func createImage(at index: Int) -> Image?
+    func createImage(at index: Int) -> CGImage?
 }
 
-public extension ImageSource {
+public extension CGImageSource {
     
     public var count: Int { return 1 } // only some formats like GIF have multiple images
     
-    public subscript (index: Int) -> Image {
+    public subscript (index: Int) -> CGImage {
         
         guard let image = createImage(at: index)
             else { fatalError("No image at index \(index)") }
@@ -86,7 +86,7 @@ public func CGImageSourceCreateWithData(_ data: Data, _ options: [CGImageSourceO
 }
 
 @inline(__always)
-public func CGImageSourceGetType<T: ImageSource>(_ imageSource: T) -> String {
+public func CGImageSourceGetType<T: CGImageSource>(_ imageSource: T) -> String {
     
     return T.typeIdentifier
 }
