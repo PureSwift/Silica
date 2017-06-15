@@ -1,12 +1,130 @@
 //
-//  CGPath.swift
+//  Path.swift
 //  Silica
 //
-//  Created by Alsey Coleman Miller on 5/9/16.
+//  Created by Alsey Coleman Miller on 5/8/16.
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+import struct Foundation.CGFloat
 import struct Foundation.CGPoint
+import struct Foundation.CGRect
+
+/// A graphics path is a mathematical description of a series of shapes or lines.
+public struct Path {
+    
+    public typealias Element = PathElement
+    
+    public var elements: [Element]
+    
+    public init(elements: [Element] = []) {
+        
+        self.elements = elements
+    }
+}
+
+// MARK: - Supporting Types
+
+/// A path element.
+public enum PathElement {
+    
+    /// The path element that starts a new subpath. The element holds a single point for the destination.
+    case moveToPoint(CGPoint)
+    
+    /// The path element that adds a line from the current point to a new point.
+    /// The element holds a single point for the destination.
+    case addLineToPoint(CGPoint)
+    
+    /// The path element that adds a quadratic curve from the current point to the specified point.
+    /// The element holds a control point and a destination point.
+    case addQuadCurveToPoint(CGPoint, CGPoint)
+    
+    /// The path element that adds a cubic curve from the current point to the specified point.
+    /// The element holds two control points and a destination point.
+    case addCurveToPoint(CGPoint, CGPoint, CGPoint)
+    
+    /// The path element that closes and completes a subpath. The element does not contain any points.
+    case closeSubpath
+}
+
+// MARK: - Constructing a Path
+
+public extension Path {
+    
+    mutating func addRect(_ rect: CGRect) {
+        
+        let newElements: [Element] = [.moveToPoint(CGPoint(x: rect.minX, y: rect.minY)),
+                                      .addLineToPoint(CGPoint(x: rect.maxX, y: rect.minY)),
+                                      .addLineToPoint(CGPoint(x: rect.maxX, y: rect.maxY)),
+                                      .addLineToPoint(CGPoint(x: rect.minX, y: rect.maxY)),
+                                      .closeSubpath]
+        
+        elements.append(contentsOf: newElements)
+    }
+    
+    mutating func addEllipse(in rect: CGRect) {
+        
+        var p = CGPoint()
+        var p1 = CGPoint()
+        var p2 = CGPoint()
+        
+        let hdiff = rect.width / 2 * KAPPA
+        let vdiff = rect.height / 2 * KAPPA
+        
+        p = CGPoint(x: rect.origin.x + rect.width / 2, y: rect.origin.y + rect.height)
+        elements.append(.moveToPoint(p))
+        
+        p = CGPoint(x: rect.origin.x, y: rect.origin.y + rect.height / 2)
+        p1 = CGPoint(x: rect.origin.x + rect.width / 2 - hdiff, y: rect.origin.y + rect.height)
+        p2 = CGPoint(x: rect.origin.x, y: rect.origin.y + rect.height / 2 + vdiff)
+        elements.append(.addCurveToPoint(p1, p2, p))
+        
+        p = CGPoint(x: rect.origin.x + rect.size.width / 2, y: rect.origin.y)
+        p1 = CGPoint(x: rect.origin.x, y: rect.origin.y + rect.size.height / 2 - vdiff)
+        p2 = CGPoint(x: rect.origin.x + rect.size.width / 2 - hdiff, y: rect.origin.y)
+        elements.append(.addCurveToPoint(p1, p2, p))
+        
+        p = CGPoint(x: rect.origin.x + rect.size.width, y: rect.origin.y + rect.size.height / 2)
+        p1 = CGPoint(x: rect.origin.x + rect.size.width / 2 + hdiff, y: rect.origin.y)
+        p2 = CGPoint(x: rect.origin.x + rect.size.width, y: rect.origin.y + rect.size.height / 2 - vdiff)
+        elements.append(.addCurveToPoint(p1, p2, p))
+        
+        p = CGPoint(x: rect.origin.x + rect.size.width / 2, y: rect.origin.y + rect.size.height)
+        p1 = CGPoint(x: rect.origin.x + rect.size.width, y: rect.origin.y + rect.size.height / 2 + vdiff)
+        p2 = CGPoint(x: rect.origin.x + rect.size.width / 2 + hdiff, y: rect.origin.y + rect.size.height)
+        elements.append(.addCurveToPoint(p1, p2, p))
+    }
+    
+    mutating func move(to point: CGPoint) {
+        
+        elements.append(.moveToPoint(point))
+    }
+    
+    mutating func addLine(to point: CGPoint) {
+        
+        elements.append(.addLineToPoint(point))
+    }
+    
+    mutating func addCurve(to endPoint: CGPoint, control1: CGPoint, control2: CGPoint) {
+        
+        elements.append(.addCurveToPoint(control1, control2, endPoint))
+    }
+    
+    mutating func addQuadCurve(to endPoint: CGPoint, control: CGPoint) {
+        
+        elements.append(.addQuadCurveToPoint(control, endPoint))
+    }
+    
+    mutating func closeSubpath() {
+        
+        elements.append(.closeSubpath)
+    }
+}
+
+// This magic number is 4 *(sqrt(2) -1)/3
+private let KAPPA: CGFloat = 0.5522847498
+
+// MARK: - CoreGraphics API
 
 public struct CGPathElement {
     
@@ -97,3 +215,4 @@ public extension Silica.Path.Element {
         }
     }
 }
+

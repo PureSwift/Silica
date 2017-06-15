@@ -9,7 +9,7 @@
 import Cairo
 import CCairo
 
-public enum LineJoin: UInt32 {
+public enum CGLineJoin: UInt32 {
     
     case miter
     case round
@@ -20,7 +20,7 @@ public enum LineJoin: UInt32 {
 
 // MARK: - Cairo Conversion
 
-extension LineJoin: CairoConvertible {
+extension CGLineJoin: CairoConvertible {
     
     public typealias CairoType = cairo_line_join_t
     

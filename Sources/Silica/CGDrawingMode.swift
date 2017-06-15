@@ -7,7 +7,7 @@
 //
 
 /// Options for rendering text.
-public enum TextDrawingMode: CInt {
+public enum CGTextDrawingMode: CInt {
     
     case fill
     case stroke
@@ -22,7 +22,7 @@ public enum TextDrawingMode: CInt {
 }
 
 /// Options for rendering a path.
-public enum DrawingMode {
+public enum CGDrawingMode {
     
     /// Render the area contained within the path using the non-zero winding number rule.
     case fill

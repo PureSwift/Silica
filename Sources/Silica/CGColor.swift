@@ -56,7 +56,7 @@ public struct CGColor: Equatable {
 
 // MARK: - Equatable
 
-public func == (lhs: Color, rhs: Color) -> Bool {
+public func == (lhs: CGColor, rhs: CGColor) -> Bool {
     
     return lhs.red == rhs.red
         && lhs.green == rhs.green
@@ -68,17 +68,18 @@ public func == (lhs: Color, rhs: Color) -> Bool {
 
 internal extension Cairo.Pattern {
     
-    convenience init(color: Color) {
+    convenience init(color: CGColor) {
         
-        self.init(color: (color.red, color.green, color.blue, color.alpha))
+        self.init(color: (Double(color.red),
+                          Double(color.green),
+                          Double(color.blue),
+                          Double(color.alpha)))
         
         assert(status.rawValue == 0, "Error creating Cairo.Pattern from Silica.Color: \(status)")
     }
 }
 
 // MARK: - CoreGraphics API
-
-import struct Foundation.CGFloat
 
 public func CGColorCreateGenericGray(_ grey: CGFloat, _ alpha: CGFloat) -> CGColor {
     

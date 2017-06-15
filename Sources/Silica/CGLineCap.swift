@@ -9,7 +9,7 @@
 import Cairo
 import CCairo
 
-public enum LineCap: UInt32 {
+public enum CGLineCap: UInt32 {
     
     case butt
     case round
@@ -20,7 +20,7 @@ public enum LineCap: UInt32 {
 
 // MARK: - Cairo Conversion
 
-extension LineCap: CairoConvertible {
+extension CGLineCap: CairoConvertible {
     
     public typealias CairoType = cairo_line_cap_t
     
