@@ -195,9 +195,14 @@ public final class CGContext {
         set { internalState.stroke = (newValue, Cairo.Pattern(color: newValue)) }
     }
     
+    @inline(__always)
+    public func setAlpha(_ alpha: CGFloat) {
+        self.alpha = alpha
+    }
+    
     public var alpha: CGFloat {
         
-        get { return internalState.alpha }
+        get { return CGFloat(internalState.alpha) }
         
         set {
             
@@ -238,16 +243,16 @@ public final class CGContext {
         set { internalState.characterSpacing = newValue }
     }
     
-    public var textDrawingMode: TextDrawingMode {
+    public var textDrawingMode: CGTextDrawingMode {
         
         get { return internalState.textMode }
         
         set { internalState.textMode = newValue }
     }
     
-    public var textPosition: Point {
+    public var textPosition: CGPoint {
         
-        get { return Point(x: textMatrix.t.x, y: textMatrix.t.y) }
+        get { return CGPoint(x: textMatrix.t.x, y: textMatrix.t.y) }
         
         set { textMatrix.t = (newValue.x, newValue.y) }
     }
@@ -270,20 +275,21 @@ public final class CGContext {
     
     public func scaleBy(x: CGFloat, y: CGFloat) {
         
-        internalContext.scale(x: x, y: y)
+        internalContext.scale(x: Double(x), y: Double(y))
     }
     
     public func translateBy(x: CGFloat, y: CGFloat) {
         
-        internalContext.translate(x: x, y: y)
+        internalContext.translate(x: Double(x), y: Double(y))
     }
     
-    public func rotateBy(_ angle: Double) {
+    public func rotateBy(_ angle: CGFloat) {
         
         internalContext.rotate(angle)
     }
     
-    public func transformBy(_ transform: AffineTransform) {
+    /// Transforms the user coordinate system in a context using a specified matrix.
+    public func concatenate(_ transform: CGAffineTransform) {
         
         internalContext.transform(transform.toCairo())
     }
@@ -337,7 +343,7 @@ public final class CGContext {
     
     // MARK: Setting Graphics State Attributes
     
-    public func setShadow(offset: Size, radius: Double, color: Color) {
+    public func setShadow(offset: CGSize, radius: CGFloat, color: CGColor) {
         
         let colorPattern = Pattern(color: color)
         
@@ -356,12 +362,12 @@ public final class CGContext {
         internalContext.closePath()
     }
     
-    public func move(to point: Point) {
+    public func move(to point: CGPoint) {
         
         internalContext.move(to: (x: point.x, y: point.y))
     }
     
-    public func line(to point: Point) {
+    public func line(to point: CGPoint) {
         
         internalContext.line(to: (x: point.x, y: point.y))
     }
@@ -548,15 +554,10 @@ public final class CGContext {
     
     // MARK: - Using Transparency Layers
     
-    public func beginTransparencyLayer(rect: Rect? = nil) throws {
+    public func beginTransparencyLayer(in rect: Rect? = nil, auxiliaryInfo: [String: Any]? = nil) {
         
         // in case we clip (for the rect)
         internalContext.save()
-        
-        if let error = internalContext.status.toError() {
-            
-            throw error
-        }
         
         if let rect = rect {
             
@@ -572,17 +573,12 @@ public final class CGContext {
         internalContext.pushGroup()
     }
     
-    @inline(__always)
-    public func beginTransparencyLayer(auxiliaryInfo: [String: Any]?) {
-        try! beginTransparencyLayer()
-    }
-    
     public func endTransparencyLayer() {
         
         let group = internalContext.popGroup()
         
         // undo change to alpha and shadow state
-        try restore()
+        restoreGState()
         
         // paint contents
         internalContext.source = group
@@ -595,13 +591,13 @@ public final class CGContext {
     // MARK: - Drawing an Image to a Graphics Context
     
     /// Draws an image into a graphics context.
-    public func draw(_ image: Image, in rect: Rect) {
+    public func draw(_ image: CGImage, in rect: CGRect) {
         
         internalContext.save()
         
         let imageSurface = image.surface
         
-        let sourceRect = Rect(x: 0, y: 0, width: Double(image.width), height: Double(image.height))
+        let sourceRect = CGRect(x: 0, y: 0, width: Double(image.width), height: Double(image.height))
         
         let pattern = Pattern(surface: imageSurface)
         
@@ -838,14 +834,14 @@ fileprivate extension Silica.CGContext {
     fileprivate final class State {
         
         var next: State?
-        var alpha: Double = 1.0
+        var alpha: CGFloat = 1.0
         var fill: (color: CGColor, pattern: Cairo.Pattern)?
         var stroke: (color: CGColor, pattern: Cairo.Pattern)?
-        var shadow: (offset: CGSize, radius: Double, color: CGColor, pattern: Cairo.Pattern)?
-        var font: Font?
-        var fontSize: Double = 0.0
-        var characterSpacing: Double = 0.0
-        var textMode = TextDrawingMode()
+        var shadow: (offset: CGSize, radius: CGFloat, color: CGColor, pattern: Cairo.Pattern)?
+        var font: CGFont?
+        var fontSize: CGFloat = 0.0
+        var characterSpacing: CGFloat = 0.0
+        var textMode = CGTextDrawingMode()
         
         init() { }
         
