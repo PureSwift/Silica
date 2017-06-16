@@ -27,6 +27,12 @@ public extension CGRect {
         self.size = CGSize(width: width, height: height)
     }
     
+    public init(x: Double, y: Double, width: Double, height: Double) {
+        
+        self.origin = CGPoint(x: CGFloat(x), y: CGFloat(y))
+        self.size = CGSize(width: CGFloat(width), height: CGFloat(height))
+    }
+    
     // MARK: - Accessors
     
     public var x: CGFloat {
