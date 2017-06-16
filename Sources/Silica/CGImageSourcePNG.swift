@@ -15,7 +15,7 @@
 import struct Foundation.Data
 import Cairo
 
-public final class ImageSourcePNG: ImageSource {
+public final class CGImageSourcePNG: CGImageSource {
     
     // MARK: - Class Properties
     
@@ -37,9 +37,9 @@ public final class ImageSourcePNG: ImageSource {
     
     // MARK: - Methods
     
-    public func createImage(at index: Int) -> Image? {
+    public func createImage(at index: Int) -> CGImage? {
         
-        let image = Image(surface: surface)
+        let image = CGImage(surface: surface)
         
         return image
     }

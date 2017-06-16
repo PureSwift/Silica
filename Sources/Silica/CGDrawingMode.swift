@@ -7,7 +7,7 @@
 //
 
 /// Options for rendering text.
-public enum TextDrawingMode: CInt {
+public enum CGTextDrawingMode: CInt {
     
     case fill
     case stroke
@@ -22,13 +22,15 @@ public enum TextDrawingMode: CInt {
 }
 
 /// Options for rendering a path.
-public enum DrawingMode {
+public enum CGDrawingMode {
     
     /// Render the area contained within the path using the non-zero winding number rule.
     case fill
     
     /// Render the area within the path using the even-odd rule.
     case evenOddFill
+    
+    public static let eoFill = CGDrawingMode.evenOddFill
     
     /// Render a line along the path.
     case stroke
@@ -38,6 +40,8 @@ public enum DrawingMode {
     
     /// First fill and then stroke the path, using the even-odd rule.
     case evenOddFillStroke
+    
+    public static let eoFillStroke = CGDrawingMode.evenOddFillStroke
     
     public init() { self = .fill }
 }

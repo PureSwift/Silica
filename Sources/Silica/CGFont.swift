@@ -10,11 +10,16 @@ import Cairo
 import CCairo
 import CFontConfig
 
+import struct Foundation.CGFloat
+import struct Foundation.CGPoint
+import struct Foundation.CGSize
+import struct Foundation.CGRect
+
 /// Silica's `Font` type.
-public struct Font: Equatable, Hashable {
+public struct CGFont: Equatable, Hashable {
     
     /// Private font cache.
-    private static var cache = [String: Font]()
+    private static var cache = [String: CGFont]()
     
     // MARK: - Properties
     
@@ -32,7 +37,7 @@ public struct Font: Equatable, Hashable {
     
     public init?(name: String) {
         
-        if let cachedFont = Font.cache[name] {
+        if let cachedFont = CGFont.cache[name] {
             
             self = cachedFont
             
@@ -59,14 +64,14 @@ public struct Font: Equatable, Hashable {
                 else { return nil }
             
             // cache
-            Font.cache[name] = self
+            CGFont.cache[name] = self
         }
     }
 }
 
 // MARK: - Equatable
 
-public func == (lhs: Font, rhs: Font) -> Bool {
+public func == (lhs: CGFont, rhs: CGFont) -> Bool {
     
     // quick and easy way
     return lhs.name == rhs.name
@@ -74,7 +79,7 @@ public func == (lhs: Font, rhs: Font) -> Bool {
 
 // MARK: - Hashable
 
-public extension Font {
+public extension CGFont {
     
     var hashValue: Int {
         
@@ -84,39 +89,39 @@ public extension Font {
 
 // MARK: - Text Math
 
-public extension Font {
+public extension CGFont {
     
-    func advances(for glyphs: [FontIndex], fontSize: Double, textMatrix: AffineTransform = AffineTransform.identity, characterSpacing: Double = 0.0) -> [Size] {
+    func advances(for glyphs: [FontIndex], fontSize: CGFloat, textMatrix: CGAffineTransform = .identity, characterSpacing: CGFloat = 0.0) -> [CGSize] {
         
         // only horizontal layout is supported
         
         // calculate advances
-        let glyphSpaceToTextSpace = fontSize / Double(scaledFont.unitsPerEm)
+        let glyphSpaceToTextSpace = fontSize / CGFloat(scaledFont.unitsPerEm)
         
-        return scaledFont.advances(for: glyphs).map { Size(width: (Double($0) * glyphSpaceToTextSpace) + characterSpacing, height: 0).applying(textMatrix) }
+        return scaledFont.advances(for: glyphs).map { CGSize(width: (CGFloat($0) * glyphSpaceToTextSpace) + characterSpacing, height: 0).applying(textMatrix) }
     }
     
-    func positions(for advances: [Size], textMatrix: AffineTransform = AffineTransform.identity) -> [Point] {
+    func positions(for advances: [CGSize], textMatrix: CGAffineTransform = .identity) -> [CGPoint] {
         
-        var glyphPositions = [Point](repeating: Point(), count: advances.count)
+        var glyphPositions = [CGPoint](repeating: CGPoint(), count: advances.count)
         
         // first position is {0, 0}
         for i in 1 ..< glyphPositions.count {
             
             let textSpaceAdvance = advances[i-1].applying(textMatrix)
             
-            glyphPositions[i] = Point(x: glyphPositions[i-1].x + textSpaceAdvance.width,
+            glyphPositions[i] = CGPoint(x: glyphPositions[i-1].x + textSpaceAdvance.width,
                                       y: glyphPositions[i-1].y + textSpaceAdvance.height)
         }
         
         return glyphPositions
     }
     
-    func singleLineWidth(text: String, fontSize: Double, textMatrix: AffineTransform = AffineTransform.identity) -> Double {
+    func singleLineWidth(text: String, fontSize: CGFloat, textMatrix: CGAffineTransform = .identity) -> CGFloat {
         
         let glyphs = text.unicodeScalars.map { scaledFont[UInt($0.value)] }
         
-        let textWidth = advances(for: glyphs, fontSize: fontSize, textMatrix: textMatrix).reduce(Double(0), { $0 +  $1.width })
+        let textWidth = advances(for: glyphs, fontSize: fontSize, textMatrix: textMatrix).reduce(CGFloat(0), { $0 + $1.width })
         
         return textWidth
     }

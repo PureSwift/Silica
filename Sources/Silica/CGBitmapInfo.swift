@@ -11,7 +11,7 @@
 /// Applications that store pixel data in memory using ARGB format must take care in how they read data. 
 /// If the code is not written correctly, it’s possible to misread the data which leads to colors or alpha that appear wrong.
 /// The byte order constants specify the byte ordering of pixel formats.
-public struct BitmapInfo {
+public struct CGBitmapInfo {
     
     /// The components of a bitmap are floating-point values.
     public var floatComponents: Bool
@@ -33,9 +33,9 @@ public struct BitmapInfo {
 
 // MARK: - Equatable
 
-extension BitmapInfo: Equatable {
+extension CGBitmapInfo: Equatable {
     
-    public static func == (lhs: BitmapInfo, rhs: BitmapInfo) -> Bool {
+    public static func == (lhs: CGBitmapInfo, rhs: CGBitmapInfo) -> Bool {
         
         return lhs.floatComponents == rhs.floatComponents
             && lhs.alpha == rhs.alpha
@@ -45,7 +45,7 @@ extension BitmapInfo: Equatable {
 
 // MARK: - Supporting Types
 
-public extension BitmapInfo {
+public extension CGBitmapInfo {
     
     /// Alpha information that specifies whether a bitmap contains an alpha channel
     /// and how the alpha channel is generated.

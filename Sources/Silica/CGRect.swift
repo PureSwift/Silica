@@ -12,93 +12,81 @@
     import Glibc
 #endif
 
-/// A structure that contains the location and dimensions of a rectangle.
-public struct Rect: Equatable {
+import struct Foundation.CGFloat
+import struct Foundation.CGPoint
+import struct Foundation.CGSize
+import struct Foundation.CGRect
+
+public extension CGRect {
     
-    // MARK: - Properties
-    
-    /// A point that specifies the coordinates of the rectangle’s origin.
-    public var origin: Point
-    
-    /// A size that specifies the height and width of the rectangle.
-    public var size: Size
-    
-    // MARK: - Initialization
-    
-    public init(origin: Point = Point(), size: Size = Size()) {
+    public init(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {
         
-        self.origin = origin
-        self.size = size
-    }
-    
-    public init(x: Double, y: Double, width: Double, height: Double) {
-        
-        self.origin = Point(x: x, y: y)
-        self.size = Size(width: width, height: height)
+        self.origin = CGPoint(x: x, y: y)
+        self.size = CGSize(width: width, height: height)
     }
     
     // MARK: - Accessors
     
-    public var x: Double {
+    public var x: CGFloat {
         
         get { return origin.x }
         
         set { origin.x = newValue }
     }
     
-    public var y: Double {
+    public var y: CGFloat {
         
         get { return origin.y }
         
         set { origin.y = newValue }
     }
     
-    public var width: Double {
+    public var width: CGFloat {
         
         get { return size.width }
         
         set { size.width = newValue }
     }
     
-    public var height: Double {
+    public var height: CGFloat {
         
         get { return size.height }
         
         set { size.height = newValue }
     }
     
-    public var minX: Double {
+    public var minX: CGFloat {
         
         return (size.width < 0) ? origin.x + size.width : origin.x
     }
     
-    public var midX: Double {
+    public var midX: CGFloat {
         
         return origin.x + (size.width / 2.0)
     }
     
-    public var maxX: Double {
+    public var maxX: CGFloat {
         
         return (size.width < 0) ? origin.x : origin.x + size.width
     }
     
-    public var minY: Double {
+    public var minY: CGFloat {
         
         return (size.height < 0) ? origin.y + size.height : origin.y
     }
     
-    public var midY: Double {
+    public var midY: CGFloat {
         
         return origin.y + (size.height / 2.0)
     }
     
-    public var maxY: Double {
+    public var maxY: CGFloat {
         
         return (size.height < 0) ? origin.y : origin.y + size.height
     }
-
+    
     /// Returns a rectangle with a positive width and height.
-    public var standardized: Rect {
+    public var standardized: CGRect {
         
         var rect = self
         
@@ -116,7 +104,7 @@ public struct Rect: Equatable {
     }
     
     /// Returns the smallest rectangle that results from converting the source rectangle values to integers.
-    public var integral: Rect {
+    public var integral: CGRect {
         
         var rect = self.standardized
         
@@ -138,19 +126,19 @@ public struct Rect: Equatable {
     
     // MARK: - Methods
     
-    public func contains(_ point: Point) -> Bool {
+    public func contains(_ point: CGPoint) -> Bool {
         
         return (point.x >= minX && point.x <= maxX)
             && (point.y >= minY && point.y <= maxY)
     }
     
     /// Returns the intersection of two rectangles.
-    public func intersection(_ other: Rect) -> Rect? {
+    public func intersection(_ other: CGRect) -> CGRect? {
         
         var r1 = self
         var r2 = other
         
-        var rect = Rect()
+        var rect = CGRect()
         
         guard r1.isEmpty == false else { return r2 }
         guard r2.isEmpty == false else { return r1 }
@@ -182,11 +170,4 @@ public struct Rect: Equatable {
         
         return rect;
     }
-}
-
-// MARK: - Equatable
-
-public func == (lhs: Rect, rhs: Rect) -> Bool {
-    
-    return lhs.origin == rhs.origin && lhs.size == rhs.size
 }
