@@ -426,12 +426,12 @@ public final class CGContext {
         let currentPoint = self.currentPoint ?? CGPoint()
         
         // arguments
-        let x0 = currentPoint.x
-        let y0 = currentPoint.y
-        let x1 = points.0.x
-        let y1 = points.0.y
-        let x2 = points.1.x
-        let y2 = points.1.y
+        let x0 = currentPoint.x.native
+        let y0 = currentPoint.y.native
+        let x1 = points.0.x.native
+        let y1 = points.0.y.native
+        let x2 = points.1.x.native
+        let y2 = points.1.y.native
         
         // calculated
         let dx0 = x0 - x1
@@ -451,10 +451,10 @@ public final class CGContext {
             return
         }
         
-        let n0x: CGFloat
-        let n0y: CGFloat
-        let n2x: CGFloat
-        let n2y: CGFloat
+        let n0x: CGFloat.NativeType
+        let n0y: CGFloat.NativeType
+        let n2x: CGFloat.NativeType
+        let n2y: CGFloat.NativeType
         
         if san < 0 {
             n0x = -dy0 / xl0
@@ -471,10 +471,15 @@ public final class CGContext {
         
         let t = (dx2*n2y - dx2*n0y - dy2*n2x + dy2*n0x) / san
         
-        let center = CGPoint(x: x1 + radius * (t * dx0 + n0x), y: y1 + radius * (t * dy0 + n0y))
+        let center = CGPoint(x: CGFloat(x1 + radius.native * (t * dx0 + n0x)),
+                             y: CGFloat(y1 + radius.native * (t * dy0 + n0y)))
         let angle = (start: atan2(-n0y, -n0x), end: atan2(-n2y, -n2x))
         
-        self.addArc(center: center, radius: radius, startAngle: angle.start, endAngle: angle.end, clockwise: (san < 0))
+        self.addArc(center: center,
+                    radius: radius,
+                    startAngle: CGFloat(angle.start),
+                    endAngle: CGFloat(angle.end),
+                    clockwise: (san < 0))
     }
     
     /// Adds a rectangular path to the current path.
