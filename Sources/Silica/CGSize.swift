@@ -10,5 +10,10 @@ import struct Foundation.CGSize
 
 public extension CGSize {
     
+#if os(Linux)
+    
     public static var zero: CGSize { return CGSize() }
+    
+#endif
+
 }

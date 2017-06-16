@@ -10,5 +10,10 @@ import struct Foundation.CGPoint
 
 public extension CGPoint {
     
+#if os(Linux)
+    
     public static var zero: CGPoint { return CGPoint() }
+    
+#endif
+    
 }
