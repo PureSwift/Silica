@@ -19,6 +19,8 @@ import struct Foundation.CGRect
 
 public extension CGRect {
     
+#if os(Linux)
+    
     public init(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {
         
         self.origin = CGPoint(x: x, y: y)
@@ -170,4 +172,6 @@ public extension CGRect {
         
         return rect;
     }
+
+#endif
 }
