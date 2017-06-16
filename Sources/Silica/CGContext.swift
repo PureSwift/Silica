@@ -67,7 +67,7 @@ public final class CGContext {
         guard let point = internalContext.currentPoint
             else { return nil }
         
-        return CGPoint(x: point.x, y: point.y)
+        return CGPoint(x: CGFloat(point.x), y: CGFloat(point.y))
     }
     
     public var shouldAntialias: Bool {
@@ -631,7 +631,7 @@ public final class CGContext {
         
         let imageSurface = image.surface
         
-        let sourceRect = CGRect(x: 0, y: 0, width: Double(image.width), height: Double(image.height))
+        let sourceRect = CGRect(x: 0, y: 0, width: CGFloat(image.width), height: CGFloat(image.height))
         
         let pattern = Pattern(surface: imageSurface)
         

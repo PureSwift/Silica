@@ -10,9 +10,5 @@ import struct Foundation.CGPoint
 
 public extension CGPoint {
     
-    init(x: Double, y: Double) {
-        
-        self.x = CGFloat(x)
-        self.y = CGFloat(y)
-    }
+    public static var zero: CGPoint { return CGPoint() }
 }
