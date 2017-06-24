@@ -149,6 +149,39 @@ public extension CGRect {
             && (point.y >= minY && point.y <= maxY)
     }
     
+    public func contains(_ rect: CGRect) -> Bool {
+    
+        return self == union(rect)
+    }
+    
+    public func union(_ rect: CGRect) -> CGRect {
+        
+        var r1 = self
+        var r2 = rect
+        
+        var union = CGRect()
+        
+        if r1.isEmpty {
+            return r2
+        }
+        else if r2.isEmpty {
+            return r1
+        }
+        
+        r1 = r1.standardized
+        r2 = r2.standardized
+        union.origin.x = min(r1.origin.x, r2.origin.x)
+        union.origin.y = min(r1.origin.y, r2.origin.y)
+        
+        var farthestPoint = CGPoint()
+        farthestPoint.x = max(r1.origin.x + r1.size.width, r2.origin.x + r2.size.width)
+        farthestPoint.y = max(r1.origin.y + r1.size.height, r2.origin.y + r2.size.height)
+        union.size.width = farthestPoint.x - union.origin.x
+        union.size.height = farthestPoint.y - union.origin.y
+        
+        return union
+    }
+    
     /// Returns the intersection of two rectangles.
     public func intersection(_ other: CGRect) -> CGRect {
         
