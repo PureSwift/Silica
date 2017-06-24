@@ -29,6 +29,8 @@ public extension CGRect {
     
     public static var zero: CGRect { return CGRect() }
     
+    public static var null: CGRect { return CGRect(x: .nan, y: .nan, width: .nan, height: .nan) }
+    
     // MARK: - Accessors
     
     public var x: CGFloat {
@@ -125,7 +127,18 @@ public extension CGRect {
     /// Returns whether a rectangle has zero width or height, or is a null rectangle.
     public var isEmpty: Bool {
         
-        return size.width == 0 || size.height == 0
+        return size.width == 0
+            || size.height == 0
+            || isNull
+    }
+    
+    /// Returns whether the rectangle is equal to the null rectangle.
+    public var isNull: Bool {
+    
+        return origin.x.isNaN
+            || origin.y.isNaN
+            || size.width.isNaN
+            || size.height.isNaN
     }
     
     // MARK: - Methods
@@ -137,7 +150,7 @@ public extension CGRect {
     }
     
     /// Returns the intersection of two rectangles.
-    public func intersection(_ other: CGRect) -> CGRect? {
+    public func intersection(_ other: CGRect) -> CGRect {
         
         var r1 = self
         var r2 = other
@@ -154,7 +167,7 @@ public extension CGRect {
             r2.origin.x + r2.size.width <= r1.origin.x ||
             r1.origin.y + r1.size.height <= r2.origin.y ||
             r2.origin.y + r2.size.height <= r1.origin.y) == false
-            else { return nil }
+            else { return .null }
         
         rect.origin.x = (r1.origin.x > r2.origin.x ? r1.origin.x : r2.origin.x)
         rect.origin.y = (r1.origin.y > r2.origin.y ? r1.origin.y : r2.origin.y)
