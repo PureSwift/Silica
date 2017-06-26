@@ -117,6 +117,12 @@ public final class CGContext {
             internalContext.lineDash = (Double(newValue.phase), newValue.lengths.map({ Double($0) })) }
     }
     
+    @inline(__always)
+    public func setLineDash(phase: CGFloat, lengths: [CGFloat]) {
+        
+        self.lineDash = (phase, lengths)
+    }
+    
     public var tolerance: CGFloat {
         
         get { return CGFloat(internalContext.tolerance) }
