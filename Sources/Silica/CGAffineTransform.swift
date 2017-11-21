@@ -21,23 +21,12 @@ public struct CGAffineTransform {
     
     // MARK: - Initialization
     
-    public init(a: CGFloat, b: CGFloat, c: CGFloat, d: CGFloat, t: (x: CGFloat, y: CGFloat)) {
-        
-        self.a = a
-        self.b = b
-        self.c = c
-        self.d = d
-        self.t = t
-    }
-    
-    init(a: CGFloat, b: CGFloat, c: CGFloat, d: CGFloat, tx: CGFloat, ty: CGFloat) {
+    public init(a: CGFloat, b: CGFloat, c: CGFloat, d: CGFloat, tx: CGFloat, ty: CGFloat) {
         
         self.init(a: a, b: b, c: c, d: d, tx: tx, ty: ty)
     }
     
     public static let identity = CGAffineTransform(a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0)
-    
-    public var tx: CGFloat { return t.x }
 }
 
 #endif
