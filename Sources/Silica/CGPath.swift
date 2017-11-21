@@ -6,9 +6,7 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
-import struct Foundation.CGFloat
-import struct Foundation.CGPoint
-import struct Foundation.CGRect
+import Foundation
 
 /// A graphics path is a mathematical description of a series of shapes or lines.
 public struct CGPath {
