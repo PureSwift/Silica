@@ -29,7 +29,7 @@ public extension CGRect {
     
     public static var zero: CGRect { return CGRect() }
     
-    public static var null: CGRect { return CGRect(x: .nan, y: .nan, width: .nan, height: .nan) }
+    public static var null: CGRect { return CGRect(x: CGFloat.nan, y: CGFloat.nan, width: CGFloat.nan, height: CGFloat.nan) }
     
     // MARK: - Accessors
     
