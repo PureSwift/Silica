@@ -214,25 +214,4 @@ public extension CGRect {
 
 }
 
-// MARK: - Swift 3 compatibility
-
-#if swift(>=4)
-    
-#elseif swift(>=3.0.2)
-    
-public extension CGRect {
-    
-    public init(x: CGFloat, y: CGFloat, width: CGFloat, height: CGFloat) {
-        
-        self.origin = CGPoint(x: x, y: y)
-        self.size = CGSize(width: width, height: height)
-    }
-    
-    public static var zero: CGRect { return CGRect() }
-    
-    public static var null: CGRect { return CGRect(x: CGFloat.nan, y: CGFloat.nan, width: CGFloat.nan, height: CGFloat.nan) }
-}
-
-#endif
-
 #endif
