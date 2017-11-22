@@ -10,7 +10,12 @@ import Cairo
 import CCairo
 import Foundation
 
-#if os(Linux)
+#if os(macOS)
+
+import struct CoreGraphics.CGAffineTransform
+public typealias CGAffineTransform = CoreGraphics.CGAffineTransform
+
+#else
 
 /// Affine Transform
 public struct CGAffineTransform {

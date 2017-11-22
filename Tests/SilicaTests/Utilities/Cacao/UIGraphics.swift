@@ -1,12 +1,12 @@
 //
 //  UIGraphics.swift
-//  Silica
+//  Cacao
 //
 //  Created by Alsey Coleman Miller on 5/12/16.
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
-@testable import Silica
+import Silica
 
 /// Returns the current graphics context.
 ///

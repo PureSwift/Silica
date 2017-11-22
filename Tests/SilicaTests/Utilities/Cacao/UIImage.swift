@@ -6,19 +6,20 @@
 //
 //
 
+import Foundation
 import Silica
 
 public final class UIImage {
     
-    public let cgImage: CGImage
+    public let cgImage: Silica.CGImage
     
-    public init(cgImage: CGImage) {
+    public init(cgImage: Silica.CGImage) {
         
         self.cgImage = cgImage
     }
     
     public var size: CGSize {
         
-        return Size(width: CGFloat(cgImage.width), height: CGFloat(cgImage.height))
+        return CGSize(width: CGFloat(cgImage.width), height: CGFloat(cgImage.height))
     }
 }

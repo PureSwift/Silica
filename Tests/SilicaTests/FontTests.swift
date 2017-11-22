@@ -15,16 +15,19 @@ final class FontTests: XCTestCase {
     
     func testCreateFont() {
         
-        let fontNames = [
-            ("MicrosoftSansSerif", "Microsoft Sans Serif"),
-            ("MicrosoftSansSerif-Bold", "Microsoft Sans Serif"),
+        var fontNames = [
             ("TimesNewRoman", "Times New Roman"),
             ("TimesNewRoman-Bold", "Times New Roman")
         ]
         
+        #if os(macOS)
+        fontNames += [("MicrosoftSansSerif", "Microsoft Sans Serif"),
+                      ("MicrosoftSansSerif-Bold", "Microsoft Sans Serif")]
+        #endif
+        
         for (fontName, expectedFullName) in fontNames {
             
-            guard let font = Silica.Font(name: fontName)
+            guard let font = Silica.CGFont(name: fontName)
                 else { XCTFail("Could not create font"); return }
             
             XCTAssert(font.name == font.name)

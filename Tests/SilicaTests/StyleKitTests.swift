@@ -17,17 +17,17 @@ final class StyleKitTests: XCTestCase {
                            ("testAdvancedShapes", testAdvancedShapes),
                            ("testImagePNG", testImagePNG)]
     
-    private func draw(_ drawingMethod: () -> (), _ name: String, _ size: Size) {
+    private func draw(_ drawingMethod: () -> (), _ name: String, _ size: CGSize) {
         
         let filename = TestPath.testData + name + ".pdf"
         
-        let frame = Rect(size: size)
+        let frame = CGRect(origin: .zero, size: size)
         
-        let surface = try! Surface.PDF(filename: filename, width: frame.width, height: frame.height)
+        let surface = try! Surface.PDF(filename: filename, width: Double(frame.width), height: Double(frame.height))
         
-        let context = try! Silica.Context(surface: surface, size: frame.size)
+        let context = try! Silica.CGContext(surface: surface, size: frame.size)
         
-        UIGraphicsPushContext(CGContext(context))
+        UIGraphicsPushContext(context)
         
         drawingMethod()
         
@@ -38,12 +38,12 @@ final class StyleKitTests: XCTestCase {
     
     func testSimpleShapes() {
         
-        draw(TestStyleKit.drawSimpleShapes, "simpleShapes", Size(width: 240, height: 120))
+        draw(TestStyleKit.drawSimpleShapes, "simpleShapes", CGSize(width: 240, height: 120))
     }
     
     func testAdvancedShapes() {
         
-        draw(TestStyleKit.drawAdvancedShapes, "advancedShapes", Size(width: 240, height: 120))
+        draw(TestStyleKit.drawAdvancedShapes, "advancedShapes", CGSize(width: 240, height: 120))
     }
     
     func testImagePNG() {
@@ -52,7 +52,7 @@ final class StyleKitTests: XCTestCase {
         
         catch { XCTFail("Could not get test assets (\(error))"); return }
         
-        draw(TestStyleKit.drawImagePNG, "imagePNG", Size(width: 240, height: 180))
+        draw(TestStyleKit.drawImagePNG, "imagePNG", CGSize(width: 240, height: 180))
     }
 }
 

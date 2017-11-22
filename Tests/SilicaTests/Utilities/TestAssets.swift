@@ -114,7 +114,7 @@ extension UIImage {
         let fileURL = TestAssetManager.shared.cacheURL(for: name)
         
         guard let data = try? Data(contentsOf: fileURL),
-            let imageSource = ImageSourcePNG(data: data)
+            let imageSource = CGImageSourcePNG(data: data)
             else { return nil }
         
         let image = imageSource[0]

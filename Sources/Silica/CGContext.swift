@@ -14,10 +14,7 @@
 
 import Cairo
 import CCairo
-import struct Foundation.CGFloat
-import struct Foundation.CGPoint
-import struct Foundation.CGSize
-import struct Foundation.CGRect
+import Foundation
 
 public final class CGContext {
     
