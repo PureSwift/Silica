@@ -5,7 +5,7 @@
 //  Created by Alsey Coleman Miller on 6/2/17.
 //
 //
-
+/*
 import struct Foundation.Data
 import CLCMS
 import LittleCMS
@@ -102,3 +102,4 @@ public extension ColorSpace {
         case pattern
     }
 }
+*/

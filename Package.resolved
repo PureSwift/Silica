@@ -29,30 +29,12 @@
         }
       },
       {
-        "package": "CLCMS",
-        "repositoryURL": "https://github.com/PureSwift/CLCMS.git",
-        "state": {
-          "branch": null,
-          "revision": "20d18d62ebc642e52758512cab59af06f2d3655e",
-          "version": "1.0.0"
-        }
-      },
-      {
         "package": "Cairo",
         "repositoryURL": "https://github.com/PureSwift/Cairo.git",
         "state": {
           "branch": null,
           "revision": "bc207ab2e367fbafef51a47b85a7e1eb2821ce57",
           "version": "1.2.3"
-        }
-      },
-      {
-        "package": "LittleCMS",
-        "repositoryURL": "https://github.com/PureSwift/LittleCMS.git",
-        "state": {
-          "branch": null,
-          "revision": "4143dfd3916be5b1ccd3cc46c27d939e9b63c0dd",
-          "version": "1.0.2"
         }
       }
     ]
