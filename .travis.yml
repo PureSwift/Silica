@@ -14,7 +14,7 @@ addons:
     - pkg-config
     - libcairo-dev
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install cairo sdl2 lcms2 ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install cairo ; fi
 install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then SWIFT_DIR=tests ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then mkdir $SWIFT_DIR ; fi
