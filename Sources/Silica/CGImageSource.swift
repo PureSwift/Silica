@@ -13,7 +13,7 @@ import struct Foundation.Data
 public protocol CGImageSource: class, RandomAccessCollection {
     
     associatedtype Index = Int
-    associatedtype Indices = DefaultRandomAccessIndices<Self>
+    associatedtype Indices = DefaultIndices<Self>
     associatedtype Iterator = IndexingIterator<Self>
     
     static var typeIdentifier: String { get }
@@ -35,9 +35,9 @@ public extension CGImageSource {
         return image
     }
     
-    public subscript(bounds: Range<Self.Index>) -> RandomAccessSlice<Self> {
+    public subscript(bounds: Range<Self.Index>) -> Slice<Self> {
         
-        return RandomAccessSlice<Self>(base: self, bounds: bounds)
+        return Slice<Self>(base: self, bounds: bounds)
     }
     
     /// The start `Index`.
