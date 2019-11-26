@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import FoundationNetworking
 import Dispatch
 
 // Dot notation syntax for class
@@ -45,7 +46,7 @@ public extension HTTP {
             
             // build request... 
             
-            guard let urlRequest = Foundation.URLRequest(request: request)
+            guard let urlRequest = FoundationNetworking.URLRequest(request: request)
                 else { throw Error.BadRequest }
             
             // execute request
@@ -58,11 +59,11 @@ public extension HTTP {
             
             var urlResponse: HTTPURLResponse?
             
-            dataTask = self.session.dataTask(with: urlRequest) { (data: Foundation.Data?, response: Foundation.URLResponse?, responseError: Swift.Error?) -> () in
+            dataTask = self.session.dataTask(with: urlRequest) { (data: Foundation.Data?, response: FoundationNetworking.URLResponse?, responseError: Swift.Error?) -> () in
                 
                 responseData = data
                 
-                urlResponse = response as? Foundation.HTTPURLResponse
+                urlResponse = response as? FoundationNetworking.HTTPURLResponse
                 
                 error = responseError
                 
@@ -105,7 +106,7 @@ public extension HTTP.Client {
     }
 }
 
-public extension Foundation.URLRequest {
+public extension FoundationNetworking.URLRequest {
     
     init?(request: HTTP.Request) {
         
