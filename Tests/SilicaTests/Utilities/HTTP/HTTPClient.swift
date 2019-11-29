@@ -7,8 +7,20 @@
 //
 
 import Foundation
+
+#if canImport(FoundationNetworking)
 import FoundationNetworking
+#endif
+
 import Dispatch
+
+#if canImport(FoundationNetworking)
+typealias FoundationURLRequest = FoundationNetworking.URLRequest
+typealias FoundationURLResponse = FoundationNetworking.URLResponse
+#else
+typealias FoundationURLRequest = Foundation.URLRequest
+typealias FoundationURLResponse = Foundation.URLResponse
+#endif
 
 // Dot notation syntax for class
 public extension HTTP {
@@ -46,7 +58,7 @@ public extension HTTP {
             
             // build request... 
             
-            guard let urlRequest = FoundationNetworking.URLRequest(request: request)
+            guard let urlRequest = FoundationURLRequest(request: request)
                 else { throw Error.BadRequest }
             
             // execute request
@@ -59,11 +71,11 @@ public extension HTTP {
             
             var urlResponse: HTTPURLResponse?
             
-            dataTask = self.session.dataTask(with: urlRequest) { (data: Foundation.Data?, response: FoundationNetworking.URLResponse?, responseError: Swift.Error?) -> () in
+            dataTask = self.session.dataTask(with: urlRequest) { (data: Foundation.Data?, response: FoundationURLResponse?, responseError: Swift.Error?) -> () in
                 
                 responseData = data
                 
-                urlResponse = response as? FoundationNetworking.HTTPURLResponse
+                urlResponse = response as? HTTPURLResponse
                 
                 error = responseError
                 
@@ -106,7 +118,7 @@ public extension HTTP.Client {
     }
 }
 
-public extension FoundationNetworking.URLRequest {
+public extension FoundationURLRequest {
     
     init?(request: HTTP.Request) {
         
