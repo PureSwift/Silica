@@ -47,7 +47,7 @@ public struct CGFont: Equatable, Hashable {
             let face = FontFace(fontConfigPattern: fontConfigPattern)
             
             let options = FontOptions()
-            options.hintMetrics = CAIRO_HINT_METRICS_OFF
+            options.hintMetrics = .off
             options.hintStyle = CAIRO_HINT_STYLE_NONE
             
             self.name = name

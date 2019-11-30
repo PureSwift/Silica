@@ -2,39 +2,12 @@
   "object": {
     "pins": [
       {
-        "package": "CCairo",
-        "repositoryURL": "https://github.com/PureSwift/CCairo.git",
-        "state": {
-          "branch": null,
-          "revision": "1bd46ac81056766182be22fccc2cdf0e457f042f",
-          "version": "1.1.1"
-        }
-      },
-      {
-        "package": "CFontConfig",
-        "repositoryURL": "https://github.com/PureSwift/CFontConfig.git",
-        "state": {
-          "branch": null,
-          "revision": "e5bae817dbd1eb402f395d960485c52350b2bd88",
-          "version": "1.0.1"
-        }
-      },
-      {
-        "package": "CFreeType",
-        "repositoryURL": "https://github.com/PureSwift/CFreeType.git",
-        "state": {
-          "branch": null,
-          "revision": "079909dc68c13c700bb6bab3059ddf51f642b43a",
-          "version": "1.0.4"
-        }
-      },
-      {
         "package": "Cairo",
         "repositoryURL": "https://github.com/PureSwift/Cairo.git",
         "state": {
-          "branch": null,
-          "revision": "bc207ab2e367fbafef51a47b85a7e1eb2821ce57",
-          "version": "1.2.3"
+          "branch": "master",
+          "revision": "b5f867a56a20d2f0064ccb975ae4a669b374e9e0",
+          "version": null
         }
       }
     ]

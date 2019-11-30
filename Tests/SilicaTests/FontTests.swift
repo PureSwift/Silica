@@ -15,10 +15,18 @@ final class FontTests: XCTestCase {
     
     func testCreateFont() {
         
+        #if os(Linux)
+        var fontNames = [
+            ("LiberationSerif", "Liberation Serif"),
+            ("LiberationSerif-Bold", "Liberation Serif")
+        ]
+
+        #else
         var fontNames = [
             ("TimesNewRoman", "Times New Roman"),
             ("TimesNewRoman-Bold", "Times New Roman")
         ]
+        #endif
         
         #if os(macOS)
         fontNames += [("MicrosoftSansSerif", "Microsoft Sans Serif"),
