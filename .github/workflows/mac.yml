@@ -8,6 +8,8 @@ jobs:
     runs-on: macOS-latest
 
     steps:
+    - name: Cairo Setup
+      run: brew install cairo
     - uses: actions/checkout@v2
     - name: Build
       run: swift build -v
