@@ -13,6 +13,6 @@ jobs:
       uses: YOCKOW/Action-setup-swift@v1.1.0
       with:
         # Latest released version of Swift
-        swift-version: 5.1.4
+        swift-version: '5.1.4'
     - name: Test
       run: swift test
