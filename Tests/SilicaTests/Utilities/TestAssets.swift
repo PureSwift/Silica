@@ -8,47 +8,36 @@
 
 import Foundation
 import Silica
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
-struct TestAsset {
+struct TestAsset: Equatable, Hashable {
     
     let url: URL
     let filename: String
 }
 
-extension TestAsset: Equatable {
-    
-    static func ==(lhs: TestAsset, rhs: TestAsset) -> Bool {
-        
-        return lhs.url == rhs.url
-            && lhs.filename == rhs.filename
-    }
-}
-
-extension TestAsset: Hashable {
-    
-    var hashValue: Int {
-        
-        return (url.absoluteString + filename).hashValue
-    }
-}
-
-final class TestAssetManager {
-    
-    init(assets: [TestAsset], cacheDirectory: URL) {
-        
-        self.assets = assets
-        self.cacheDirectory = cacheDirectory
-    }
+final class TestAssetManager <HTTPClient: URLClient> {
     
     let assets: [TestAsset]
     
     let cacheDirectory: URL
     
-    let httpClient = HTTP.Client()
+    let httpClient: HTTPClient
     
     private(set) var downloadedAssets = [TestAsset]()
     
-    func fetchAssets(skipCached: Bool = true) throws {
+    init(assets: [TestAsset], cacheDirectory: URL, httpClient: HTTPClient) {
+        
+        self.assets = assets
+        self.cacheDirectory = cacheDirectory
+        self.httpClient = httpClient
+    }
+    
+    public func fetchAssets(skipCached: Bool = true) async throws {
+        
+        let httpClient = self.httpClient
         
         for asset in assets {
             
@@ -66,15 +55,17 @@ final class TestAssetManager {
             
             // fetch data
             
-            let request = HTTP.Request(url: asset.url)
+            let request = URLRequest(url: asset.url)
             
-            let response = try httpClient.send(request: request)
+            let (data, response) = try await httpClient.data(for: request)
             
-            guard response.statusCode == HTTP.StatusCode.OK.rawValue
-                else { throw Error.invalidStatusCode(response.statusCode) }
+            guard let httpResponse = response as? HTTPURLResponse else {
+                fatalError()
+            }
             
-            let data = response.body
-            
+            guard httpResponse.statusCode == 200
+                else { throw Error.invalidStatusCode(httpResponse.statusCode) }
+                        
             guard data.isEmpty == false
                 else { throw Error.emptyData }
             
@@ -90,8 +81,16 @@ final class TestAssetManager {
     }
     
     func cacheURL(for assetFilename: String) -> URL {
-        
         return cacheDirectory.appendingPathComponent(assetFilename)
+    }
+    
+    func cachedImage(named name: String) -> CGImage? {
+        let fileURL = cacheURL(for: name)
+        guard let data = try? Data(contentsOf: fileURL),
+            let imageSource = CGImageSourcePNG(data: data),
+            let image = imageSource.createImage(at: 0)
+            else { return nil }
+        return image
     }
 }
 
@@ -110,15 +109,9 @@ extension TestAssetManager {
 extension UIImage {
     
     convenience init?(named name: String) {
-        
-        let fileURL = TestAssetManager.shared.cacheURL(for: name)
-        
-        guard let data = try? Data(contentsOf: fileURL),
-            let imageSource = CGImageSourcePNG(data: data)
-            else { return nil }
-        
-        let image = imageSource[0]
-        
+        guard let image = TestAssetManager.shared.cachedImage(named: name) else {
+            return nil
+        }
         self.init(cgImage: image)
     }
 }

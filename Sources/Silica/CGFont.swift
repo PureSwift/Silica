@@ -9,14 +9,16 @@
 import Cairo
 import CCairo
 import CFontConfig
-
 import Foundation
+#if os(macOS)
+import struct CoreGraphics.CGAffineTransform
+#endif
 
 /// Silica's `Font` type.
-public struct CGFont: Equatable, Hashable {
+public struct CGFont {
     
     /// Private font cache.
-    private static var cache = [String: CGFont]()
+    internal nonisolated(unsafe) static var cache = [String: CGFont]()
     
     // MARK: - Properties
     
@@ -68,20 +70,27 @@ public struct CGFont: Equatable, Hashable {
 
 // MARK: - Equatable
 
-public func == (lhs: CGFont, rhs: CGFont) -> Bool {
+extension CGFont: Equatable {
     
-    // quick and easy way
-    return lhs.name == rhs.name
+    public static func == (lhs: CGFont, rhs: CGFont) -> Bool {
+        lhs.name == rhs.name
+    }
 }
 
 // MARK: - Hashable
 
-public extension CGFont {
+extension CGFont: Hashable {
     
-    var hashValue: Int {
-        
-        return name.hashValue
+    public func hash(into hasher: inout Hasher) {
+        name.hash(into: &hasher)
     }
+}
+
+// MARK: - Identifiable
+
+extension CGFont: Identifiable {
+    
+    public var id: String { name }
 }
 
 // MARK: - Text Math
@@ -127,7 +136,7 @@ public extension CGFont {
 // MARK: - Private
 
 /// Initialize a pointer to a `FcPattern` object created from the specified PostScript font name.
-private func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)? {
+internal func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)? {
     
     guard let pattern = FcPatternCreate()
         else { return nil }
@@ -232,17 +241,7 @@ internal extension String {
     
     func substring(range: Range<Int>) -> String? {
         let indexRange = utf8.index(utf8.startIndex, offsetBy: range.lowerBound) ..< utf8.index(utf8.startIndex, offsetBy: range.upperBound)
-        
         let substring = String(utf8[indexRange])
-        
         return substring
-    }
-}
-
-internal extension String {
-    
-    func contains(_ other: String) -> Bool {
-        
-        return strstr(self, other) != nil
     }
 }

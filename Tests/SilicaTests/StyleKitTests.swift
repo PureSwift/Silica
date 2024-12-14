@@ -13,10 +13,6 @@ import Cairo
 
 final class StyleKitTests: XCTestCase {
     
-    static let allTests = [("testSimpleShapes", testSimpleShapes),
-                           ("testAdvancedShapes", testAdvancedShapes),
-                           ("testImagePNG", testImagePNG)]
-    
     private func draw(_ drawingMethod: () -> (), _ name: String, _ size: CGSize) {
         
         let filename = TestPath.testData + name + ".pdf"
@@ -46,14 +42,10 @@ final class StyleKitTests: XCTestCase {
         draw(TestStyleKit.drawAdvancedShapes, "advancedShapes", CGSize(width: 240, height: 120))
     }
     
-    func testImagePNG() {
+    func testImagePNG() async throws {
         
-        do { try TestAssetManager.shared.fetchAssets() }
-        
-        catch { XCTFail("Could not get test assets (\(error))"); return }
+        try await TestAssetManager.shared.fetchAssets()
         
         draw(TestStyleKit.drawImagePNG, "imagePNG", CGSize(width: 240, height: 180))
     }
 }
-
-

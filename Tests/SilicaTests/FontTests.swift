@@ -10,9 +10,7 @@ import XCTest
 @testable import Silica
 
 final class FontTests: XCTestCase {
-    
-    static let allTests = [("testCreateFont", testCreateFont)]
-    
+        
     func testCreateFont() {
         
         #if os(Linux)
@@ -36,7 +34,7 @@ final class FontTests: XCTestCase {
         for (fontName, expectedFullName) in fontNames {
             
             guard let font = Silica.CGFont(name: fontName)
-                else { XCTFail("Could not create font"); return }
+                else { XCTFail("Could not create font \(fontName)"); return }
             
             XCTAssert(font.name == font.name)
             XCTAssert(expectedFullName == font.scaledFont.fullName, "\(expectedFullName) == \(font.scaledFont.fullName)")

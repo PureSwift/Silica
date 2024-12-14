@@ -10,7 +10,7 @@ import struct Foundation.Data
 
 /// This object abstracts the data-writing task.
 /// An image source can write image data to `Data`.
-public protocol ImageDestination: class, RandomAccessCollection, MutableCollection {
+public protocol ImageDestination: AnyObject, RandomAccessCollection, MutableCollection {
     
     
 }

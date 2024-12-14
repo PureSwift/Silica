@@ -7,6 +7,9 @@
 //
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 struct TestPath {
     
@@ -37,16 +40,13 @@ struct TestPath {
     }
 }
 
-extension TestAssetManager {
+extension TestAssetManager where HTTPClient == URLSession {
     
-    static var shared: TestAssetManager {
-        
-        struct Static {
-            static let value = TestAssetManager(assets: testAssets, cacheDirectory: URL(fileURLWithPath: TestPath.assets))
-        }
-        
-        return Static.value
-    }
+    nonisolated(unsafe) static let shared: TestAssetManager<URLSession> = TestAssetManager(
+        assets: testAssets,
+        cacheDirectory: URL(fileURLWithPath: TestPath.assets),
+        httpClient: URLSession(configuration: .ephemeral)
+    )
 }
 
 private let testAssets: [TestAsset] = [

@@ -527,7 +527,7 @@ public final class CGContext {
             startShadow()
         }
         
-        internalContext.source = internalState.stroke?.pattern ?? DefaultPattern
+        internalContext.source = internalState.stroke?.pattern ?? .default
         
         internalContext.stroke()
         
@@ -552,7 +552,7 @@ public final class CGContext {
     
     public func clear() {
         
-        internalContext.source = internalState.fill?.pattern ?? DefaultPattern
+        internalContext.source = internalState.fill?.pattern ?? .default
         
         internalContext.clip()
         internalContext.clipPreserve()
@@ -698,7 +698,7 @@ public final class CGContext {
         
         internalContext.setFont(matrix: cairoTextMatrix)
         
-        internalContext.source = internalState.fill?.pattern ?? DefaultPattern
+        internalContext.source = internalState.fill?.pattern ?? .default
         
         internalContext.show(text: text)
         
@@ -797,7 +797,7 @@ public final class CGContext {
         
         internalContext.setFont(matrix: cairoTextMatrix)
         
-        internalContext.source = internalState.fill?.pattern ?? DefaultPattern
+        internalContext.source = internalState.fill?.pattern ?? .default
         
         // show glyphs
         cairoGlyphs.forEach { internalContext.show(glyph: $0) }
@@ -812,7 +812,7 @@ public final class CGContext {
             startShadow()
         }
         
-        internalContext.source = internalState.fill?.pattern ?? DefaultPattern
+        internalContext.source = internalState.fill?.pattern ?? .default
         
         internalContext.fillRule = evenOdd ? CAIRO_FILL_RULE_EVEN_ODD : CAIRO_FILL_RULE_WINDING
         
@@ -876,9 +876,12 @@ public final class CGContext {
 // MARK: - Private
 
 /// Default black pattern
-fileprivate let DefaultPattern = Cairo.Pattern(color: (red: 0, green: 0, blue: 0))
+internal extension Cairo.Pattern {
+    
+    nonisolated(unsafe) static var `default`: Cairo.Pattern = Cairo.Pattern(color: (red: 0, green: 0, blue: 0))
+}
 
-fileprivate extension Silica.CGContext {
+internal extension Silica.CGContext {
     
     /// To save non-Cairo state variables
     fileprivate final class State {
@@ -920,7 +923,7 @@ internal extension Collection {
         
     func indexedMap<T>(_ transform: (Index, Iterator.Element) throws -> T) rethrows -> [T] {
         
-        let count: Int = numericCast(self.count)
+        let count = self.count
         if count == 0 {
             return []
         }
@@ -942,7 +945,7 @@ internal extension Collection {
     @inline(__always)
     func merge<C: Collection, T>
         (_ other: C) -> [(Iterator.Element, T)]
-        where C.Iterator.Element == T, C.IndexDistance == IndexDistance, C.Index == Index {
+        where C.Iterator.Element == T, C.Index == Index {
         
         precondition(self.count == other.count, "The collection to merge must be of the same size")
         
@@ -952,16 +955,15 @@ internal extension Collection {
 
 #if os(macOS) && Xcode
     
-    import Foundation
-    import AppKit
+import Foundation
+import AppKit
     
-    public extension Silica.CGContext {
-        
-        @objc(debugQuickLookObject)
-        public var debugQuickLookObject: AnyObject {
-            
-            return surface.debugQuickLookObject
-        }
+public extension Silica.CGContext {
+
+    @objc(debugQuickLookObject)
+    var debugQuickLookObject: AnyObject {
+        return surface.debugQuickLookObject
     }
+}
     
 #endif

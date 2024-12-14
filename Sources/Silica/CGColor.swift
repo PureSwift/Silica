@@ -41,17 +41,17 @@ public struct CGColor: Equatable {
     
     // MARK: - Singletons
     
-    public static let clear = CGColor(red: 0, green: 0, blue: 0, alpha: 0)
+    public static var clear: CGColor { CGColor(red: 0, green: 0, blue: 0, alpha: 0) }
     
-    public static let black = CGColor(red: 0, green: 0, blue: 0)
+    public static var black: CGColor { CGColor(red: 0, green: 0, blue: 0) }
     
-    public static let white = CGColor(red: 1, green: 1, blue: 1)
+    public static var white: CGColor { CGColor(red: 1, green: 1, blue: 1) }
     
-    public static let red = CGColor(red: 1, green: 0, blue: 0)
+    public static var red: CGColor { CGColor(red: 1, green: 0, blue: 0) }
     
-    public static let green = CGColor(red: 0, green: 1, blue: 0)
+    public static var green: CGColor { CGColor(red: 0, green: 1, blue: 0) }
     
-    public static let blue = CGColor(red: 0, green: 0, blue: 1)
+    public static var blue: CGColor { CGColor(red: 0, green: 0, blue: 1) }
 }
 
 // MARK: - Equatable
