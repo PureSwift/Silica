@@ -8,6 +8,7 @@
 
 import XCTest
 @testable import Silica
+import FontConfig
 
 final class FontTests: XCTestCase {
         
@@ -15,29 +16,32 @@ final class FontTests: XCTestCase {
         
         #if os(Linux)
         var fontNames = [
-            ("LiberationSerif", "Liberation Serif"),
-            ("LiberationSerif-Bold", "Liberation Serif")
+            ("LiberationSerif", "Liberation Serif", FontWeight.regular),
+            ("LiberationSerif-Bold", "Liberation Serif", .bold)
         ]
 
         #else
         var fontNames = [
-            ("TimesNewRoman", "Times New Roman"),
-            ("TimesNewRoman-Bold", "Times New Roman")
+            ("TimesNewRoman", "Times New Roman", FontWeight.regular),
+            ("TimesNewRoman-Bold", "Times New Roman", .bold)
         ]
         #endif
         
         #if os(macOS)
-        fontNames += [("MicrosoftSansSerif", "Microsoft Sans Serif"),
-                      ("MicrosoftSansSerif-Bold", "Microsoft Sans Serif")]
+        fontNames += [("MicrosoftSansSerif", "Microsoft Sans Serif", .regular),
+                      ("MicrosoftSansSerif-Bold", "Microsoft Sans Serif", .bold)]
         #endif
         
-        for (fontName, expectedFullName) in fontNames {
+        for (fontName, expectedFullName, weight) in fontNames {
             
-            guard let font = Silica.CGFont(name: fontName)
+            guard let font = Silica.CGFont(name: fontName),
+                let pattern = FontConfig.Pattern(cgFont: fontName)
                 else { XCTFail("Could not create font \(fontName)"); return }
             
             XCTAssertEqual(font.name, font.name)
             XCTAssertEqual(expectedFullName, font.scaledFont.fullName)
+            XCTAssertEqual(pattern.family, font.family)
+            XCTAssertEqual(pattern.weight, weight)
         }
     }
 }
