@@ -7,9 +7,9 @@
 //
 
 #if os(macOS)
-    import Darwin.C.math
-#elseif os(Linux)
-    import Glibc
+import Darwin.C.math
+#elseif canImport(Glibc)
+import Glibc
 #endif
 
 import struct Foundation.Data
@@ -19,7 +19,7 @@ public final class CGImageSourcePNG: CGImageSource {
     
     // MARK: - Class Properties
     
-    public static let typeIdentifier = "public.png"
+    public static var typeIdentifier: String { "public.png" }
         
      // MARK: - Properties
     
@@ -38,9 +38,7 @@ public final class CGImageSourcePNG: CGImageSource {
     // MARK: - Methods
     
     public func createImage(at index: Int) -> CGImage? {
-        
         let image = CGImage(surface: surface)
-        
         return image
     }
 }

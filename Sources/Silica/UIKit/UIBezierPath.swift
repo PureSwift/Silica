@@ -7,13 +7,12 @@
 //
 
 #if os(macOS)
-    import Darwin.C.math
+import Darwin.C.math
 #elseif os(Linux)
-    import Glibc
+import Glibc
 #endif
 
 import Foundation
-import Silica
 
 /// The `UIBezierPath` class lets you define a path consisting of straight and curved line segments
 /// and render that path in your custom views. You use this class initially to specify just the geometry for your path. 

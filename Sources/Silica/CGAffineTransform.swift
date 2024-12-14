@@ -36,7 +36,7 @@ public struct CGAffineTransform {
         self.ty = ty
     }
     
-    public static let identity = CGAffineTransform(a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0)
+    public static var identity: CGAffineTransform { CGAffineTransform(a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0) }
 }
 
 #endif

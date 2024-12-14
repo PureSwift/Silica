@@ -61,7 +61,7 @@ public extension CGBitmapInfo {
     ///
     /// - Note: Silica supports premultiplied alpha only for images.
     /// You should not premultiply any other color values specified in Silica.
-    public enum Alpha {
+    enum Alpha {
         
         /// There is no alpha channel.
         case none
@@ -93,7 +93,7 @@ public extension CGBitmapInfo {
     }
     
     /// The byte ordering of pixel formats.
-    public enum ByteOrder {
+    enum ByteOrder {
         
         /// The default byte order.
         case `default`

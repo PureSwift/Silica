@@ -6,8 +6,6 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
-import Silica
-
 /// Returns the current graphics context.
 ///
 /// The current graphics context is `nil` by default.
@@ -17,25 +15,21 @@ import Silica
 ///
 /// This function may be called from any thread of your app.
 public func UIGraphicsGetCurrentContext() -> CGContext? {
-    
-    return ContextStack.last
+    UIKitContextStack.last
 }
 
 /// Makes the specified graphics context the current context.
 public func UIGraphicsPushContext(_ context: CGContext) {
-    
-    ContextStack.append(context)
+    UIKitContextStack.append(context)
 }
 
 /// Removes the current graphics context from the top of the stack, restoring the previous context.
 public func UIGraphicsPopContext() {
-    
-    if ContextStack.isEmpty == false {
-        
-        ContextStack.removeLast()
+    if UIKitContextStack.isEmpty == false {
+        UIKitContextStack.removeLast()
     }
 }
 
 // MARK: - Private
 
-private var ContextStack: [CGContext] = []
+nonisolated(unsafe) private var UIKitContextStack: [CGContext] = []

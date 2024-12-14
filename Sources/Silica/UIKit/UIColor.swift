@@ -7,7 +7,6 @@
 //
 
 import Foundation
-@testable import Silica
 
 public final class UIColor {
     
@@ -52,32 +51,29 @@ public final class UIColor {
     
     /// Sets the color of subsequent stroke and fill operations to the color that the receiver represents.
     public func set() {
-        
         setFill()
         setStroke()
     }
     
     /// Sets the color of subsequent fill operations to the color that the receiver represents.
     public func setFill() {
-        
         UIGraphicsGetCurrentContext()?.fillColor = self.cgColor
     }
     
     /// Sets the color of subsequent stroke operations to the color that the receiver represents.
     public func setStroke() {
-        
         UIGraphicsGetCurrentContext()?.strokeColor = self.cgColor
     }
     
     // MARK: - Singletons
     
-    public static let red = UIColor(cgColor: .red)
+    public static var red: UIColor { UIColor(cgColor: .red) }
     
-    public static let green = UIColor(cgColor: .green)
+    public static var green: UIColor { UIColor(cgColor: .green) }
     
-    public static let blue = UIColor(cgColor: .blue)
+    public static var blue: UIColor { UIColor(cgColor: .blue) }
     
-    public static let white = UIColor(cgColor: .white)
+    public static var white: UIColor { UIColor(cgColor: .white) }
     
-    public static let black = UIColor(cgColor: .black)
+    public static var black: UIColor { UIColor(cgColor: .black) }
 }

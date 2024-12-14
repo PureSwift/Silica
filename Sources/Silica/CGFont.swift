@@ -8,15 +8,17 @@
 
 import Cairo
 import CCairo
-import CFontConfig
-
+import FontConfig
 import Foundation
+#if os(macOS)
+import struct CoreGraphics.CGAffineTransform
+#endif
 
 /// Silica's `Font` type.
-public struct CGFont: Equatable, Hashable {
+public struct CGFont {
     
     /// Private font cache.
-    private static var cache = [String: CGFont]()
+    internal nonisolated(unsafe) static var cache = [String: CGFont]()
     
     // MARK: - Properties
     
@@ -32,7 +34,7 @@ public struct CGFont: Equatable, Hashable {
     
     // MARK: - Initialization
     
-    public init?(name: String) {
+    public init?(name: String, configuration: FontConfiguration = .current) {
         
         if let cachedFont = CGFont.cache[name] {
             
@@ -41,10 +43,11 @@ public struct CGFont: Equatable, Hashable {
         } else {
             
             // create new font
-            guard let (fontConfigPattern, family) = FcPattern(name: name)
+            guard let pattern = FontConfig.Pattern(cgFont: name, configuration: configuration),
+                let family = pattern.family
                 else { return nil }
             
-            let face = FontFace(fontConfigPattern: fontConfigPattern)
+            let face = FontFace(pattern: pattern)
             
             let options = FontOptions()
             options.hintMetrics = .off
@@ -52,7 +55,21 @@ public struct CGFont: Equatable, Hashable {
             
             self.name = name
             self.family = family
-            self.scaledFont = ScaledFont(face: face, matrix: Matrix.identity, currentTransformation: Matrix.identity, options: options)
+            do {
+                self.scaledFont = try ScaledFont(
+                    face: face,
+                    matrix: .identity,
+                    currentTransformation: .identity,
+                    options: options
+                )
+            }
+            catch .noMemory {
+                assertionFailure("Insufficient memory to perform the operation.")
+                return nil
+            }
+            catch {
+                return nil
+            }
             
             // Default font is Verdana, make sure the name is correct
             let defaultFontName = "Verdana"
@@ -68,20 +85,27 @@ public struct CGFont: Equatable, Hashable {
 
 // MARK: - Equatable
 
-public func == (lhs: CGFont, rhs: CGFont) -> Bool {
+extension CGFont: Equatable {
     
-    // quick and easy way
-    return lhs.name == rhs.name
+    public static func == (lhs: CGFont, rhs: CGFont) -> Bool {
+        lhs.name == rhs.name
+    }
 }
 
 // MARK: - Hashable
 
-public extension CGFont {
+extension CGFont: Hashable {
     
-    var hashValue: Int {
-        
-        return name.hashValue
+    public func hash(into hasher: inout Hasher) {
+        name.hash(into: &hasher)
     }
+}
+
+// MARK: - Identifiable
+
+extension CGFont: Identifiable {
+    
+    public var id: String { name }
 }
 
 // MARK: - Text Math
@@ -124,125 +148,59 @@ public extension CGFont {
     }
 }
 
-// MARK: - Private
+// MARK: - Font Config Pattern
 
-/// Initialize a pointer to a `FcPattern` object created from the specified PostScript font name.
-private func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)? {
+internal extension FontConfig.Pattern {
     
-    guard let pattern = FcPatternCreate()
-        else { return nil }
-    
-    /// hacky way to cleanup, `defer` will copy initial value of `Bool` so this is needed.
-    /// ARC will cleanup for us
-    final class ErrorCleanup {
+    convenience init?(cgFont name: String, configuration: FontConfiguration = .current) {
+        self.init()
         
-        var shouldCleanup = true
+        let separator: Character = "-"
         
-        let cleanup: () -> ()
+        let traits: String?
         
-        deinit { if shouldCleanup { cleanup() } }
+        let family: String
         
-        init(cleanup: @escaping () -> ()) {
-            
-            self.cleanup = cleanup
-        }
-    }
-    
-    let cleanup = ErrorCleanup(cleanup: { FcPatternDestroy(pattern) })
-    
-    let separator = "-".withCString { (pointer) in return pointer[0] }
-    
-    let traits: String?
-    
-    let family: String
-    
-    if let traitsCString = strchr(name, CInt(separator)) {
+        let components = name.split(separator: separator, maxSplits: 2, omittingEmptySubsequences: true)
         
-        let trimmedCString = traitsCString.advanced(by: 1)
-        
-        // should free memory, but crashes
-        // defer { free(traitsCString) }
-        
-        let traitsString = String(cString: trimmedCString)
-        
-        let familyLength = name.utf8.count - traitsString.utf8.count - 1 // for separator
-        
-        family = name.substring(range: 0 ..< familyLength)!
-        
-        traits = traitsString
-        
-    } else {
-        
-        family = name
-        traits = nil
-    }
-    
-    guard FcPatternAddString(pattern, FC_FAMILY, family) != 0
-        else { return nil }
-    
-    // FontConfig assumes Medium Roman Regular, add / replace additional traits
-    if let traits = traits {
-        
-        if traits.contains("Bold") {
-            
-            guard FcPatternAddInteger(pattern, FC_WEIGHT, FC_WEIGHT_BOLD) != 0
-                else { return nil }
+        if components.count == 2  {
+            family = String(components[0])
+            traits = String(components[1])
+        } else {
+            family = name
+            traits = nil
         }
         
-        if traits.contains("Italic") {
+        self.family = family
+        assert(self.family == family)
+        
+        // FontConfig assumes Medium Roman Regular, add / replace additional traits
+        if let traits = traits {
             
-            guard FcPatternAddInteger(pattern, FC_SLANT, FC_SLANT_ITALIC) != 0
-                else { return nil }
+            if traits.contains("Bold") {
+                self.weight = .bold
+            }
+            
+            if traits.contains("Italic") {
+                self.slant = .italic
+            }
+            
+            if traits.contains("Oblique") {
+                self.slant = .oblique
+            }
+            
+            if traits.contains("Condensed") {
+                self.width = .condensed
+            }
         }
         
-        if traits.contains("Oblique") {
-            
-            guard FcPatternAddInteger(pattern, FC_SLANT, FC_SLANT_OBLIQUE) != 0
-                else { return nil }
-        }
+        guard configuration.substitute(pattern: self, kind: FcMatchPattern)
+            else { return nil }
         
-        if traits.contains("Condensed") {
-            
-            guard FcPatternAddInteger(pattern, FC_WIDTH, FC_WIDTH_CONDENSED) != 0
-                else { return nil }
-        }
-    }
-    
-    let matchPattern = FcMatchKind(rawValue: 0) // FcMatchPattern
-    
-    guard FcConfigSubstitute(nil, pattern, matchPattern) != 0
-        else { return nil }
-    
-    FcDefaultSubstitute(pattern)
-    
-    var result = FcResult(0)
-    
-    guard FcFontMatch(nil, pattern, &result) != nil
-        else { return nil }
-    
-    // success
-    cleanup.shouldCleanup = false
-    
-    return (pattern, family)
-}
-
-// MARK: - String Extensions
-
-internal extension String {
-    
-    func substring(range: Range<Int>) -> String? {
-        let indexRange = utf8.index(utf8.startIndex, offsetBy: range.lowerBound) ..< utf8.index(utf8.startIndex, offsetBy: range.upperBound)
+        self.defaultSubstitutions()
         
-        let substring = String(utf8[indexRange])
+        guard configuration.match(self) != nil
+            else { return nil }
         
-        return substring
-    }
-}
-
-internal extension String {
-    
-    func contains(_ other: String) -> Bool {
-        
-        return strstr(self, other) != nil
     }
 }
