@@ -34,12 +34,11 @@ public final class CGContext {
     
     // MARK: - Initialization
     
-    public init(surface: Cairo.Surface, size: CGSize) throws {
+    public init(surface: Cairo.Surface, size: CGSize) throws(CairoError) {
         
         let context = Cairo.Context(surface: surface)
         
-        if let error = context.status.toError() {
-            
+        if let error = CairoError(context.status) {
             throw error
         }
                 
@@ -55,7 +54,6 @@ public final class CGContext {
     
     /// Returns the current transformation matrix.
     public var currentTransform: CGAffineTransform {
-        
         return CGAffineTransform(cairo: internalContext.matrix)
     }
     
@@ -313,37 +311,28 @@ public final class CGContext {
     
     // MARK: Saving and Restoring the Graphics State
     
-    public func save() throws {
-        
+    public func save() throws(CairoError) {
         internalContext.save()
-        
-        if let error = internalContext.status.toError() {
-            
+        if let error = CairoError(internalContext.status) {
             throw error
         }
-        
         let newState = internalState.copy
-        
         newState.next = internalState
-        
         internalState = newState
     }
     
-    @inline(__always)
-    public func saveGState() {
-        
+    internal func saveGState() {
         try! save()
     }
     
-    public func restore() throws {
+    public func restore() throws(CairoError) {
 
         guard let restoredState = internalState.next
-            else { throw CAIRO_STATUS_INVALID_RESTORE.toError()! }
+            else { throw .invalidRestore }
         
         internalContext.restore()
         
-        if let error = internalContext.status.toError() {
-            
+        if let error = CairoError(internalContext.status) {
             throw error
         }
         
@@ -354,7 +343,6 @@ public final class CGContext {
     
     @inline(__always)
     public func restoreGState() {
-        
         try! restore()
     }
     
@@ -805,7 +793,7 @@ public final class CGContext {
     
     // MARK: - Private Functions
     
-    private func fillPath(evenOdd: Bool, preserve: Bool) throws {
+    private func fillPath(evenOdd: Bool, preserve: Bool) throws(CairoError) {
         
         if internalState.shadow != nil {
             
@@ -828,8 +816,7 @@ public final class CGContext {
             endShadow()
         }
         
-        if let error = internalContext.status.toError() {
-            
+        if let error = CairoError(internalContext.status) {
             throw error
         }
     }

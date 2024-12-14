@@ -54,12 +54,23 @@ public struct CGFont {
             
             self.name = name
             self.family = family
-            self.scaledFont = ScaledFont(face: face, matrix: Matrix.identity, currentTransformation: Matrix.identity, options: options)
+            do {
+                self.scaledFont = try ScaledFont(
+                    face: face,
+                    matrix: .identity,
+                    currentTransformation: .identity,
+                    options: options
+                )
+            }
+            catch .noMemory {
+                assertionFailure("Insufficient memory to perform the operation.")
+                return nil
+            }
+            catch {
+                return nil
+            }
             
-            // Default font is Verdana, make sure the name is correct
-            let defaultFontName = "Verdana"
-            
-            guard name == defaultFontName || scaledFont.fullName != defaultFontName
+            guard name == scaledFont.fullName
                 else { return nil }
             
             // cache
