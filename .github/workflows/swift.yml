@@ -1,0 +1,48 @@
+name: Swift
+on: [push]
+jobs:
+
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+    - name: Install Swift
+      uses: slashmo/install-swift@v0.3.0
+      with:
+        version: 6.0.3
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Swift Version
+      run: swift --version
+    - name: Install dependencies
+      run: brew install cairo fontconfig freetype
+    - name: Build (Debug)
+      run: swift build -c debug
+    - name: Build (Release)
+      run: swift build -c release
+    - name: Test (Debug)
+      run: swift test -c debug
+  
+  linux:
+    name: Linux
+    strategy:
+      matrix:
+        swift: [6.0.3]
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Install Swift
+      uses: slashmo/install-swift@v0.3.0
+      with:
+        version: ${{ matrix.swift }}
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Swift Version
+      run: swift --version
+    - name: Install dependencies
+      run: sudo apt-get install -y libcairo2-dev libfreetype6-dev libfontconfig-dev
+    - name: Build (Debug)
+      run: swift build -c debug
+    - name: Build (Release)
+      run: swift build -c release
+    - name: Test (Debug)
+      run: swift test -c debug
