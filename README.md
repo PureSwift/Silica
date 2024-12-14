@@ -1,2 +1,4 @@
 # Silica
-Pure Swift CoreGraphics (or Quartz2D) implementation (Supports Linux)
+Pure Swift CoreGraphics (Quartz2D) implementation
+
+This library is a compatibility layer over Cairo for porting UIKit (and CoreGraphics) drawing code to other platforms.
