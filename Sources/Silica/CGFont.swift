@@ -8,7 +8,7 @@
 
 import Cairo
 import CCairo
-import CFontConfig
+import FontConfig
 import Foundation
 #if os(macOS)
 import struct CoreGraphics.CGAffineTransform
@@ -34,7 +34,7 @@ public struct CGFont {
     
     // MARK: - Initialization
     
-    public init?(name: String) {
+    public init?(name: String, configuration: FontConfiguration = .current) {
         
         if let cachedFont = CGFont.cache[name] {
             
@@ -43,10 +43,11 @@ public struct CGFont {
         } else {
             
             // create new font
-            guard let (fontConfigPattern, family) = FcPattern(name: name)
+            guard let pattern = FontConfig.Pattern(cgFont: name, configuration: configuration),
+                let family = pattern.family
                 else { return nil }
             
-            let face = FontFace(fontConfigPattern: fontConfigPattern)
+            let face = FontFace(pattern: pattern)
             
             let options = FontOptions()
             options.hintMetrics = .off
@@ -147,93 +148,59 @@ public extension CGFont {
     }
 }
 
-// MARK: - Private
+// MARK: - Font Config Pattern
 
-/// Initialize a pointer to a `FcPattern` object created from the specified PostScript font name.
-internal func FcPattern(name: String) -> (pointer: OpaquePointer, family: String)? {
+internal extension FontConfig.Pattern {
     
-    guard let pattern = FcPatternCreate()
-        else { return nil }
-    
-    /// hacky way to cleanup, `defer` will copy initial value of `Bool` so this is needed.
-    /// ARC will cleanup for us
-    final class ErrorCleanup {
+    convenience init?(cgFont name: String, configuration: FontConfiguration = .current) {
+        self.init()
         
-        var shouldCleanup = true
+        let separator: Character = "-"
         
-        let cleanup: () -> ()
+        let traits: String?
         
-        deinit { if shouldCleanup { cleanup() } }
+        let family: String
         
-        init(cleanup: @escaping () -> ()) {
-            
-            self.cleanup = cleanup
+        let components = name.split(separator: separator, maxSplits: 2, omittingEmptySubsequences: true)
+        
+        if components.count == 2  {
+            family = String(components[0])
+            traits = String(components[1])
+        } else {
+            family = name
+            traits = nil
         }
+        
+        self.family = family
+        assert(self.family == family)
+        
+        // FontConfig assumes Medium Roman Regular, add / replace additional traits
+        if let traits = traits {
+            
+            if traits.contains("Bold") {
+                self.weight = .bold
+            }
+            
+            if traits.contains("Italic") {
+                self.slant = .italic
+            }
+            
+            if traits.contains("Oblique") {
+                self.slant = .oblique
+            }
+            
+            if traits.contains("Condensed") {
+                self.width = .condensed
+            }
+        }
+        
+        guard configuration.substitute(pattern: self, kind: FcMatchPattern)
+            else { return nil }
+        
+        self.defaultSubstitutions()
+        
+        guard configuration.match(self) != nil
+            else { return nil }
+        
     }
-    
-    let cleanup = ErrorCleanup(cleanup: { FcPatternDestroy(pattern) })
-    
-    let separator: Character = "-"
-    
-    let traits: String?
-    
-    let family: String
-    
-    let components = name.split(separator: separator, maxSplits: 2, omittingEmptySubsequences: true)
-    
-    if components.count == 2  {
-        family = String(components[0])
-        traits = String(components[1])
-    } else {
-        family = name
-        traits = nil
-    }
-    
-    guard FcPatternAddString(pattern, FC_FAMILY, family) != 0
-        else { return nil }
-    
-    // FontConfig assumes Medium Roman Regular, add / replace additional traits
-    if let traits = traits {
-        
-        if traits.contains("Bold") {
-            
-            guard FcPatternAddInteger(pattern, FC_WEIGHT, FC_WEIGHT_BOLD) != 0
-                else { return nil }
-        }
-        
-        if traits.contains("Italic") {
-            
-            guard FcPatternAddInteger(pattern, FC_SLANT, FC_SLANT_ITALIC) != 0
-                else { return nil }
-        }
-        
-        if traits.contains("Oblique") {
-            
-            guard FcPatternAddInteger(pattern, FC_SLANT, FC_SLANT_OBLIQUE) != 0
-                else { return nil }
-        }
-        
-        if traits.contains("Condensed") {
-            
-            guard FcPatternAddInteger(pattern, FC_WIDTH, FC_WIDTH_CONDENSED) != 0
-                else { return nil }
-        }
-    }
-    
-    let matchPattern = FcMatchKind(rawValue: 0) // FcMatchPattern
-    
-    guard FcConfigSubstitute(nil, pattern, matchPattern) != 0
-        else { return nil }
-    
-    FcDefaultSubstitute(pattern)
-    
-    var result = FcResult(0)
-    
-    guard FcFontMatch(nil, pattern, &result) != nil
-        else { return nil }
-    
-    // success
-    cleanup.shouldCleanup = false
-    
-    return (pattern, family)
 }
