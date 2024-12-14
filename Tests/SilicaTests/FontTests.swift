@@ -36,8 +36,8 @@ final class FontTests: XCTestCase {
             guard let font = Silica.CGFont(name: fontName)
                 else { XCTFail("Could not create font \(fontName)"); return }
             
-            XCTAssert(font.name == font.name)
-            XCTAssert(expectedFullName == font.scaledFont.fullName, "\(expectedFullName) == \(font.scaledFont.fullName)")
+            XCTAssertEqual(font.name, font.name)
+            XCTAssertEqual(expectedFullName, font.scaledFont.fullName)
         }
     }
 }
