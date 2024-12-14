@@ -70,7 +70,10 @@ public struct CGFont {
                 return nil
             }
             
-            guard name == scaledFont.fullName
+            // Default font is Verdana, make sure the name is correct
+            let defaultFontName = "Verdana"
+            
+            guard name == defaultFontName || scaledFont.fullName != defaultFontName
                 else { return nil }
             
             // cache
@@ -170,29 +173,18 @@ internal func FcPattern(name: String) -> (pointer: OpaquePointer, family: String
     
     let cleanup = ErrorCleanup(cleanup: { FcPatternDestroy(pattern) })
     
-    let separator = "-".withCString { (pointer) in return pointer[0] }
+    let separator: Character = "-"
     
     let traits: String?
     
     let family: String
     
-    if let traitsCString = strchr(name, CInt(separator)) {
-        
-        let trimmedCString = traitsCString.advanced(by: 1)
-        
-        // should free memory, but crashes
-        // defer { free(traitsCString) }
-        
-        let traitsString = String(cString: trimmedCString)
-        
-        let familyLength = name.utf8.count - traitsString.utf8.count - 1 // for separator
-        
-        family = name.substring(range: 0 ..< familyLength)!
-        
-        traits = traitsString
-        
+    let components = name.split(separator: separator, maxSplits: 2, omittingEmptySubsequences: true)
+    
+    if components.count == 2  {
+        family = String(components[0])
+        traits = String(components[1])
     } else {
-        
         family = name
         traits = nil
     }
@@ -244,15 +236,4 @@ internal func FcPattern(name: String) -> (pointer: OpaquePointer, family: String
     cleanup.shouldCleanup = false
     
     return (pattern, family)
-}
-
-// MARK: - String Extensions
-
-internal extension String {
-    
-    func substring(range: Range<Int>) -> String? {
-        let indexRange = utf8.index(utf8.startIndex, offsetBy: range.lowerBound) ..< utf8.index(utf8.startIndex, offsetBy: range.upperBound)
-        let substring = String(utf8[indexRange])
-        return substring
-    }
 }
