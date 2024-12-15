@@ -9,10 +9,9 @@
 import Cairo
 import CCairo
 import FontConfig
-import Foundation
-#if os(macOS)
-import struct CoreGraphics.CGAffineTransform
-#endif
+import struct Foundation.CGFloat
+import struct Foundation.CGSize
+import struct Foundation.CGPoint
 
 /// Silica's `Font` type.
 public struct CGFont {
