@@ -321,7 +321,8 @@ public final class CGContext {
         internalState = newState
     }
     
-    internal func saveGState() {
+    /// Pushes a copy of the current graphics state onto the graphics state stack for the context.
+    public func saveGState() {
         try! save()
     }
     
@@ -341,7 +342,7 @@ public final class CGContext {
         internalState = restoredState
     }
     
-    @inline(__always)
+    /// Sets the current graphics state to the state most recently saved.
     public func restoreGState() {
         try! restore()
     }
