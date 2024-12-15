@@ -68,4 +68,22 @@ final class StyleKitTests: XCTestCase {
         
         draw(TestStyleKit.drawMultiLineText(), "multilineText", CGSize(width: 240, height: 180))
     }
+    
+    func testContentMode() {
+        
+        let bounds = CGRect(origin: .zero, size: CGSize(width: 320, height: 240))
+        let testData: [((CGRect) -> (), CGSize)] = [
+            (TestStyleKit.drawSwiftLogo, CGSize(width: 32, height: 32)),
+            (TestStyleKit.drawSwiftLogoWithText, CGSize(width: 32 * (41 / 12), height: 32))
+        ]
+        for (index, (drawingFunction, intrinsicContentSize)) in testData.enumerated() {
+            let imageNumber = index + 1
+            for contentMode in UIViewContentMode.allCases {
+                let frame = CGRect(contentMode: contentMode, bounds: bounds, size: intrinsicContentSize)
+                print("Draw image \(imageNumber) with content mode \(contentMode). \(frame)")
+                draw(drawingFunction(frame), "testContentMode_\(imageNumber)_\(contentMode)", bounds.size)
+            }
+        }
+        
+    }
 }
