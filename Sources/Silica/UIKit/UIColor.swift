@@ -76,4 +76,6 @@ public final class UIColor {
     public static var white: UIColor { UIColor(cgColor: .white) }
     
     public static var black: UIColor { UIColor(cgColor: .black) }
+
+    public static var clear: UIColor { UIColor(cgColor: .clear) }
 }
