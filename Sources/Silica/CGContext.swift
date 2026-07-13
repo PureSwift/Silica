@@ -7,7 +7,7 @@
 //
 
 #if os(macOS)
-    import Darwin.C.math
+    import Darwin
 #elseif os(Linux)
     import Glibc
 #endif
