@@ -37,6 +37,10 @@ let package = Package(
         .package(
             url: "https://github.com/swiftlang/swift-java.git",
             branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-android-sdk/swift-android-native.git",
+            branch: "main"
         )
     ],
     targets: [
@@ -103,7 +107,22 @@ let package = Package(
             name: "SilicaAndroidTests",
             dependencies: [
                 "SilicaAndroid",
-                "SilicaTestSupport"
+                "SilicaTestSupport",
+                .product(
+                    name: "AndroidApp",
+                    package: "Android",
+                    condition: .when(platforms: [.android])
+                ),
+                .product(
+                    name: "AndroidContext",
+                    package: "swift-android-native",
+                    condition: .when(platforms: [.android])
+                ),
+                .product(
+                    name: "SwiftJava",
+                    package: "swift-java",
+                    condition: .when(platforms: [.android])
+                )
             ]
         )
     ]

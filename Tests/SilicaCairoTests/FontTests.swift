@@ -6,6 +6,8 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+#if canImport(Cairo)
+
 import XCTest
 @testable import SilicaCairo
 import FontConfig
@@ -50,3 +52,5 @@ final class FontTests: XCTestCase {
         }
     }
 }
+
+#endif // canImport(Cairo)

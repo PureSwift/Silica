@@ -8,28 +8,71 @@
 
 #if canImport(AndroidGraphics) && os(Android)
 
-import XCTest
+import Testing
 import Foundation
+import SwiftJava
+import JavaIO
+import AndroidOS
+import AndroidApp
+import AndroidContext
+@preconcurrency import AndroidContent
 import SilicaAndroid
 import SilicaTestSupport
 
 /// Renders the shared StyleKit content through the Android Canvas backend.
 ///
-/// These tests require an Android emulator or device (API 31+).
-final class AndroidStyleKitTests: XCTestCase {
+/// These tests run on-device via `skip android test` and require API 31+
+/// for glyph rendering (`Canvas.drawGlyphs`).
+@Suite(.serialized)
+struct AndroidStyleKitTests {
 
-    override func setUp() {
-        super.setUp()
-        AndroidBackend.register()
+    @Test func simpleShapes() throws {
+        let data = try render(TestStyleKit.drawSimpleShapes(), name: "android_simpleShapes", size: CGSize(width: 240, height: 120))
+        try expectPDF(data)
     }
 
-    private func draw(_ drawingMethod: @autoclosure () -> (), _ name: String, _ size: CGSize) throws -> String {
+    @Test func advancedShapes() throws {
+        let data = try render(TestStyleKit.drawAdvancedShapes(), name: "android_advancedShapes", size: CGSize(width: 240, height: 120))
+        try expectPDF(data)
+    }
 
-        let filename = TestPath.testData + name + ".pdf"
+    @Test func swiftLogo() throws {
+        let size = CGSize(width: 200, height: 200)
+        let data = try render(TestStyleKit.drawSwiftLogo(frame: CGRect(origin: .zero, size: size)), name: "android_SwiftLogo", size: size)
+        try expectPDF(data)
+    }
 
-        let frame = CGRect(origin: .zero, size: size)
+    @Test func singleLineText() throws {
+        let data = try render(TestStyleKit.drawSingleLineText(), name: "android_singleLineText", size: CGSize(width: 240, height: 120))
+        try expectPDF(data)
+    }
 
-        let context = try AndroidCanvasContext(pdf: URL(fileURLWithPath: filename), size: frame.size)
+    @Test func bitmapContext() throws {
+        AndroidBackend.register()
+
+        let context = try AndroidCanvasContext(bitmap: CGSize(width: 20, height: 20))
+        context.fillColor = CGColor(red: 1, green: 0, blue: 0)
+        context.addRect(CGRect(x: 0, y: 0, width: 20, height: 20))
+        context.fillPath()
+
+        let image = try #require(context.makeImage())
+        #expect(image.width == 20)
+        #expect(image.height == 20)
+
+        // solid red (premultiplied RGBA)
+        #expect(image.data[0] > 200)
+        #expect(image.data[1] < 50)
+    }
+
+    // MARK: - Utilities
+
+    private func render(_ drawingMethod: @autoclosure () -> (), name: String, size: CGSize) throws -> Data {
+
+        AndroidBackend.register()
+
+        let path = try Self.outputDirectory() + "/" + name + ".pdf"
+
+        let context = try AndroidCanvasContext(pdf: URL(fileURLWithPath: path), size: size)
 
         UIGraphicsPushContext(context)
 
@@ -39,42 +82,52 @@ final class AndroidStyleKitTests: XCTestCase {
 
         try context.finish()
 
-        print("Wrote to \(filename)")
+        print("Wrote to \(path)")
 
-        return filename
+        return try Data(contentsOf: URL(fileURLWithPath: path))
     }
 
-    private func validatePDF(_ filename: String, file: StaticString = #filePath, line: UInt = #line) throws {
-
-        let data = try Data(contentsOf: URL(fileURLWithPath: filename))
-
-        XCTAssertGreaterThan(data.count, 4, file: file, line: line)
-        XCTAssertEqual(String(decoding: data.prefix(4), as: UTF8.self), "%PDF", file: file, line: line)
+    private func expectPDF(_ data: Data) throws {
+        #expect(data.count > 4)
+        #expect(String(decoding: data.prefix(4), as: UTF8.self) == "%PDF")
     }
 
-    func testSimpleShapes() throws {
+    private struct ContextError: Error { }
 
-        let filename = try draw(TestStyleKit.drawSimpleShapes(), "android_simpleShapes", CGSize(width: 240, height: 120))
-        try validatePDF(filename)
-    }
+    /// Cached by `outputDirectory()`; safe because the suite is serialized.
+    private nonisolated(unsafe) static var cachedOutputDirectory: String?
 
-    func testAdvancedShapes() throws {
+    /// The application cache directory — the reliably writable location
+    /// inside the on-device test harness.
+    private static func outputDirectory() throws -> String {
 
-        let filename = try draw(TestStyleKit.drawAdvancedShapes(), "android_advancedShapes", CGSize(width: 240, height: 120))
-        try validatePDF(filename)
-    }
+        if let cached = cachedOutputDirectory {
+            return cached
+        }
 
-    func testDrawSwiftLogo() throws {
+        let jvm = try JavaVirtualMachine.shared()
+        let environment = try jvm.environment()
 
-        let size = CGSize(width: 200, height: 200)
-        let filename = try draw(TestStyleKit.drawSwiftLogo(frame: CGRect(origin: .zero, size: size)), "android_SwiftLogo", size)
-        try validatePDF(filename)
-    }
+        // get the low-level application context from swift-android-native
+        // and wrap it in the @JavaClass Context (like PureSwift/Android's tests).
+        // JavaObjectHolder takes ownership of a local reference (it promotes it
+        // to a global reference and deletes the local one), so hand it a fresh
+        // local reference rather than the stored context pointer.
+        let lowLevelContext = try AndroidContext.application
 
-    func testDrawSingleLineText() throws {
+        guard let localContext = environment.interface.NewLocalRef(environment, lowLevelContext.pointer)
+            else { throw ContextError() }
 
-        let filename = try draw(TestStyleKit.drawSingleLineText(), "android_singleLineText", CGSize(width: 240, height: 120))
-        try validatePDF(filename)
+        let application = Application(javaHolder: JavaObjectHolder(object: localContext, environment: environment))
+
+        let context = try #require(application.as(AndroidContent.Context.self))
+        let cacheDirectory = try #require(context.getCacheDir())
+
+        let path = cacheDirectory.getAbsolutePath()
+
+        cachedOutputDirectory = path
+
+        return path
     }
 }
 

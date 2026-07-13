@@ -7,6 +7,8 @@
 //  bottom-left-origin (raw CoreGraphics) context mode.
 //
 
+#if canImport(Cairo)
+
 import XCTest
 import Foundation
 import Cairo
@@ -184,3 +186,5 @@ final class CGCompatTests: XCTestCase {
         XCTAssertFalse(inkExists(inDeviceRows: 44 ..< 60), "found ink below the baseline: glyphs are mirrored")
     }
 }
+
+#endif // canImport(Cairo)

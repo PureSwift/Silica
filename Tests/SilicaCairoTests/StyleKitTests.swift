@@ -6,6 +6,8 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+#if canImport(Cairo)
+
 import XCTest
 import Foundation
 import Cairo
@@ -93,3 +95,5 @@ final class StyleKitTests: XCTestCase {
         
     }
 }
+
+#endif // canImport(Cairo)
