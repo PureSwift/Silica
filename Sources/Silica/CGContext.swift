@@ -21,31 +21,45 @@ public final class CGContext {
     // MARK: - Properties
     
     public let surface: Cairo.Surface
-    
+
     public let size: CGSize
-    
+
+    /// Whether the context uses a top-left origin with the y axis pointing
+    /// down (`true`, the default — matching UIKit-vended CoreGraphics
+    /// contexts and Silica's UIKit layer), or a bottom-left origin with the
+    /// y axis pointing up (`false` — matching a raw CoreGraphics bitmap
+    /// context; text draws upright from the baseline, like CoreGraphics).
+    public let isFlipped: Bool
+
     public var textMatrix = CGAffineTransform.identity
-    
+
     // MARK: - Private Properties
-    
+
     private let internalContext: Cairo.Context
-    
+
     private var internalState: State = State()
-    
+
     // MARK: - Initialization
-    
-    public init(surface: Cairo.Surface, size: CGSize) throws(CairoError) {
-        
+
+    public init(surface: Cairo.Surface, size: CGSize, flipped: Bool = true) throws(CairoError) {
+
         let context = Cairo.Context(surface: surface)
-        
+
         if let error = CairoError(context.status) {
             throw error
         }
-                
+
         // Cairo defaults to line width 2.0
         context.lineWidth = 1.0
-        
+
+        if flipped == false {
+            // raw CoreGraphics convention: origin bottom-left, y up
+            context.translate(x: 0, y: Double(size.height))
+            context.scale(x: 1, y: -1)
+        }
+
         self.size = size
+        self.isFlipped = flipped
         self.internalContext = context
         self.surface = surface
     }
@@ -127,8 +141,8 @@ public final class CGContext {
     
     /// Returns a `Path` built from the current path information in the graphics context.
     public var path: CGPath {
-        
-        var path = CGPath()
+
+        let path = CGMutablePath()
         
         let cairoPath = internalContext.copyPath()
         
@@ -548,29 +562,43 @@ public final class CGContext {
     }
     
     public func drawPath(using mode: CGDrawingMode = CGDrawingMode()) {
-        
+
         switch mode {
         case .fill: try! fillPath(evenOdd: false, preserve: false)
         case .evenOddFill: try! fillPath(evenOdd: true, preserve: false)
-        case .fillStroke: try! fillPath(evenOdd: false, preserve: true)
-        case .evenOddFillStroke: try! fillPath(evenOdd: true, preserve: true)
+        case .fillStroke:
+            // fill preserving the path, then stroke it (like CoreGraphics)
+            try! fillPath(evenOdd: false, preserve: true)
+            strokePath()
+            internalContext.newPath()
+        case .evenOddFillStroke:
+            try! fillPath(evenOdd: true, preserve: true)
+            strokePath()
+            internalContext.newPath()
         case .stroke: strokePath()
         }
     }
-    
-    public func clip(evenOdd: Bool = false) {
-        
+
+    public func clip(evenOdd: Bool) {
+
         if evenOdd {
-            
+
             internalContext.fillRule = CAIRO_FILL_RULE_EVEN_ODD
         }
-        
+
         internalContext.clip()
-        
+
         if evenOdd {
-            
+
             internalContext.fillRule = CAIRO_FILL_RULE_WINDING
         }
+    }
+
+    /// Modifies the current clipping path, using the specified fill rule
+    /// (matches CoreGraphics' `clip(using:)`).
+    public func clip(using rule: CGPathFillRule = .winding) {
+
+        clip(evenOdd: rule == .evenOdd)
     }
     
     @inline(__always)
@@ -680,15 +708,18 @@ public final class CGContext {
         // calculate text matrix
         
         var cairoTextMatrix = Matrix.identity
-        
-        cairoTextMatrix.scale(x: Double(fontSize), y: Double(fontSize))
-        
+
+        // in a bottom-left-origin context the CTM's y flip would mirror
+        // glyphs; a negative font y scale keeps them upright (CoreGraphics
+        // behavior)
+        cairoTextMatrix.scale(x: Double(fontSize), y: isFlipped ? Double(fontSize) : -Double(fontSize))
+
         cairoTextMatrix.multiply(a: cairoTextMatrix, b: textMatrix.toCairo())
-        
+
         internalContext.setFont(matrix: cairoTextMatrix)
-        
+
         internalContext.source = internalState.fill?.pattern ?? .default
-        
+
         internalContext.show(text: text)
         
         let distance = internalContext.currentPoint ?? (0, 0)
@@ -771,11 +802,17 @@ public final class CGContext {
         }
         
         var cairoTextMatrix = Matrix.identity
-        
-        cairoTextMatrix.scale(x: Double(fontSize), y: Double(fontSize))
-        
-        let ascender = (Double(font.ascent) * Double(fontSize)) / Double(font.unitsPerEm)
-        
+
+        // in a bottom-left-origin context the CTM's y flip would mirror
+        // glyphs; a negative font y scale keeps them upright, and the text
+        // position is the baseline (CoreGraphics behavior) rather than
+        // Silica's flipped-context line top
+        cairoTextMatrix.scale(x: Double(fontSize), y: isFlipped ? Double(fontSize) : -Double(fontSize))
+
+        let ascender = isFlipped
+            ? (Double(font.ascent) * Double(fontSize)) / Double(font.unitsPerEm)
+            : 0
+
         let silicaTextMatrix = Matrix(a: Double(textMatrix.a),
                                       b: Double(textMatrix.b),
                                       c: Double(textMatrix.c),
@@ -955,3 +992,77 @@ public extension Silica.CGContext {
 }
     
 #endif
+
+// MARK: - CoreGraphics API conveniences
+
+public extension CGContext {
+
+    /// Sets the line width for a graphics context.
+    func setLineWidth(_ width: CGFloat) {
+        lineWidth = width
+    }
+
+    /// Sets the current fill color in a graphics context.
+    func setFillColor(_ color: CGColor) {
+        fillColor = color
+    }
+
+    /// Sets the current fill color to a value in the DeviceRGB color space.
+    func setFillColor(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat = 1.0) {
+        fillColor = CGColor(red: red, green: green, blue: blue, alpha: alpha)
+    }
+
+    /// Sets the current stroke color in a graphics context.
+    func setStrokeColor(_ color: CGColor) {
+        strokeColor = color
+    }
+
+    /// Sets the current stroke color to a value in the DeviceRGB color space.
+    func setStrokeColor(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat = 1.0) {
+        strokeColor = CGColor(red: red, green: green, blue: blue, alpha: alpha)
+    }
+
+    /// Rotates the user coordinate system in a context
+    /// (matches CoreGraphics' `rotate(by:)`).
+    func rotate(by angle: CGFloat) {
+        rotateBy(angle)
+    }
+
+    /// Adds an ellipse that fits inside the specified rectangle to the
+    /// current path.
+    func addEllipse(in rect: CGRect) {
+        let path = CGMutablePath()
+        path.addEllipse(in: rect)
+        addPath(path)
+    }
+
+    /// Returns a snapshot of the context's contents.
+    ///
+    /// Like CoreGraphics, this only succeeds for bitmap contexts
+    /// (an image surface); PDF/SVG contexts return `nil`. The pixels are
+    /// copied, so later drawing does not modify the returned image.
+    func makeImage() -> CGImage? {
+        guard let imageSurface = surface as? Cairo.Surface.Image,
+            let format = imageSurface.format
+            else { return nil }
+        imageSurface.flush()
+        let width = imageSurface.width
+        let height = imageSurface.height
+        let sourceStride = imageSurface.stride
+        guard let copy = try? Cairo.Surface.Image(format: format, width: width, height: height)
+            else { return nil }
+        let destinationStride = copy.stride
+        let rowBytes = min(sourceStride, destinationStride)
+        copy.withUnsafeMutableBytes { destination in
+            imageSurface.withUnsafeMutableBytes { source in
+                for row in 0 ..< height {
+                    memcpy(destination + row * destinationStride,
+                           source + row * sourceStride,
+                           rowBytes)
+                }
+            }
+        }
+        copy.markDirty()
+        return CGImage(surface: copy)
+    }
+}
