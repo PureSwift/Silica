@@ -1,10 +1,12 @@
 //
 //  CairoContext.swift
-//  Silica
+//  SilicaCairo
 //
 //  Created by Alsey Coleman Miller on 5/8/16.
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
+
+#if canImport(Cairo)
 
 #if canImport(Darwin)
 import Darwin
@@ -15,6 +17,7 @@ import Glibc
 import Cairo
 import CCairo
 import Foundation
+import Silica
 
 /// Cairo-backed implementation of `CGContext`.
 public final class CairoContext: CGContext {
@@ -25,7 +28,7 @@ public final class CairoContext: CGContext {
 
     public let size: CGSize
 
-    public var textMatrix = CGAffineTransform.identity
+    public var textMatrix = CGAffineTransform(a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0)
 
     // MARK: - Private Properties
 
@@ -49,6 +52,8 @@ public final class CairoContext: CGContext {
         self.size = size
         self.internalContext = context
         self.surface = surface
+
+        CairoBackend.registerIfNeeded()
     }
 
     /// Creates a PDF drawing destination at the specified file URL.
@@ -532,9 +537,10 @@ public final class CairoContext: CGContext {
     /// Draws an image into a graphics context.
     public func draw(_ image: CGImage, in rect: CGRect) {
 
-        internalContext.save()
+        guard let imageSurface = try? Cairo.Surface.Image(image)
+            else { assertionFailure("Unable to convert image to Cairo surface"); return }
 
-        let imageSurface = image.surface
+        internalContext.save()
 
         let sourceRect = CGRect(x: 0, y: 0, width: CGFloat(image.width), height: CGFloat(image.height))
 
@@ -664,9 +670,7 @@ public final class CairoContext: CGContext {
         guard let imageSurface = surface as? Cairo.Surface.Image
             else { return nil }
 
-        imageSurface.flush()
-
-        return CGImage(surface: imageSurface)
+        return CGImage(cairo: imageSurface)
     }
 
     // MARK: - Private Functions
@@ -784,3 +788,5 @@ public extension CairoContext {
 }
 
 #endif
+
+#endif // canImport(Cairo)

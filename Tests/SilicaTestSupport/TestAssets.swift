@@ -12,13 +12,13 @@ import Silica
 import FoundationNetworking
 #endif
 
-struct TestAsset: Equatable, Hashable {
+public struct TestAsset: Equatable, Hashable, Sendable {
     
     let url: URL
     let filename: String
 }
 
-final class TestAssetManager <HTTPClient: URLClient> {
+public final class TestAssetManager <HTTPClient: URLClient> {
     
     let assets: [TestAsset]
     
@@ -84,7 +84,7 @@ final class TestAssetManager <HTTPClient: URLClient> {
         return cacheDirectory.appendingPathComponent(assetFilename)
     }
     
-    func cachedImage(named name: String) -> CGImage? {
+    public func cachedImage(named name: String) -> CGImage? {
         let fileURL = cacheURL(for: name)
         guard let data = try? Data(contentsOf: fileURL),
             let imageSource = CGImageSourcePNG(data: data),

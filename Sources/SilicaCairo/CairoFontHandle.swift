@@ -1,15 +1,18 @@
 //
 //  CairoFontHandle.swift
-//  Silica
+//  SilicaCairo
 //
 //  Created by Alsey Coleman Miller on 7/13/26.
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
+#if canImport(Cairo)
+
 import Cairo
 import CCairo
 import FontConfig
 import struct Foundation.CGFloat
+import Silica
 
 /// Cairo / FontConfig backed font.
 public final class CairoFontHandle: CGFontHandle {
@@ -66,12 +69,12 @@ public final class CairoFontHandle: CGFontHandle {
 
     public var capHeight: CGFloat { CGFloat(scaledFont.capHeight) / CGFloat(scaledFont.unitsPerEm) }
 
-    public func glyph(for scalar: Unicode.Scalar) -> CGGlyph {
+    public func glyph(for scalar: Unicode.Scalar) -> Silica.CGGlyph {
 
         return scaledFont[UInt(scalar.value)]
     }
 
-    public func advances(for glyphs: [CGGlyph]) -> [CGFloat] {
+    public func advances(for glyphs: [Silica.CGGlyph]) -> [CGFloat] {
 
         let unitsPerEm = CGFloat(scaledFont.unitsPerEm)
 
@@ -86,26 +89,16 @@ public extension CGFont {
     /// Creates a font with the specified name, resolved via FontConfig and loaded by Cairo.
     init?(name: String, configuration: FontConfiguration = .current) {
 
-        if let cachedFont = CGFont.cache[name] {
+        guard let handle = CairoFontHandle(name: name, configuration: configuration)
+            else { return nil }
 
-            self = cachedFont
+        // Default font is Verdana, make sure the name is correct
+        let defaultFontName = "Verdana"
 
-        } else {
+        guard name == defaultFontName || handle.fullName != defaultFontName
+            else { return nil }
 
-            guard let handle = CairoFontHandle(name: name, configuration: configuration)
-                else { return nil }
-
-            // Default font is Verdana, make sure the name is correct
-            let defaultFontName = "Verdana"
-
-            guard name == defaultFontName || handle.fullName != defaultFontName
-                else { return nil }
-
-            self.init(name: name, family: handle.familyName, handle: handle)
-
-            // cache
-            CGFont.cache[name] = self
-        }
+        self.init(name: name, family: handle.familyName, handle: handle)
     }
 
     /// The Cairo scaled font, if this font was loaded by the Cairo backend.
@@ -174,3 +167,5 @@ internal extension FontConfig.Pattern {
 
     }
 }
+
+#endif // canImport(Cairo)

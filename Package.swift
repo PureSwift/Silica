@@ -7,6 +7,10 @@ let package = Package(
         .library(
             name: "Silica",
             targets: ["Silica"]
+        ),
+        .library(
+            name: "SilicaCairo",
+            targets: ["SilicaCairo"]
         )
     ],
     dependencies: [
@@ -21,15 +25,35 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Silica",
+            name: "Silica"
+        ),
+        .target(
+            name: "SilicaCairo",
             dependencies: [
-                "Cairo",
-                "FontConfig"
+                "Silica",
+                .product(
+                    name: "Cairo",
+                    package: "Cairo",
+                    condition: .when(platforms: [.macOS, .linux])
+                ),
+                .product(
+                    name: "FontConfig",
+                    package: "FontConfig",
+                    condition: .when(platforms: [.macOS, .linux])
+                )
             ]
         ),
+        .target(
+            name: "SilicaTestSupport",
+            dependencies: ["Silica"],
+            path: "Tests/SilicaTestSupport"
+        ),
         .testTarget(
-            name: "SilicaTests",
-            dependencies: ["Silica"]
+            name: "SilicaCairoTests",
+            dependencies: [
+                "SilicaCairo",
+                "SilicaTestSupport"
+            ]
         )
     ]
 )

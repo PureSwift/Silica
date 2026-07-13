@@ -36,6 +36,22 @@ public struct CGFont {
         self.family = family
         self.handle = handle
     }
+
+    /// Creates a font with the specified name using the default rendering backend.
+    public init?(name: String) {
+
+        if let cachedFont = CGFont.cache[name] {
+            self = cachedFont
+            return
+        }
+
+        guard let backend = SilicaBackend.default,
+            let font = backend.font(named: name)
+            else { return nil }
+
+        CGFont.cache[name] = font
+        self = font
+    }
 }
 
 // MARK: - Equatable

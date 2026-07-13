@@ -9,10 +9,16 @@
 import XCTest
 import Foundation
 import Cairo
-@testable import Silica
+import SilicaCairo
+import SilicaTestSupport
 
 final class StyleKitTests: XCTestCase {
-    
+
+    override func setUp() {
+        super.setUp()
+        CairoBackend.register()
+    }
+
     private func draw(_ drawingMethod: @autoclosure () -> (), _ name: String, _ size: CGSize) {
         
         let filename = TestPath.testData + name + ".pdf"

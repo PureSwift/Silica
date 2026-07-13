@@ -6,39 +6,32 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
-#if os(macOS)
-import Darwin
-#elseif canImport(Glibc)
-import Glibc
-#endif
-
 import struct Foundation.Data
-import Cairo
 
 public final class CGImageSourcePNG: CGImageSource {
-    
+
     // MARK: - Class Properties
-    
+
     public static var typeIdentifier: String { "public.png" }
-        
+
      // MARK: - Properties
-    
-    public let surface: Cairo.Surface.Image
-    
+
+    internal let image: CGImage
+
     // MARK: - Initialization
-    
+
     public init?(data: Data) {
-        
-        guard let surface = try? Cairo.Surface.Image(png: data)
+
+        guard let backend = SilicaBackend.default,
+            let image = backend.decodePNG(data)
             else { return nil }
-        
-        self.surface = surface
+
+        self.image = image
     }
-    
+
     // MARK: - Methods
-    
+
     public func createImage(at index: Int) -> CGImage? {
-        let image = CGImage(surface: surface)
         return image
     }
 }
