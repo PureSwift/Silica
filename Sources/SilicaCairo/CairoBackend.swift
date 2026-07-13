@@ -52,6 +52,14 @@ public enum CairoBackend: SilicaBackendProtocol {
 
         return CGImage(cairo: normalized)
     }
+
+    public static func encodePNG(_ image: Silica.CGImage) -> Data? {
+
+        guard let surface = try? Cairo.Surface.Image(image)
+            else { return nil }
+
+        return try? surface.writePNG()
+    }
 }
 
 #endif

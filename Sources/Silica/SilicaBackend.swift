@@ -18,6 +18,9 @@ public protocol SilicaBackendProtocol {
 
     /// Decodes PNG data into a bitmap image.
     static func decodePNG(_ data: Data) -> CGImage?
+
+    /// Encodes a bitmap image as PNG data.
+    static func encodePNG(_ image: CGImage) -> Data?
 }
 
 /// Global rendering backend registration.

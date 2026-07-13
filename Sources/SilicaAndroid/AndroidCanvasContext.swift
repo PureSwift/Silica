@@ -36,6 +36,9 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
     public let size: CGSize
 
+    /// Android's Canvas is natively top-left origin, y-down.
+    public var isFlipped: Bool { true }
+
     /// The underlying Android canvas (replaced on `beginPage()` for PDF destinations).
     public private(set) var canvas: AndroidGraphics.Canvas
 
@@ -338,9 +341,7 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
         let inverse = internalState.ctm.inverse
 
-        var path = CGPath()
-        path.elements = deviceElements.map { $0.applying(inverse) }
-        return path
+        return CGPath(elements: deviceElements.map { $0.applying(inverse) })
     }
 
     public var currentPoint: CGPoint? {

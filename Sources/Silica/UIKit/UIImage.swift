@@ -20,4 +20,9 @@ public final class UIImage {
     public var size: CGSize {
         return CGSize(width: CGFloat(cgImage.width), height: CGFloat(cgImage.height))
     }
+
+    /// Returns a data object that contains the image in PNG format.
+    public func pngData() -> Data? {
+        return SilicaBackend.default?.encodePNG(cgImage)
+    }
 }

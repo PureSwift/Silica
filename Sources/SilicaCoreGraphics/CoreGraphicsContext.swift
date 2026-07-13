@@ -25,6 +25,10 @@ public final class CoreGraphicsContext: Silica.CGContext {
 
     public let size: CGSize
 
+    /// Silica's top-left origin convention (the backend installs a vertical
+    /// flip over Quartz's native bottom-left space).
+    public var isFlipped: Bool { true }
+
     /// The underlying Quartz context.
     public let nativeContext: CoreGraphics.CGContext
 
@@ -331,10 +335,10 @@ public final class CoreGraphicsContext: Silica.CGContext {
 
     public var path: CGPath {
 
-        var path = CGPath()
+        var elements = [PathElement]()
 
         guard let nativePath = nativeContext.path
-            else { return path }
+            else { return CGPath() }
 
         nativePath.applyWithBlock { pointer in
 
@@ -343,26 +347,26 @@ public final class CoreGraphicsContext: Silica.CGContext {
             switch element.type {
 
             case .moveToPoint:
-                path.elements.append(.moveToPoint(element.points[0]))
+                elements.append(.moveToPoint(element.points[0]))
 
             case .addLineToPoint:
-                path.elements.append(.addLineToPoint(element.points[0]))
+                elements.append(.addLineToPoint(element.points[0]))
 
             case .addQuadCurveToPoint:
-                path.elements.append(.addQuadCurveToPoint(element.points[0], element.points[1]))
+                elements.append(.addQuadCurveToPoint(element.points[0], element.points[1]))
 
             case .addCurveToPoint:
-                path.elements.append(.addCurveToPoint(element.points[0], element.points[1], element.points[2]))
+                elements.append(.addCurveToPoint(element.points[0], element.points[1], element.points[2]))
 
             case .closeSubpath:
-                path.elements.append(.closeSubpath)
+                elements.append(.closeSubpath)
 
             @unknown default:
                 assertionFailure("Unknown path element type \(element.type)")
             }
         }
 
-        return path
+        return CGPath(elements: elements)
     }
 
     public var currentPoint: CGPoint? {

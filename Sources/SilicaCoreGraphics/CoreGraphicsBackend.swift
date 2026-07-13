@@ -46,6 +46,21 @@ public enum CoreGraphicsBackend: SilicaBackendProtocol {
 
         return Silica.CGImage(nativeImage)
     }
+
+    public static func encodePNG(_ image: Silica.CGImage) -> Data? {
+
+        guard let nativeImage = image.toCoreGraphics(),
+            let data = CFDataCreateMutable(nil, 0),
+            let destination = ImageIO.CGImageDestinationCreateWithData(data, "public.png" as CFString, 1, nil)
+            else { return nil }
+
+        ImageIO.CGImageDestinationAddImage(destination, nativeImage, nil)
+
+        guard ImageIO.CGImageDestinationFinalize(destination)
+            else { return nil }
+
+        return data as Data
+    }
 }
 
 // MARK: - CGImage Conversion

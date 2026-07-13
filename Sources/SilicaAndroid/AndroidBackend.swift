@@ -10,6 +10,8 @@
 
 import AndroidGraphics
 import SwiftJava
+import JavaIO
+import JavaLangIO
 import Foundation
 import Silica
 
@@ -47,6 +49,21 @@ public enum AndroidBackend: SilicaBackendProtocol {
             else { return nil }
 
         return Silica.CGImage(bitmap)
+    }
+
+    public static func encodePNG(_ image: Silica.CGImage) -> Data? {
+
+        guard let bitmap = image.toAndroidBitmap()
+            else { return nil }
+
+        let stream = ByteArrayOutputStream()
+
+        guard bitmap.compress(Bitmap.CompressFormat(.PNG), 100, stream)
+            else { return nil }
+
+        let bytes = stream.toByteArray()
+
+        return Data(bytes.map { UInt8(bitPattern: $0) })
     }
 }
 

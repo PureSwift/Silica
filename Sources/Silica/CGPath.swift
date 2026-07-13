@@ -9,15 +9,35 @@
 import Foundation
 
 /// A graphics path is a mathematical description of a series of shapes or lines.
-public struct CGPath {
-    
+///
+/// Like CoreGraphics, `CGPath` is an immutable reference type;
+/// build paths with `CGMutablePath`.
+public class CGPath {
+
     public typealias Element = PathElement
-    
-    public var elements: [Element]
-    
+
+    public internal(set) var elements: [Element]
+
     public init(elements: [Element] = []) {
-        
+
         self.elements = elements
+    }
+
+    /// Creates a mutable copy of the path.
+    public func mutableCopy() -> CGMutablePath {
+
+        return CGMutablePath(elements: elements)
+    }
+}
+
+/// A mutable graphics path: a mathematical description of shapes or lines
+/// that you can change after creation.
+public final class CGMutablePath: CGPath {
+
+    /// Creates a mutable copy of an existing path.
+    public convenience init(path: CGPath) {
+
+        self.init(elements: path.elements)
     }
 }
 
@@ -47,9 +67,9 @@ public enum PathElement {
 
 // MARK: - Constructing a Path
 
-public extension CGPath {
-    
-    mutating func addRect(_ rect: CGRect) {
+public extension CGMutablePath {
+
+    func addRect(_ rect: CGRect) {
         
         let newElements: [Element] = [.moveToPoint(CGPoint(x: rect.minX, y: rect.minY)),
                                       .addLineToPoint(CGPoint(x: rect.maxX, y: rect.minY)),
@@ -60,7 +80,7 @@ public extension CGPath {
         elements.append(contentsOf: newElements)
     }
     
-    mutating func addEllipse(in rect: CGRect) {
+    func addEllipse(in rect: CGRect) {
         
         var p = CGPoint()
         var p1 = CGPoint()
@@ -93,27 +113,27 @@ public extension CGPath {
         elements.append(.addCurveToPoint(p1, p2, p))
     }
     
-    mutating func move(to point: CGPoint) {
+    func move(to point: CGPoint) {
         
         elements.append(.moveToPoint(point))
     }
     
-    mutating func addLine(to point: CGPoint) {
+    func addLine(to point: CGPoint) {
         
         elements.append(.addLineToPoint(point))
     }
     
-    mutating func addCurve(to endPoint: CGPoint, control1: CGPoint, control2: CGPoint) {
+    func addCurve(to endPoint: CGPoint, control1: CGPoint, control2: CGPoint) {
         
         elements.append(.addCurveToPoint(control1, control2, endPoint))
     }
     
-    mutating func addQuadCurve(to endPoint: CGPoint, control: CGPoint) {
+    func addQuadCurve(to endPoint: CGPoint, control: CGPoint) {
         
         elements.append(.addQuadCurveToPoint(control, endPoint))
     }
     
-    mutating func closeSubpath() {
+    func closeSubpath() {
         
         elements.append(.closeSubpath)
     }

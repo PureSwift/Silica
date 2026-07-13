@@ -28,6 +28,13 @@ public final class CairoContext: CGContext {
 
     public let size: CGSize
 
+    /// Whether the context uses a top-left origin with the y axis pointing
+    /// down (`true`, the default — matching UIKit-vended CoreGraphics
+    /// contexts and Silica's UIKit layer), or a bottom-left origin with the
+    /// y axis pointing up (`false` — matching a raw CoreGraphics bitmap
+    /// context; text draws upright from the baseline, like CoreGraphics).
+    public let isFlipped: Bool
+
     public var textMatrix = CGAffineTransform(a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0)
 
     // MARK: - Private Properties
@@ -38,7 +45,7 @@ public final class CairoContext: CGContext {
 
     // MARK: - Initialization
 
-    public init(surface: Cairo.Surface, size: CGSize) throws(SilicaError) {
+    public init(surface: Cairo.Surface, size: CGSize, flipped: Bool = true) throws(SilicaError) {
 
         let context = Cairo.Context(surface: surface)
 
@@ -49,7 +56,14 @@ public final class CairoContext: CGContext {
         // Cairo defaults to line width 2.0
         context.lineWidth = 1.0
 
+        if flipped == false {
+            // raw CoreGraphics convention: origin bottom-left, y up
+            context.translate(x: 0, y: Double(size.height))
+            context.scale(x: 1, y: -1)
+        }
+
         self.size = size
+        self.isFlipped = flipped
         self.internalContext = context
         self.surface = surface
 
@@ -162,7 +176,7 @@ public final class CairoContext: CGContext {
     /// Returns a `Path` built from the current path information in the graphics context.
     public var path: CGPath {
 
-        var path = CGPath()
+        var elements = [PathElement]()
 
         let cairoPath = internalContext.copyPath()
 
@@ -212,13 +226,13 @@ public final class CairoContext: CGContext {
             default: fatalError("Unknown Cairo Path data: \(header.type.rawValue)")
             }
 
-            path.elements.append(element)
+            elements.append(element)
 
             // increment
             index += length
         }
 
-        return path
+        return CGPath(elements: elements)
     }
 
     public var fillColor: CGColor {
@@ -597,7 +611,8 @@ public final class CairoContext: CGContext {
 
         var cairoTextMatrix = Matrix.identity
 
-        cairoTextMatrix.scale(x: Double(fontSize), y: Double(fontSize))
+        // see draw(glyphs:) — keep glyphs upright in a bottom-left-origin context
+        cairoTextMatrix.scale(x: Double(fontSize), y: isFlipped ? Double(fontSize) : -Double(fontSize))
 
         cairoTextMatrix.multiply(a: cairoTextMatrix, b: textMatrix.toCairo())
 
@@ -643,7 +658,10 @@ public final class CairoContext: CGContext {
 
         var cairoTextMatrix = Matrix.identity
 
-        cairoTextMatrix.scale(x: Double(fontSize), y: Double(fontSize))
+        // in a bottom-left-origin context the CTM's y flip would mirror
+        // glyphs; a negative font y scale keeps them upright (CoreGraphics
+        // behavior)
+        cairoTextMatrix.scale(x: Double(fontSize), y: isFlipped ? Double(fontSize) : -Double(fontSize))
 
         let silicaTextMatrix = Matrix(a: Double(textMatrix.a),
                                       b: Double(textMatrix.b),

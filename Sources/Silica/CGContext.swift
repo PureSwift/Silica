@@ -29,6 +29,13 @@ public protocol CGContext: AnyObject {
     /// The size of the drawing surface, in points.
     var size: CGSize { get }
 
+    /// Whether the context uses a top-left origin with the y axis pointing
+    /// down (`true`, the default — matching UIKit-vended CoreGraphics
+    /// contexts and Silica's UIKit layer), or a bottom-left origin with the
+    /// y axis pointing up (`false` — matching a raw CoreGraphics bitmap
+    /// context; text draws upright from the baseline, like CoreGraphics).
+    var isFlipped: Bool { get }
+
     /// Starts a new page in a page-based (e.g. PDF) graphics context.
     func beginPage()
 
@@ -210,6 +217,37 @@ public extension CGContext {
         self.textDrawingMode = newValue
     }
 
+    /// Sets the line width for a graphics context.
+    func setLineWidth(_ width: CGFloat) {
+        lineWidth = width
+    }
+
+    /// Sets the current fill color in a graphics context.
+    func setFillColor(_ color: CGColor) {
+        fillColor = color
+    }
+
+    /// Sets the current fill color to a value in the DeviceRGB color space.
+    func setFillColor(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat = 1.0) {
+        fillColor = CGColor(red: red, green: green, blue: blue, alpha: alpha)
+    }
+
+    /// Sets the current stroke color in a graphics context.
+    func setStrokeColor(_ color: CGColor) {
+        strokeColor = color
+    }
+
+    /// Sets the current stroke color to a value in the DeviceRGB color space.
+    func setStrokeColor(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat = 1.0) {
+        strokeColor = CGColor(red: red, green: green, blue: blue, alpha: alpha)
+    }
+
+    /// Rotates the user coordinate system in a context
+    /// (matches CoreGraphics' `rotate(by:)`).
+    func rotate(by angle: CGFloat) {
+        rotateBy(angle)
+    }
+
     // MARK: Constructing Paths
 
     /// Adds a quadratic Bézier curve to the current path, with the specified end point and control point.
@@ -290,6 +328,15 @@ public extension CGContext {
                     clockwise: (san < 0))
     }
 
+    /// Adds an ellipse that fits inside the specified rectangle to the
+    /// current path.
+    func addEllipse(in rect: CGRect) {
+
+        let path = CGMutablePath()
+        path.addEllipse(in: rect)
+        addPath(path)
+    }
+
     /// Adds a previously created path object to the current path in a graphics context.
     func addPath(_ path: CGPath) {
 
@@ -330,8 +377,13 @@ public extension CGContext {
         switch mode {
         case .fill: fillPath(evenOdd: false, preserve: false)
         case .evenOddFill: fillPath(evenOdd: true, preserve: false)
-        case .fillStroke: fillPath(evenOdd: false, preserve: true)
-        case .evenOddFillStroke: fillPath(evenOdd: true, preserve: true)
+        case .fillStroke:
+            // fill preserving the path, then stroke it (like CoreGraphics)
+            fillPath(evenOdd: false, preserve: true)
+            strokePath()
+        case .evenOddFillStroke:
+            fillPath(evenOdd: true, preserve: true)
+            strokePath()
         case .stroke: strokePath()
         }
     }
@@ -339,6 +391,13 @@ public extension CGContext {
     /// Modifies the current clipping path, using the winding (non-zero) fill rule.
     func clip() {
         clip(evenOdd: false)
+    }
+
+    /// Modifies the current clipping path, using the specified fill rule
+    /// (matches CoreGraphics' `clip(using:)`).
+    func clip(using rule: CGPathFillRule = .winding) {
+
+        clip(evenOdd: rule == .evenOdd)
     }
 
     @inline(__always)
@@ -424,7 +483,10 @@ public extension CGContext {
             else { return }
 
         // Convert text-space positions to user-space baseline origins.
-        let ascender = font.ascent * fontSize
+        // In Silica's default flipped (top-left origin) convention the text
+        // position is the top of the line; in a bottom-left-origin context the
+        // text position is the baseline itself (CoreGraphics behavior).
+        let ascender = isFlipped ? font.ascent * fontSize : 0
 
         let baselineGlyphs = glyphPositions.map { element -> (glyph: CGGlyph, position: CGPoint) in
 

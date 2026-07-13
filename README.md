@@ -49,6 +49,8 @@ Silica uses a top-left origin, y-down coordinate system (UIKit convention) on ev
 
 Like UIKit, `draw(_ image:in:)` follows Apple's y-up image convention: drawing code flips the CTM around the destination rect to draw images upright, and clockwise arcs appear counterclockwise.
 
+The Cairo backend also supports an opt-in bottom-left origin mode matching a raw CoreGraphics bitmap context — `CairoContext(surface:size:flipped: false)` — where text draws upright from the baseline (see `isFlipped`).
+
 ## Platform Notes
 
 ### macOS
