@@ -146,7 +146,7 @@ public extension String {
         
         let font = textAttributes.font
         
-        let descender = (CGFloat(font.cgFont.scaledFont.descent) * font.pointSize) / CGFloat(font.cgFont.scaledFont.unitsPerEm)
+        let descender = font.cgFont.descent * font.pointSize
         
         
         textFrame.size.height = textFrame.size.height - descender

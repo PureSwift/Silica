@@ -21,7 +21,7 @@ final class StyleKitTests: XCTestCase {
         
         let surface = try! Surface.PDF(filename: filename, width: Double(frame.width), height: Double(frame.height))
         
-        let context = try! Silica.CGContext(surface: surface, size: frame.size)
+        let context = try! CairoContext(surface: surface, size: frame.size)
         
         UIGraphicsPushContext(context)
         

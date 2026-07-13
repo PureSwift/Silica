@@ -24,9 +24,9 @@ public final class UIFont {
     
     public let pointSize: CGFloat
     
-    public lazy var descender: CGFloat = (CGFloat(self.cgFont.scaledFont.descent) * self.pointSize) / CGFloat(self.cgFont.scaledFont.unitsPerEm)
-    
-    public lazy var ascender: CGFloat = (CGFloat(self.cgFont.scaledFont.ascent) * self.pointSize) / CGFloat(self.cgFont.scaledFont.unitsPerEm)
+    public lazy var descender: CGFloat = self.cgFont.descent * self.pointSize
+
+    public lazy var ascender: CGFloat = self.cgFont.ascent * self.pointSize
     
     // MARK: - Initialization
     
