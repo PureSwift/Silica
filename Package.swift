@@ -15,6 +15,10 @@ let package = Package(
         .library(
             name: "SilicaCoreGraphics",
             targets: ["SilicaCoreGraphics"]
+        ),
+        .library(
+            name: "SilicaAndroid",
+            targets: ["SilicaAndroid"]
         )
     ],
     dependencies: [
@@ -25,6 +29,14 @@ let package = Package(
         .package(
             url: "https://github.com/PureSwift/FontConfig.git",
             branch: "master"
+        ),
+        .package(
+            url: "https://github.com/PureSwift/Android.git",
+            branch: "master"
+        ),
+        .package(
+            url: "https://github.com/swiftlang/swift-java.git",
+            branch: "main"
         )
     ],
     targets: [
@@ -52,6 +64,22 @@ let package = Package(
             dependencies: ["Silica"]
         ),
         .target(
+            name: "SilicaAndroid",
+            dependencies: [
+                "Silica",
+                .product(
+                    name: "AndroidGraphics",
+                    package: "Android",
+                    condition: .when(platforms: [.android])
+                ),
+                .product(
+                    name: "JavaIO",
+                    package: "swift-java",
+                    condition: .when(platforms: [.android])
+                )
+            ]
+        ),
+        .target(
             name: "SilicaTestSupport",
             dependencies: ["Silica"],
             path: "Tests/SilicaTestSupport"
@@ -68,6 +96,13 @@ let package = Package(
             dependencies: [
                 "SilicaCoreGraphics",
                 "SilicaCairo",
+                "SilicaTestSupport"
+            ]
+        ),
+        .testTarget(
+            name: "SilicaAndroidTests",
+            dependencies: [
+                "SilicaAndroid",
                 "SilicaTestSupport"
             ]
         )
