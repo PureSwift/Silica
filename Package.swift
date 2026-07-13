@@ -11,6 +11,10 @@ let package = Package(
         .library(
             name: "SilicaCairo",
             targets: ["SilicaCairo"]
+        ),
+        .library(
+            name: "SilicaCoreGraphics",
+            targets: ["SilicaCoreGraphics"]
         )
     ],
     dependencies: [
@@ -44,6 +48,10 @@ let package = Package(
             ]
         ),
         .target(
+            name: "SilicaCoreGraphics",
+            dependencies: ["Silica"]
+        ),
+        .target(
             name: "SilicaTestSupport",
             dependencies: ["Silica"],
             path: "Tests/SilicaTestSupport"
@@ -51,6 +59,14 @@ let package = Package(
         .testTarget(
             name: "SilicaCairoTests",
             dependencies: [
+                "SilicaCairo",
+                "SilicaTestSupport"
+            ]
+        ),
+        .testTarget(
+            name: "SilicaCoreGraphicsTests",
+            dependencies: [
+                "SilicaCoreGraphics",
                 "SilicaCairo",
                 "SilicaTestSupport"
             ]

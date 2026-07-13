@@ -40,16 +40,21 @@ public struct CGFont {
     /// Creates a font with the specified name using the default rendering backend.
     public init?(name: String) {
 
-        if let cachedFont = CGFont.cache[name] {
+        guard let backend = SilicaBackend.default
+            else { return nil }
+
+        // cache fonts per backend, since multiple backends may coexist in one process
+        let cacheKey = "\(backend)/\(name)"
+
+        if let cachedFont = CGFont.cache[cacheKey] {
             self = cachedFont
             return
         }
 
-        guard let backend = SilicaBackend.default,
-            let font = backend.font(named: name)
+        guard let font = backend.font(named: name)
             else { return nil }
 
-        CGFont.cache[name] = font
+        CGFont.cache[cacheKey] = font
         self = font
     }
 }
