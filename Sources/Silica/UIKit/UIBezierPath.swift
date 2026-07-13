@@ -56,7 +56,7 @@ public final class UIBezierPath {
     
     public init(rect: CGRect) {
         
-        var path = CGPath()
+        let path = CGMutablePath()
         
         path.addRect(rect)
         
@@ -65,7 +65,7 @@ public final class UIBezierPath {
     
     public init(ovalIn rect: CGRect) {
         
-        var path = CGPath()
+        let path = CGMutablePath()
         
         path.addEllipse(in: rect)
         
@@ -79,7 +79,7 @@ public final class UIBezierPath {
     
     public init(roundedRect rect: CGRect, byRoundingCorners corners: UIRectCorner, cornerRadii: CGSize) {
         
-        var path = CGPath()
+        let path = CGMutablePath()
         
         func addCurve(_ control1: CGPoint, _ control2: CGPoint, _ end: CGPoint) {
             
