@@ -7,7 +7,7 @@
 //
 
 #if os(macOS)
-import Darwin.C.math
+import Darwin
 #elseif canImport(Glibc)
 import Glibc
 #endif
