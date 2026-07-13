@@ -6,12 +6,8 @@ jobs:
     name: macOS
     runs-on: macos-latest
     steps:
-    - name: Install Swift
-      uses: slashmo/install-swift@v0.3.0
-      with:
-        version: 6.0.3
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Swift Version
       run: swift --version
     - name: Install dependencies
@@ -22,24 +18,26 @@ jobs:
       run: swift build -c release
     - name: Test (Debug)
       run: swift test -c debug
-  
+
   linux:
-    name: Linux
+    name: Linux (${{ matrix.container }})
+    runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        swift: [6.0.3]
-    runs-on: ubuntu-20.04
+        container: ["swift:latest"]
+    container: ${{ matrix.container }}
     steps:
-    - name: Install Swift
-      uses: slashmo/install-swift@v0.3.0
-      with:
-        version: ${{ matrix.swift }}
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Swift Version
       run: swift --version
     - name: Install dependencies
-      run: sudo apt-get install -y libcairo2-dev libfreetype6-dev libfontconfig-dev
+      run: |
+        apt-get update
+        apt-get install -y --no-install-recommends \
+          libcairo2-dev libfreetype-dev libfontconfig-dev \
+          fontconfig fonts-dejavu-core pkg-config
     - name: Build (Debug)
       run: swift build -c debug
     - name: Build (Release)
