@@ -3,6 +3,9 @@ import PackageDescription
 
 let package = Package(
     name: "Silica",
+    platforms: [
+        .macOS(.v13)
+    ],
     products: [
         .library(
             name: "Silica",
