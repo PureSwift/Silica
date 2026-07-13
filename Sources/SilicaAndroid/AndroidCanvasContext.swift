@@ -403,7 +403,7 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
         // Match Cairo's angle normalization: arcs sweep from the start angle to the
         // end angle in increasing direction (decreasing when clockwise).
-        var start = Double(startAngle)
+        let start = Double(startAngle)
         var end = Double(endAngle)
 
         if clockwise {
