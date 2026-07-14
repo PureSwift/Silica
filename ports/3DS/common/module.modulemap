@@ -1,0 +1,5 @@
+// Exposes libctru (3ds.h) plus our shim to Swift as `import CTRU`.
+module CTRU {
+    header "ctru_umbrella.h"
+    export *
+}

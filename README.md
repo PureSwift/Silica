@@ -11,6 +11,7 @@ Silica provides a CoreGraphics-compatible drawing API (plus a small UIKit shim) 
 | macOS | `SilicaCoreGraphics` | `CoreGraphicsContext` | Apple CoreGraphics / CoreText / ImageIO |
 | Linux (and macOS) | `SilicaCairo` | `CairoContext` | [Cairo](https://github.com/PureSwift/Cairo) / [FontConfig](https://github.com/PureSwift/FontConfig) / FreeType |
 | Android | `SilicaAndroid` | `AndroidCanvasContext` | `android.graphics.Canvas` via [PureSwift/Android](https://github.com/PureSwift/Android) (JNI) |
+| Nintendo 3DS (experimental) | `Silica3DS` | `Nintendo3DSContext` | Built-in pure-Swift software rasterizer |
 | WebAssembly | `SilicaWeb` | `WebCanvasContext` | Web Canvas API (`CanvasRenderingContext2D`) via [JavaScriptKit](https://github.com/swiftwasm/JavaScriptKit), including Embedded Swift |
 
 The `Silica` library contains the shared API: the `CGContext` protocol and its derived drawing operations, the data types (`CGPath`, `CGColor`, `CGImage`, `CGFont`, `CGAffineTransform`, …) and the UIKit compatibility layer (`UIBezierPath`, `UIColor`, `UIFont`, `UIImage`, `NSString` drawing). Drawing code only needs `import Silica`; the backend library is imported where the graphics context is created.
@@ -38,7 +39,7 @@ Each backend also offers `init(bitmap:)` for raster contexts (`makeImage()` retu
 Fonts and PNG decoding without an explicit context (`CGFont(name:)`, `UIFont(name:size:)`, `CGImageSourcePNG(data:)`) use the registered default backend. A backend registers itself when its first context is created, or explicitly:
 
 ```swift
-CairoBackend.register() // or CoreGraphicsBackend / AndroidBackend / WebBackend
+CairoBackend.register() // or CoreGraphicsBackend / AndroidBackend / Nintendo3DSBackend / WebBackend
 ```
 
 ## Coordinate System
@@ -65,6 +66,12 @@ The Cairo backend also builds and runs on macOS (`brew install cairo fontconfig 
 - JNI-backed objects must be used from a JVM-attached thread; create, use, and finish a context on the same thread.
 - The linear (scale/rotation) components of the text matrix are not applied to glyph shapes.
 - Unknown font names fall back to the system typeface (Android provides no font-matching failure signal).
+
+### Nintendo 3DS
+
+The 3DS has no system vector graphics library, so `Silica3DS` rasterizes in pure Swift into an RGBA bitmap (scanline fills with both winding rules, stroking with caps/joins/dashes, clip masks, transparency layers, blur-less shadows, and optional supersampling). The renderer is platform-neutral: bitmap contexts build and are pixel-tested on every host.
+
+`ports/3DS` builds a homebrew `.3dsx` demo with **Embedded Swift** (`armv6-none-none-eabi`, Swift 6.3.2+) against devkitPro's libctru, following the same structure as [junkbot-swift](https://github.com/colemancda/junkbot-swift)'s 3DS port — verified running in the Azahar emulator. `present()` copies the rendered bitmap into the GSP framebuffer (rotated 90°, column-major). Text and PNG codecs are unavailable on this backend, and non-ASCII string comparison traps (the embedded Unicode tables are soft-float; the 3DS ABI is hard-float).
 
 ### WebAssembly
 

@@ -512,7 +512,7 @@ public final class CairoContext: CGContext {
 
     // MARK: Transparency Layers
 
-    public func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: [String: Any]?) {
+    public func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: CGAuxiliaryInfo?) {
 
         // in case we clip (for the rect)
         internalContext.save()

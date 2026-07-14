@@ -31,7 +31,7 @@ public typealias CGAuxiliaryInfo = [String: String]
 ///
 /// Concrete implementations are provided by the rendering backend libraries
 /// (e.g. `CairoContext`, `CoreGraphicsContext`, `AndroidCanvasContext`).
-///
+
 /// Silica uses a top-left origin, y-down coordinate system (UIKit convention) on every backend.
 public protocol CGContext: AnyObject {
 

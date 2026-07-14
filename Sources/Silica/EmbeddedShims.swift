@@ -141,6 +141,39 @@ public func floor(_ value: Double) -> Double {
     value.rounded(.down)
 }
 
+/// Returns the sine of the specified angle, in radians.
+public func sin(_ x: Double) -> Double {
+
+    // range-reduce to [-pi, pi]
+    var value = x.truncatingRemainder(dividingBy: 2 * .pi)
+    if value > .pi { value -= 2 * .pi }
+    if value < -.pi { value += 2 * .pi }
+
+    // Maclaurin series on the reduced argument
+    let square = value * value
+    var term = value
+    var sum = value
+    var n = 1.0
+
+    for _ in 0 ..< 8 {
+        n += 2
+        term *= -square / ((n - 1) * n)
+        sum += term
+    }
+
+    return sum
+}
+
+/// Returns the cosine of the specified angle, in radians.
+public func cos(_ x: Double) -> Double {
+    sin(x + .pi / 2)
+}
+
+/// Returns the tangent of the specified angle, in radians.
+public func tan(_ x: Double) -> Double {
+    sin(x) / cos(x)
+}
+
 /// Returns the principal value of the arc tangent of `y/x`,
 /// using the signs of both arguments to determine the quadrant of the result.
 public func atan2(_ y: Double, _ x: Double) -> Double {

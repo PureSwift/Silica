@@ -74,3 +74,8 @@ docs
 # Finder
 .DS_Store
 .build-android/
+# ports/3DS build output
+ports/3DS/build/
+ports/3DS/*.elf
+ports/3DS/*.3dsx
+ports/3DS/*.map
