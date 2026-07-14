@@ -6,7 +6,9 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+#if canImport(Foundation)
 import Foundation
+#endif
 
 /// A graphics path is a mathematical description of a series of shapes or lines.
 ///
@@ -196,7 +198,7 @@ public enum CGPathElementType {
 
 public extension CGPathElement {
     
-    init(_ element: Silica.PathElement) {
+    init(_ element: PathElement) {
         
         switch element {
             
@@ -228,7 +230,7 @@ public extension CGPathElement {
     }
 }
 
-public extension Silica.PathElement {
+public extension PathElement {
     
     init(_ element: CGPathElement) {
         

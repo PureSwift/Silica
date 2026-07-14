@@ -463,7 +463,7 @@ public final class CoreGraphicsContext: Silica.CGContext {
 
     // MARK: - Transparency Layers
 
-    public func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: [String: Any]?) {
+    public func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: SilicaAuxiliaryInfo?) {
 
         ensurePage()
 

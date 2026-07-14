@@ -22,6 +22,10 @@ let package = Package(
         .library(
             name: "SilicaAndroid",
             targets: ["SilicaAndroid"]
+        ),
+        .library(
+            name: "Silica3DS",
+            targets: ["Silica3DS"]
         )
     ],
     dependencies: [
@@ -87,6 +91,10 @@ let package = Package(
             ]
         ),
         .target(
+            name: "Silica3DS",
+            dependencies: ["Silica"]
+        ),
+        .target(
             name: "SilicaTestSupport",
             dependencies: ["Silica"],
             path: "Tests/SilicaTestSupport"
@@ -103,6 +111,13 @@ let package = Package(
             dependencies: [
                 "SilicaCoreGraphics",
                 "SilicaCairo",
+                "SilicaTestSupport"
+            ]
+        ),
+        .testTarget(
+            name: "Silica3DSTests",
+            dependencies: [
+                "Silica3DS",
                 "SilicaTestSupport"
             ]
         ),

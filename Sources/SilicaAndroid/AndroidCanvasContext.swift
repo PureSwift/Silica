@@ -512,7 +512,7 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
     // MARK: - Transparency Layers
 
-    public func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: [String: Any]?) {
+    public func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: SilicaAuxiliaryInfo?) {
 
         let alpha = Int32((internalState.alpha * 255).rounded())
 

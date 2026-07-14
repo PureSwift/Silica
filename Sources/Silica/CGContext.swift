@@ -14,13 +14,23 @@ import Glibc
 import Android
 #endif
 
+#if canImport(Foundation)
 import Foundation
+#endif
 
 /// An abstract two-dimensional drawing destination, modeled after the Quartz 2D drawing API.
 ///
 /// Concrete implementations are provided by the rendering backend libraries
 /// (e.g. `CairoContext`, `CoreGraphicsContext`, `AndroidCanvasContext`).
 ///
+#if hasFeature(Embedded)
+/// Embedded Swift forbids `Any`; transparency-layer auxiliary info is unused there.
+public typealias SilicaAuxiliaryInfo = [String: String]
+#else
+/// Auxiliary information for transparency layers (matches CoreGraphics' untyped dictionary).
+public typealias SilicaAuxiliaryInfo = [String: Any]
+#endif
+
 /// Silica uses a top-left origin, y-down coordinate system (UIKit convention) on every backend.
 public protocol CGContext: AnyObject {
 
@@ -146,7 +156,7 @@ public protocol CGContext: AnyObject {
 
     // MARK: - Transparency Layers
 
-    func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: [String: Any]?)
+    func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: SilicaAuxiliaryInfo?)
 
     func endTransparencyLayer()
 
@@ -410,7 +420,7 @@ public extension CGContext {
 
     // MARK: Transparency Layers
 
-    func beginTransparencyLayer(auxiliaryInfo: [String: Any]? = nil) {
+    func beginTransparencyLayer(auxiliaryInfo: SilicaAuxiliaryInfo? = nil) {
         beginTransparencyLayer(in: nil, auxiliaryInfo: auxiliaryInfo)
     }
 
