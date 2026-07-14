@@ -6,7 +6,9 @@
 //
 //
 
+#if canImport(Foundation)
 import struct Foundation.Data
+#endif
 
 /// This object abstracts the data-writing task.
 /// An image source can write image data to `Data`.

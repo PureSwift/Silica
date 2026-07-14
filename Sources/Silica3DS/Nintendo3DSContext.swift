@@ -425,7 +425,7 @@ public final class Nintendo3DSContext: CGContext {
 
     // MARK: - Transparency Layers
 
-    public func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: SilicaAuxiliaryInfo?) {
+    public func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: CGAuxiliaryInfo?) {
 
         layerAlphas.append(internalState.alpha)
 

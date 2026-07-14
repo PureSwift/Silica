@@ -1,203 +1,122 @@
 //
-//  AndroidCanvasContext.swift
-//  SilicaAndroid
+//  WebCanvasContext.swift
+//  SilicaWeb
 //
 //  Created by Alsey Coleman Miller on 7/13/26.
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
-#if canImport(AndroidGraphics)
+#if canImport(JavaScriptKit)
 
-import AndroidGraphics
-import SwiftJava
-import JavaIO
-import JavaLangIO
+#if canImport(Foundation)
 import Foundation
+#endif
+
+import JavaScriptKit
 import Silica
 
-/// Android Canvas backed implementation of `CGContext`.
+/// Web Canvas API (`CanvasRenderingContext2D`) backed implementation of `CGContext`,
+/// bridged through JavaScriptKit. Compatible with Embedded Swift.
 ///
-/// Android's Canvas is already a top-left origin, y-down coordinate system, so no
-/// base flip is required. PDF output uses `android.graphics.pdf.PdfDocument`,
-/// whose page canvas operates in points (1/72 inch).
+/// The web canvas is already a top-left origin, y-down coordinate system, so no
+/// base flip is required.
 ///
 /// The current transformation matrix is tracked on the Swift side: path points are
 /// transformed into device space at add time (matching Cairo and Quartz semantics)
 /// and strokes are rendered under the CTM so pen geometry transforms correctly.
 ///
-/// - Note: `finish()` is mandatory for PDF destinations — the document is only
-///   written to disk when it is called. JNI-backed objects must be used from a
-///   JVM-attached thread; a context should be created, used and finished on the
-///   same thread.
-/// - Note: Glyph rendering requires Android API 31 (`Canvas.drawGlyphs`).
-public final class AndroidCanvasContext: Silica.CGContext {
+/// - Note: The canvas is sized in device pixels; callers that render at a display
+///   scale other than 1:1 (e.g. `devicePixelRatio`) should apply it with `scaleBy`.
+/// - Note: Shape antialiasing cannot be disabled in the Web Canvas API;
+///   `shouldAntialias` only controls image smoothing.
+public final class WebCanvasContext: Silica.CGContext {
 
     // MARK: - Properties
 
     public let size: CGSize
 
-    /// Android's Canvas is natively top-left origin, y-down.
+    /// The web canvas is natively top-left origin, y-down.
     public var isFlipped: Bool { true }
 
-    /// The underlying Android canvas (replaced on `beginPage()` for PDF destinations).
-    public private(set) var canvas: AndroidGraphics.Canvas
+    /// The underlying canvas (`HTMLCanvasElement` or `OffscreenCanvas`).
+    public let canvas: JSObject
+
+    /// The underlying 2D rendering context of `canvas`.
+    public let context: JSObject
 
     public var textMatrix = CGAffineTransform(a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0)
 
     // MARK: - Private Properties
 
-    private let pdfDocument: PdfDocument?
-
-    private let pdfURL: URL?
-
-    private let bitmap: AndroidGraphics.Bitmap?
-
-    private var page: PdfDocument.Page?
-
-    private var pageNumber: Int32 = 0
-
-    private var isFinished = false
-
     private var internalState: State = State()
 
-    private var devicePath = AndroidGraphics.Path()
-
-    /// Mirror of the current path (device space) for the `path` accessor.
+    /// The current path, in device space.
     private var deviceElements = [PathElement]()
 
     private var deviceCurrentPoint: CGPoint?
 
     private var deviceSubpathStart: CGPoint?
 
-    private var saveCounts = [Int32]()
+    /// Transparency layer stack; drawing goes to the top layer's context.
+    private var layers = [Layer]()
 
-    private var layerCounts = [Int32]()
+    /// The 2D context all drawing operations currently target.
+    private var target: JSObject { layers.last?.context ?? context }
 
     // MARK: - Initialization
 
-    /// Creates a PDF drawing destination at the specified file URL.
+    /// Wraps an existing canvas (`HTMLCanvasElement` or `OffscreenCanvas`).
     ///
-    /// Call `finish()` to write the document to disk.
-    public init(pdf url: URL, size: CGSize) throws(SilicaError) {
+    /// - Parameter size: The size of the drawing surface in points;
+    ///   defaults to the canvas' pixel dimensions.
+    public init(canvas: JSObject, size: CGSize? = nil) throws(SilicaError) {
 
-        let document = PdfDocument()
-
-        self.pdfDocument = document
-        self.pdfURL = url
-        self.bitmap = nil
-        self.size = size
-
-        let info = PdfDocument.PageInfo.Builder(Int32(size.width), Int32(size.height), 1).create()
-
-        guard let page = document.startPage(info),
-            let canvas = page.getCanvas()
+        guard let context = canvas.getContext!("2d").object
             else { throw SilicaError.invalidContext }
 
-        self.page = page
         self.canvas = canvas
-        self.pageNumber = 1
+        self.context = context
+        self.size = size ?? CGSize(width: canvas.width.number ?? 0,
+                                   height: canvas.height.number ?? 0)
 
-        AndroidBackend.registerIfNeeded()
+        WebBackend.registerIfNeeded()
     }
 
-    /// Creates a bitmap drawing destination of the specified size.
-    public init(bitmap size: CGSize) throws(SilicaError) {
+    /// Creates a bitmap drawing destination of the specified size, backed by an
+    /// `OffscreenCanvas` (or an `HTMLCanvasElement` where `OffscreenCanvas` is unavailable).
+    public convenience init(size: CGSize) throws(SilicaError) {
 
-        guard let bitmapClass = try? JavaClass<AndroidGraphics.Bitmap>(),
-            let bitmap = bitmapClass.createBitmap(Int32(size.width), Int32(size.height), Bitmap.Config(.ARGB_8888))
+        guard let canvas = WebCanvasContext.makeCanvas(width: Int(size.width), height: Int(size.height))
             else { throw SilicaError.noMemory }
 
-        self.pdfDocument = nil
-        self.pdfURL = nil
-        self.bitmap = bitmap
-        self.size = size
-        self.canvas = Canvas(bitmap)
-
-        AndroidBackend.registerIfNeeded()
+        try self.init(canvas: canvas, size: size)
     }
 
-    /// Wraps an existing canvas (e.g. provided to `View.onDraw`).
-    public init(canvas: AndroidGraphics.Canvas, size: CGSize) {
+    internal static func makeCanvas(width: Int, height: Int) -> JSObject? {
 
-        self.pdfDocument = nil
-        self.pdfURL = nil
-        self.bitmap = nil
-        self.size = size
-        self.canvas = canvas
+        if let offscreenCanvas = JSObject.global.OffscreenCanvas.function {
+            return offscreenCanvas.new(width, height)
+        }
 
-        AndroidBackend.registerIfNeeded()
+        // fall back to a detached canvas element
+        let document = JSObject.global.document
+
+        guard let canvas = document.createElement("canvas").object
+            else { return nil }
+
+        canvas.width = .number(Double(width))
+        canvas.height = .number(Double(height))
+
+        return canvas
     }
 
     // MARK: - Defining Pages
 
-    public func beginPage() {
+    public func beginPage() { } // not a page-based destination
 
-        guard let document = pdfDocument, isFinished == false
-            else { return }
+    public func endPage() { }
 
-        if page != nil {
-            endPage()
-        }
-
-        pageNumber += 1
-
-        let info = PdfDocument.PageInfo.Builder(Int32(size.width), Int32(size.height), pageNumber).create()
-
-        guard let newPage = document.startPage(info),
-            let newCanvas = newPage.getCanvas()
-            else { assertionFailure("Unable to start PDF page"); return }
-
-        page = newPage
-        canvas = newCanvas
-        saveCounts.removeAll()
-        layerCounts.removeAll()
-    }
-
-    public func endPage() {
-
-        guard let document = pdfDocument, let openPage = page
-            else { return }
-
-        document.finishPage(openPage)
-        page = nil
-    }
-
-    /// Writes the PDF document to disk and closes it.
-    ///
-    /// This method is mandatory for PDF destinations.
-    public func finish() throws(SilicaError) {
-
-        guard isFinished == false
-            else { return }
-
-        defer { isFinished = true }
-
-        guard let document = pdfDocument, let url = pdfURL
-            else { return }
-
-        if page != nil {
-            endPage()
-        }
-
-        let stream: FileOutputStream
-
-        do {
-            stream = try FileOutputStream(url.path)
-        }
-        catch {
-            throw SilicaError.writeError
-        }
-
-        do {
-            try document.writeTo(stream)
-            try stream.close()
-        }
-        catch {
-            throw SilicaError.writeError
-        }
-
-        document.close()
-    }
+    public func finish() throws(SilicaError) { }
 
     // MARK: - Transforming the Coordinate Space
 
@@ -218,8 +137,8 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
     public func rotateBy(_ angle: CGFloat) {
 
-        let cosine = cos(angle)
-        let sine = sin(angle)
+        let cosine = JSMath.cos(angle)
+        let sine = JSMath.sin(angle)
 
         concatenate(CGAffineTransform(a: cosine, b: sine, c: -sine, d: cosine, tx: 0, ty: 0))
     }
@@ -234,7 +153,7 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
     public func save() throws(SilicaError) {
 
-        saveCounts.append(canvas.save())
+        _ = target.save!()
 
         let newState = internalState.copy
         newState.next = internalState
@@ -243,11 +162,10 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
     public func restore() throws(SilicaError) {
 
-        guard let restoredState = internalState.next,
-            let saveCount = saveCounts.popLast()
+        guard let restoredState = internalState.next
             else { throw .invalidRestore }
 
-        canvas.restoreToCount(saveCount)
+        _ = target.restore!()
         internalState = restoredState
     }
 
@@ -354,7 +272,6 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
     public func beginPath() {
 
-        devicePath.reset()
         deviceElements.removeAll()
         deviceCurrentPoint = nil
         deviceSubpathStart = nil
@@ -362,7 +279,6 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
     public func closePath() {
 
-        devicePath.close()
         deviceElements.append(.closeSubpath)
         deviceCurrentPoint = deviceSubpathStart
     }
@@ -371,7 +287,6 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
         let device = point.applying(internalState.ctm)
 
-        devicePath.moveTo(Float(device.x), Float(device.y))
         deviceElements.append(.moveToPoint(device))
         deviceCurrentPoint = device
         deviceSubpathStart = device
@@ -381,7 +296,6 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
         let device = point.applying(internalState.ctm)
 
-        devicePath.lineTo(Float(device.x), Float(device.y))
         deviceElements.append(.addLineToPoint(device))
         deviceCurrentPoint = device
     }
@@ -392,9 +306,6 @@ public final class AndroidCanvasContext: Silica.CGContext {
         let deviceControl2 = control2.applying(internalState.ctm)
         let deviceEnd = end.applying(internalState.ctm)
 
-        devicePath.cubicTo(Float(deviceControl1.x), Float(deviceControl1.y),
-                           Float(deviceControl2.x), Float(deviceControl2.y),
-                           Float(deviceEnd.x), Float(deviceEnd.y))
         deviceElements.append(.addCurveToPoint(deviceControl1, deviceControl2, deviceEnd))
         deviceCurrentPoint = deviceEnd
     }
@@ -415,8 +326,8 @@ public final class AndroidCanvasContext: Silica.CGContext {
         let radius = Double(radius)
 
         func point(at angle: Double) -> CGPoint {
-            return CGPoint(x: center.x + CGFloat(radius * Foundation.cos(angle)),
-                           y: center.y + CGFloat(radius * Foundation.sin(angle)))
+            return CGPoint(x: center.x + CGFloat(radius * JSMath.cos(angle)),
+                           y: center.y + CGFloat(radius * JSMath.sin(angle)))
         }
 
         let startPoint = point(at: start)
@@ -436,7 +347,7 @@ public final class AndroidCanvasContext: Silica.CGContext {
         // subdivide into segments of at most 90°, lowered to cubic Béziers
         let segments = max(1, Int((abs(total) / (Double.pi / 2.0)).rounded(.up)))
         let delta = total / Double(segments)
-        let k = (4.0 / 3.0) * Foundation.tan(delta / 4.0)
+        let k = (4.0 / 3.0) * JSMath.tan(delta / 4.0)
 
         var angle1 = start
 
@@ -447,10 +358,10 @@ public final class AndroidCanvasContext: Silica.CGContext {
             let p1 = point(at: angle1)
             let p2 = point(at: angle2)
 
-            let control1 = CGPoint(x: p1.x - CGFloat(k * radius * Foundation.sin(angle1)),
-                                   y: p1.y + CGFloat(k * radius * Foundation.cos(angle1)))
-            let control2 = CGPoint(x: p2.x + CGFloat(k * radius * Foundation.sin(angle2)),
-                                   y: p2.y - CGFloat(k * radius * Foundation.cos(angle2)))
+            let control1 = CGPoint(x: p1.x - CGFloat(k * radius * JSMath.sin(angle1)),
+                                   y: p1.y + CGFloat(k * radius * JSMath.cos(angle1)))
+            let control2 = CGPoint(x: p2.x + CGFloat(k * radius * JSMath.sin(angle2)),
+                                   y: p2.y - CGFloat(k * radius * JSMath.cos(angle2)))
 
             addCurve(to: p2, control1: control1, control2: control2)
 
@@ -472,26 +383,28 @@ public final class AndroidCanvasContext: Silica.CGContext {
     public func strokePath() {
 
         if let shadow = internalState.shadow {
-            drawShadow(shadow) { canvas, paint in
-                self.strokeUnderTransform(paint: paint, canvas: canvas)
+            drawShadow(shadow) { context in
+                self.strokeUnderTransform(context)
             }
         }
 
-        strokeUnderTransform(paint: strokePaint(), canvas: canvas)
+        applyStrokeStyle(target)
+        strokeUnderTransform(target)
         resetPath()
     }
 
     public func fillPath(evenOdd: Bool, preserve: Bool) {
 
-        devicePath.setFillType(Path.FillType(evenOdd ? .EVEN_ODD : .WINDING))
+        let fillRule = evenOdd ? "evenodd" : "nonzero"
 
         if let shadow = internalState.shadow {
-            drawShadow(shadow) { canvas, paint in
-                canvas.drawPath(self.devicePath, paint)
+            drawShadow(shadow) { context in
+                _ = context.fill!(self.makePath2D(self.deviceElements), fillRule)
             }
         }
 
-        canvas.drawPath(devicePath, fillPaint())
+        target.fillStyle = .string(cssColor(internalState.fill ?? .black))
+        _ = target.fill!(makePath2D(deviceElements), fillRule)
 
         if preserve == false {
             resetPath()
@@ -505,8 +418,7 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
     public func clip(evenOdd: Bool) {
 
-        devicePath.setFillType(Path.FillType(evenOdd ? .EVEN_ODD : .WINDING))
-        _ = canvas.clipPath(devicePath)
+        _ = target.clip!(makePath2D(deviceElements), evenOdd ? "evenodd" : "nonzero")
         resetPath()
     }
 
@@ -514,12 +426,17 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
     public func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: CGAuxiliaryInfo?) {
 
-        let alpha = Int32((internalState.alpha * 255).rounded())
+        let width = Int(canvas.width.number ?? Double(size.width))
+        let height = Int(canvas.height.number ?? Double(size.height))
 
-        let count: Int32
+        guard let layerCanvas = WebCanvasContext.makeCanvas(width: width, height: height),
+            let layerContext = layerCanvas.getContext!("2d").object
+            else { assertionFailure("Unable to create transparency layer"); return }
+
+        // transform the user-space bounds into device space
+        var deviceRect: CGRect?
 
         if let rect = rect {
-            // transform the user-space rect corners into device space and take their bounds
             let corners = [
                 CGPoint(x: rect.minX, y: rect.minY).applying(internalState.ctm),
                 CGPoint(x: rect.maxX, y: rect.minY).applying(internalState.ctm),
@@ -530,13 +447,13 @@ public final class AndroidCanvasContext: Silica.CGContext {
             let minY = corners.map { $0.y }.min()!
             let maxX = corners.map { $0.x }.max()!
             let maxY = corners.map { $0.y }.max()!
-            let bounds = RectF(Float(minX), Float(minY), Float(maxX), Float(maxY))
-            count = canvas.saveLayerAlpha(bounds, alpha)
-        } else {
-            count = canvas.saveLayerAlpha(nil, alpha)
+            deviceRect = CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
         }
 
-        layerCounts.append(count)
+        layers.append(Layer(canvas: layerCanvas,
+                            context: layerContext,
+                            alpha: internalState.alpha,
+                            bounds: deviceRect))
 
         let newState = internalState.copy
         newState.next = internalState
@@ -547,37 +464,45 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
     public func endTransparencyLayer() {
 
-        guard let count = layerCounts.popLast()
+        guard let layer = layers.popLast()
             else { return }
-
-        canvas.restoreToCount(count)
 
         if let restoredState = internalState.next {
             internalState = restoredState
         }
+
+        // composite the layer at the captured alpha
+        _ = target.save!()
+        target.globalAlpha = .number(Double(layer.alpha))
+
+        if let bounds = layer.bounds {
+            _ = target.beginPath!()
+            _ = target.rect!(Double(bounds.minX), Double(bounds.minY), Double(bounds.width), Double(bounds.height))
+            _ = target.clip!()
+        }
+
+        _ = target.drawImage!(layer.canvas, 0, 0)
+        _ = target.restore!()
     }
 
     // MARK: - Drawing Images
 
     public func draw(_ image: CGImage, in rect: CGRect) {
 
-        guard let bitmap = image.toAndroidBitmap()
+        guard let imageCanvas = image.makeWebCanvas()
             else { assertionFailure("Unable to convert image"); return }
 
         // Silica's `draw(_:in:)` follows Apple's y-up image convention (callers
         // flip the CTM to draw upright, as UIKit code does), so mirror the image
         // vertically about the rect's centerline.
-        _ = canvas.save()
-        canvas.concat(internalState.ctm.toAndroid())
-        canvas.translate(0, Float(rect.minY + rect.maxY))
-        canvas.scale(1, -1)
+        _ = target.save!()
+        setTransform(target, internalState.ctm)
+        _ = target.transform!(1, 0, 0, -1, 0, Double(rect.minY + rect.maxY))
 
-        let destination = RectF(Float(rect.minX), Float(rect.minY), Float(rect.maxX), Float(rect.maxY))
-        let paint = Paint()
-        paint.setAntiAlias(internalState.shouldAntialias)
-        canvas.drawBitmap(bitmap, nil, destination, paint)
+        target.imageSmoothingEnabled = .boolean(internalState.shouldAntialias)
+        _ = target.drawImage!(imageCanvas, Double(rect.minX), Double(rect.minY), Double(rect.width), Double(rect.height))
 
-        canvas.restore()
+        _ = target.restore!()
     }
 
     // MARK: - Drawing Text
@@ -615,60 +540,77 @@ public final class AndroidCanvasContext: Silica.CGContext {
 
     /// Primitive glyph rendering; positions are user-space baseline origins.
     ///
-    /// Requires Android API 31 (`Canvas.drawGlyphs`). The linear components of the
-    /// text matrix (scale / rotation of glyph shapes) are not supported on Android.
+    /// The Web Canvas API exposes no glyph-level drawing, so glyph indices are
+    /// Unicode scalar values (see `WebFontHandle`) rendered with `fillText`.
+    /// The linear components of the text matrix (scale / rotation of glyph
+    /// shapes) are not supported.
     public func draw(glyphs: [(glyph: CGGlyph, position: CGPoint)]) {
 
         guard let font = internalState.font,
             fontSize > 0.0 && glyphs.isEmpty == false
             else { return }
 
-        guard let handle = font.handle as? AndroidFontHandle
-            else { assertionFailure("Font \(font.name) was not loaded by the Android backend"); return }
+        guard let handle = font.handle as? WebFontHandle
+            else { assertionFailure("Font \(font.name) was not loaded by the Web backend"); return }
 
         guard internalState.textMode != .invisible
             else { return }
 
-        let paint = Paint()
-        paint.setAntiAlias(internalState.shouldAntialias)
-        paint.setColor(colorValue(internalState.fill ?? .black))
-        paint.setTextSize(Float(fontSize))
+        _ = target.save!()
+        setTransform(target, internalState.ctm)
+
+        target.font = .string(handle.cssFont(size: fontSize))
+        target.textBaseline = .string("alphabetic")
+
+        let fill: Bool
+        let stroke: Bool
 
         switch internalState.textMode {
         case .stroke, .strokeClip:
-            paint.setStyle(Paint.Style(.STROKE))
-            paint.setColor(colorValue(internalState.stroke ?? .black))
-            paint.setStrokeWidth(Float(internalState.lineWidth))
+            fill = false; stroke = true
         case .fillStroke, .fillStrokeClip:
-            paint.setStyle(Paint.Style(.FILL_AND_STROKE))
-            paint.setStrokeWidth(Float(internalState.lineWidth))
+            fill = true; stroke = true
         default:
-            paint.setStyle(Paint.Style(.FILL))
+            fill = true; stroke = false
         }
 
-        _ = canvas.save()
-        canvas.concat(internalState.ctm.toAndroid())
+        if fill {
+            target.fillStyle = .string(cssColor(internalState.fill ?? .black))
+        }
+
+        if stroke {
+            target.strokeStyle = .string(cssColor(internalState.stroke ?? .black))
+            target.lineWidth = .number(Double(internalState.lineWidth))
+        }
 
         for element in glyphs {
 
-            let glyphFont = handle.font(for: element.glyph) ?? handle.baseFont
+            let text = handle.text(for: element.glyph)
 
-            canvas.drawGlyphs([Int32(element.glyph)], 0,
-                              [Float(element.position.x), Float(element.position.y)], 0,
-                              1, glyphFont, paint)
+            if fill {
+                _ = target.fillText!(text, Double(element.position.x), Double(element.position.y))
+            }
+
+            if stroke {
+                _ = target.strokeText!(text, Double(element.position.x), Double(element.position.y))
+            }
         }
 
-        canvas.restore()
+        _ = target.restore!()
     }
 
     // MARK: - Bitmap Contexts
 
     public func makeImage() -> CGImage? {
 
-        guard let bitmap = self.bitmap
+        let width = Int(canvas.width.number ?? 0)
+        let height = Int(canvas.height.number ?? 0)
+
+        guard width > 0, height > 0,
+            let imageData = context.getImageData!(0, 0, width, height).object
             else { return nil }
 
-        return CGImage(bitmap)
+        return CGImage(imageData)
     }
 
     // MARK: - Private Methods
@@ -678,65 +620,94 @@ public final class AndroidCanvasContext: Silica.CGContext {
         beginPath()
     }
 
-    private func fillPaint() -> Paint {
+    /// Creates a `Path2D` from the specified path elements.
+    private func makePath2D(_ elements: [PathElement]) -> JSObject {
 
-        let paint = Paint()
-        paint.setAntiAlias(internalState.shouldAntialias)
-        paint.setStyle(Paint.Style(.FILL))
-        paint.setColor(colorValue(internalState.fill ?? .black))
-        return paint
+        let path = JSObject.global.Path2D.function!.new()
+
+        for element in elements {
+
+            switch element {
+
+            case let .moveToPoint(point):
+                _ = path.moveTo!(Double(point.x), Double(point.y))
+
+            case let .addLineToPoint(point):
+                _ = path.lineTo!(Double(point.x), Double(point.y))
+
+            case let .addQuadCurveToPoint(control, destination):
+                _ = path.quadraticCurveTo!(Double(control.x), Double(control.y),
+                                          Double(destination.x), Double(destination.y))
+
+            case let .addCurveToPoint(control1, control2, destination):
+                _ = path.bezierCurveTo!(Double(control1.x), Double(control1.y),
+                                       Double(control2.x), Double(control2.y),
+                                       Double(destination.x), Double(destination.y))
+
+            case .closeSubpath:
+                _ = path.closePath!()
+            }
+        }
+
+        return path
     }
 
-    private func strokePaint() -> Paint {
+    private func setTransform(_ context: JSObject, _ transform: CGAffineTransform) {
 
-        let paint = Paint()
-        paint.setAntiAlias(internalState.shouldAntialias)
-        paint.setStyle(Paint.Style(.STROKE))
-        paint.setColor(colorValue(internalState.stroke ?? .black))
-        paint.setStrokeWidth(Float(internalState.lineWidth))
-        paint.setStrokeMiter(Float(internalState.miterLimit))
+        _ = context.setTransform!(Double(transform.a), Double(transform.b),
+                                 Double(transform.c), Double(transform.d),
+                                 Double(transform.tx), Double(transform.ty))
+    }
+
+    private func applyStrokeStyle(_ context: JSObject) {
+
+        context.strokeStyle = .string(cssColor(internalState.stroke ?? .black))
+        context.lineWidth = .number(Double(internalState.lineWidth))
+        context.miterLimit = .number(Double(internalState.miterLimit))
 
         switch internalState.lineCap {
-        case .butt: paint.setStrokeCap(Paint.Cap(.BUTT))
-        case .round: paint.setStrokeCap(Paint.Cap(.ROUND))
-        case .square: paint.setStrokeCap(Paint.Cap(.SQUARE))
+        case .butt: context.lineCap = .string("butt")
+        case .round: context.lineCap = .string("round")
+        case .square: context.lineCap = .string("square")
         }
 
         switch internalState.lineJoin {
-        case .miter: paint.setStrokeJoin(Paint.Join(.MITER))
-        case .round: paint.setStrokeJoin(Paint.Join(.ROUND))
-        case .bevel: paint.setStrokeJoin(Paint.Join(.BEVEL))
+        case .miter: context.lineJoin = .string("miter")
+        case .round: context.lineJoin = .string("round")
+        case .bevel: context.lineJoin = .string("bevel")
         }
 
         let dash = internalState.lineDash
+        let segments = JSObject.global.Array.function!.new()
 
-        if dash.lengths.isEmpty == false {
-            _ = paint.setPathEffect(DashPathEffect(dash.lengths.map { Float($0) }, Float(dash.phase)))
+        for length in dash.lengths {
+            _ = segments.push!(Double(length))
         }
 
-        return paint
+        _ = context.setLineDash!(segments)
+        context.lineDashOffset = .number(Double(dash.phase))
     }
 
     /// Strokes the current device-space path with the pen transformed by the CTM,
     /// reproducing Cairo's stroke semantics (including non-uniform scales).
-    private func strokeUnderTransform(paint: Paint, canvas: AndroidGraphics.Canvas) {
+    private func strokeUnderTransform(_ context: JSObject) {
 
         let ctm = internalState.ctm
 
         // transform the device path back into user space
-        let userPath = AndroidGraphics.Path()
-        devicePath.transform(ctm.inverse.toAndroid(), userPath)
+        let inverse = ctm.inverse
+        let userPath = makePath2D(deviceElements.map { $0.applying(inverse) })
 
-        _ = canvas.save()
-        canvas.concat(ctm.toAndroid())
-        canvas.drawPath(userPath, paint)
-        canvas.restore()
+        _ = context.save!()
+        setTransform(context, ctm)
+        _ = context.stroke!(userPath)
+        _ = context.restore!()
     }
 
     /// Draws the shadow pass: the shape silhouette in the shadow color at the
     /// shadow offset (no blur, matching the Cairo backend's emulation).
     private func drawShadow(_ shadow: (offset: CGSize, radius: CGFloat, color: CGColor),
-                            _ draw: (AndroidGraphics.Canvas, Paint) -> ()) {
+                            _ draw: (JSObject) -> ()) {
 
         let ctm = internalState.ctm
 
@@ -744,35 +715,35 @@ public final class AndroidCanvasContext: Silica.CGContext {
         let deviceOffset = CGSize(width: ctm.a * shadow.offset.width + ctm.c * shadow.offset.height,
                                   height: ctm.b * shadow.offset.width + ctm.d * shadow.offset.height)
 
-        let paint = Paint()
-        paint.setAntiAlias(internalState.shouldAntialias)
-        paint.setStyle(Paint.Style(.FILL))
-        paint.setColor(colorValue(shadow.color))
+        _ = target.save!()
+        _ = target.translate!(Double(deviceOffset.width), Double(deviceOffset.height))
 
-        _ = canvas.save()
-        canvas.translate(Float(deviceOffset.width), Float(deviceOffset.height))
-        draw(canvas, paint)
-        canvas.restore()
-    }
+        let shadowColor = cssColor(shadow.color)
+        target.fillStyle = .string(shadowColor)
+        target.strokeStyle = .string(shadowColor)
 
-    private func colorValue(_ color: CGColor) -> Int32 {
+        draw(target)
 
-        func component(_ value: CGFloat) -> UInt32 {
-            return UInt32((max(0, min(1, value)) * 255).rounded())
-        }
-
-        let argb: UInt32 = (component(color.alpha) << 24)
-            | (component(color.red) << 16)
-            | (component(color.green) << 8)
-            | component(color.blue)
-
-        return Int32(bitPattern: argb)
+        _ = target.restore!()
     }
 }
 
-// MARK: - State
+// MARK: - Supporting Types
 
-internal extension AndroidCanvasContext {
+internal extension WebCanvasContext {
+
+    struct Layer {
+
+        let canvas: JSObject
+
+        let context: JSObject
+
+        /// Global alpha captured when the layer began, applied when compositing.
+        let alpha: CGFloat
+
+        /// Device-space bounds the composite is clipped to.
+        let bounds: CGRect?
+    }
 
     fileprivate final class State {
 
@@ -823,76 +794,4 @@ internal extension AndroidCanvasContext {
     }
 }
 
-// MARK: - Geometry Helpers
-
-internal extension CGAffineTransform {
-
-    /// The result of applying `self` first, then `other`.
-    func multiplied(by other: CGAffineTransform) -> CGAffineTransform {
-
-        return CGAffineTransform(
-            a: a * other.a + b * other.c,
-            b: a * other.b + b * other.d,
-            c: c * other.a + d * other.c,
-            d: c * other.b + d * other.d,
-            tx: tx * other.a + ty * other.c + other.tx,
-            ty: tx * other.b + ty * other.d + other.ty
-        )
-    }
-
-    var inverse: CGAffineTransform {
-
-        let determinant = a * d - b * c
-
-        guard determinant != 0
-            else { return self }
-
-        return CGAffineTransform(
-            a: d / determinant,
-            b: -b / determinant,
-            c: -c / determinant,
-            d: a / determinant,
-            tx: (c * ty - d * tx) / determinant,
-            ty: (b * tx - a * ty) / determinant
-        )
-    }
-
-    func toAndroid() -> AndroidGraphics.Matrix {
-
-        let matrix = AndroidGraphics.Matrix()
-
-        matrix.setValues([
-            Float(a), Float(c), Float(tx),
-            Float(b), Float(d), Float(ty),
-            0, 0, 1
-        ])
-
-        return matrix
-    }
-}
-
-internal extension PathElement {
-
-    func applying(_ transform: CGAffineTransform) -> PathElement {
-
-        switch self {
-
-        case let .moveToPoint(point):
-            return .moveToPoint(point.applying(transform))
-
-        case let .addLineToPoint(point):
-            return .addLineToPoint(point.applying(transform))
-
-        case let .addQuadCurveToPoint(control, destination):
-            return .addQuadCurveToPoint(control.applying(transform), destination.applying(transform))
-
-        case let .addCurveToPoint(control1, control2, destination):
-            return .addCurveToPoint(control1.applying(transform), control2.applying(transform), destination.applying(transform))
-
-        case .closeSubpath:
-            return .closeSubpath
-        }
-    }
-}
-
-#endif // canImport(AndroidGraphics)
+#endif // canImport(JavaScriptKit)

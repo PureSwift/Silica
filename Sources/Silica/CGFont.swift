@@ -49,15 +49,24 @@ public struct CGFont {
             else { return nil }
 
         // cache fonts per backend, since multiple backends may coexist in one process
+        #if canImport(Foundation)
         let cacheKey = "\(backend)/\(name)"
+        #else
+        let cacheKey = backend.name + "/" + name
+        #endif
 
         if let cachedFont = CGFont.cache[cacheKey] {
             self = cachedFont
             return
         }
 
+        #if canImport(Foundation)
         guard let font = backend.font(named: name)
             else { return nil }
+        #else
+        guard let font = backend.font(name)
+            else { return nil }
+        #endif
 
         CGFont.cache[cacheKey] = font
         self = font

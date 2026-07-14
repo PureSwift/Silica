@@ -26,6 +26,10 @@ let package = Package(
         .library(
             name: "Silica3DS",
             targets: ["Silica3DS"]
+        ),
+        .library(
+            name: "SilicaWeb",
+            targets: ["SilicaWeb"]
         )
     ],
     dependencies: [
@@ -48,6 +52,10 @@ let package = Package(
         .package(
             url: "https://github.com/swift-android-sdk/swift-android-native.git",
             branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swiftwasm/JavaScriptKit.git",
+            from: "0.56.1"
         )
     ],
     targets: [
@@ -93,6 +101,17 @@ let package = Package(
         .target(
             name: "Silica3DS",
             dependencies: ["Silica"]
+        ),
+        .target(
+            name: "SilicaWeb",
+            dependencies: [
+                "Silica",
+                .product(
+                    name: "JavaScriptKit",
+                    package: "JavaScriptKit",
+                    condition: .when(platforms: [.wasi])
+                )
+            ]
         ),
         .target(
             name: "SilicaTestSupport",

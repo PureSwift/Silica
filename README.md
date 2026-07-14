@@ -12,6 +12,7 @@ Silica provides a CoreGraphics-compatible drawing API (plus a small UIKit shim) 
 | Linux (and macOS) | `SilicaCairo` | `CairoContext` | [Cairo](https://github.com/PureSwift/Cairo) / [FontConfig](https://github.com/PureSwift/FontConfig) / FreeType |
 | Android | `SilicaAndroid` | `AndroidCanvasContext` | `android.graphics.Canvas` via [PureSwift/Android](https://github.com/PureSwift/Android) (JNI) |
 | Nintendo 3DS (experimental) | `Silica3DS` | `Nintendo3DSContext` | Built-in pure-Swift software rasterizer |
+| WebAssembly | `SilicaWeb` | `WebCanvasContext` | Web Canvas API (`CanvasRenderingContext2D`) via [JavaScriptKit](https://github.com/swiftwasm/JavaScriptKit), including Embedded Swift |
 
 The `Silica` library contains the shared API: the `CGContext` protocol and its derived drawing operations, the data types (`CGPath`, `CGColor`, `CGImage`, `CGFont`, `CGAffineTransform`, …) and the UIKit compatibility layer (`UIBezierPath`, `UIColor`, `UIFont`, `UIImage`, `NSString` drawing). Drawing code only needs `import Silica`; the backend library is imported where the graphics context is created.
 
@@ -38,7 +39,7 @@ Each backend also offers `init(bitmap:)` for raster contexts (`makeImage()` retu
 Fonts and PNG decoding without an explicit context (`CGFont(name:)`, `UIFont(name:size:)`, `CGImageSourcePNG(data:)`) use the registered default backend. A backend registers itself when its first context is created, or explicitly:
 
 ```swift
-CairoBackend.register() // or CoreGraphicsBackend / AndroidBackend
+CairoBackend.register() // or CoreGraphicsBackend / AndroidBackend / Nintendo3DSBackend / WebBackend
 ```
 
 ## Coordinate System
@@ -72,6 +73,45 @@ The 3DS has no system vector graphics library, so `Silica3DS` rasterizes in pure
 
 `ports/3DS` builds a homebrew `.3dsx` demo with **Embedded Swift** (`armv6-none-none-eabi`, Swift 6.3.2+) against devkitPro's libctru, following the same structure as [junkbot-swift](https://github.com/colemancda/junkbot-swift)'s 3DS port — verified running in the Azahar emulator. `present()` copies the rendered bitmap into the GSP framebuffer (rotated 90°, column-major). Text and PNG codecs are unavailable on this backend, and non-ASCII string comparison traps (the embedded Unicode tables are soft-float; the 3DS ABI is hard-float).
 
+### WebAssembly
+
+The `SilicaWeb` backend draws onto an `HTMLCanvasElement` or `OffscreenCanvas` through the Web Canvas API and builds with both the regular (`swift-<version>-RELEASE_wasm`) and **Embedded Swift** (`swift-<version>-RELEASE_wasm-embedded`) WebAssembly SDKs — the core `Silica` module is Foundation-free when compiled for Embedded Swift:
+
+```swift
+import JavaScriptKit
+import SilicaWeb
+
+let canvas = JSObject.global.document.createElement("canvas")
+let context = try WebCanvasContext(canvas: canvas.object!)
+// ... CoreGraphics style drawing code ...
+```
+
+```sh
+swift build --swift-sdk swift-6.3.3-RELEASE_wasm-embedded --target SilicaWeb
+```
+
+See [`Examples/WebCanvasDemo`](Examples/WebCanvasDemo) for a complete browser app built with the [PackageToJS](https://swiftpackageindex.com/swiftwasm/JavaScriptKit/main/documentation/javascriptkit/packagetojs) plugin (`swift package --swift-sdk <sdk-id> js`). It renders the same `TestStyleKit` (PaintCode-generated) drawing methods that `SilicaCairoTests` renders to PDF with the Cairo backend, plus a showcase panel of paths, arcs, transforms, transparency layers, clipping, and bitmap round-tripping:
+
+```sh
+cd Examples/WebCanvasDemo
+swift package --swift-sdk swift-6.3.3-RELEASE_wasm js --use-cdn   # regular SDK
+
+# the Embedded SDK build needs the Unicode data tables linked (see Package.swift)
+# and skips the two panels that use `String.draw(in:withAttributes:)` ([String: Any])
+SILICA_WASM_EMBEDDED=1 swift package --swift-sdk swift-6.3.3-RELEASE_wasm-embedded js --use-cdn
+
+npx serve .   # then open index.html
+```
+
+Web platform notes:
+
+- Page-based (PDF) output is not supported; `WebCanvasContext` is a bitmap destination.
+- Glyph indices are Unicode scalar values (the Canvas API exposes no font tables), rendered with `fillText`; metrics come from `measureText`. Scalars outside the Basic Multilingual Plane map to glyph 0.
+- `decodePNG` is unavailable (the web only decodes images asynchronously); create a `CGImage` from an `ImageData` object instead, or draw `HTMLImageElement`/`ImageBitmap` directly onto the canvas. `encodePNG` requires a DOM document (`canvas.toDataURL`).
+- Shape antialiasing cannot be disabled; `shouldAntialias` only controls image smoothing.
+- Font names resolve as CSS font families (with camel-case expansion, e.g. `"TimesNewRoman-Bold"` → `"Times New Roman"`, bold), falling back to `sans-serif`.
+- Executables built with the Embedded Swift SDK must link the Unicode data tables: `.linkedLibrary("swiftUnicodeDataTables", .when(platforms: [.wasi]))`.
+
 ### Rendering Differences
 
 - **Shadows**: CoreGraphics renders true Gaussian-blurred shadows; the Cairo and Android backends emulate shadows without blur (a silhouette at the shadow offset).
@@ -83,3 +123,4 @@ The 3DS has no system vector graphics library, so `Silica3DS` rasterizes in pure
 - Linux/macOS (Cairo backend): `cairo`, `fontconfig`, `freetype` system libraries.
 - Android: [PureSwift/Android](https://github.com/PureSwift/Android) (pulled automatically; only built when compiling for Android).
 - macOS (CoreGraphics backend): system frameworks only.
+- WebAssembly: [JavaScriptKit](https://github.com/swiftwasm/JavaScriptKit) (pulled automatically; only built when compiling for WebAssembly).

@@ -12,7 +12,9 @@ import Darwin
 import Glibc
 #endif
 
+#if canImport(Foundation)
 import Foundation
+#endif
 
 public enum UIViewContentMode: Int, Sendable, CaseIterable {
     
