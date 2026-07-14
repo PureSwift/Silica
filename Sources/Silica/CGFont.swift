@@ -15,10 +15,8 @@ import struct Foundation.CGPoint
 /// Silica's `Font` type.
 public struct CGFont {
 
-    #if canImport(Foundation)
     /// Private font cache.
     internal nonisolated(unsafe) static var cache = [String: CGFont]()
-    #endif
 
     // MARK: - Properties
 
@@ -41,7 +39,6 @@ public struct CGFont {
         self.handle = handle
     }
 
-    #if canImport(Foundation)
     /// Creates a font with the specified name using the default rendering backend.
     public init?(name: String) {
 
@@ -71,7 +68,6 @@ public struct CGFont {
         CGFont.cache[cacheKey] = font
         self = font
     }
-    #endif
 }
 
 // MARK: - Equatable
