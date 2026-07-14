@@ -22,6 +22,10 @@ let package = Package(
         .library(
             name: "SilicaAndroid",
             targets: ["SilicaAndroid"]
+        ),
+        .library(
+            name: "SilicaWeb",
+            targets: ["SilicaWeb"]
         )
     ],
     dependencies: [
@@ -44,6 +48,10 @@ let package = Package(
         .package(
             url: "https://github.com/swift-android-sdk/swift-android-native.git",
             branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swiftwasm/JavaScriptKit.git",
+            from: "0.56.1"
         )
     ],
     targets: [
@@ -83,6 +91,17 @@ let package = Package(
                     name: "JavaIO",
                     package: "swift-java",
                     condition: .when(platforms: [.android])
+                )
+            ]
+        ),
+        .target(
+            name: "SilicaWeb",
+            dependencies: [
+                "Silica",
+                .product(
+                    name: "JavaScriptKit",
+                    package: "JavaScriptKit",
+                    condition: .when(platforms: [.wasi])
                 )
             ]
         ),

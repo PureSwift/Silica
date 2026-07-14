@@ -12,7 +12,9 @@ import Darwin
 import Glibc
 #endif
 
+#if canImport(Foundation)
 import Foundation
+#endif
 
 /// The `UIBezierPath` class lets you define a path consisting of straight and curved line segments
 /// and render that path in your custom views. You use this class initially to specify just the geometry for your path. 

@@ -51,6 +51,34 @@ jobs:
     - name: Test (Debug)
       run: swift test -c debug
 
+  wasm:
+    name: WebAssembly (${{ matrix.swift-sdk }})
+    runs-on: ubuntu-latest
+    container: swift:6.3.3
+    strategy:
+      fail-fast: false
+      matrix:
+        # regular and Embedded Swift WebAssembly SDKs
+        swift-sdk: ['swift-6.3.3-RELEASE_wasm', 'swift-6.3.3-RELEASE_wasm-embedded']
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Swift Version
+      run: swift --version
+    - name: Install Swift SDK for WebAssembly
+      run: |
+        swift sdk install \
+          https://download.swift.org/swift-6.3.3-release/wasm-sdk/swift-6.3.3-RELEASE/swift-6.3.3-RELEASE_wasm.artifactbundle.tar.gz \
+          --checksum cabfa08b73bb8ac783927ecd15fa386e99d0c139c5f232445067bcf58379cae7
+        swift sdk list
+    - name: Build
+      run: swift build --swift-sdk ${{ matrix.swift-sdk }} --target SilicaWeb
+    - name: Build Example
+      # the Embedded SDK needs the Unicode data tables linked explicitly; see Examples/WebCanvasDemo/Package.swift
+      run: |
+        env $( [[ "${{ matrix.swift-sdk }}" == *embedded ]] && echo SILICA_WASM_EMBEDDED=1 ) \
+          swift build --package-path Examples/WebCanvasDemo --swift-sdk ${{ matrix.swift-sdk }}
+
   android:
     name: Android
     runs-on: ubuntu-24.04

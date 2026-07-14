@@ -6,7 +6,9 @@
 //
 //
 
+#if canImport(Foundation)
 import Foundation
+#endif
 
 /// UIKit compatibility layer for UIImage
 public final class UIImage {
