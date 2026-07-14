@@ -22,6 +22,7 @@ jobs:
     - name: Build (Release)
       run: swift build -c release
     - name: Test (Debug)
+      # exercises both the CoreGraphics and Cairo backends
       run: swift test -c debug
 
   linux:
@@ -49,3 +50,40 @@ jobs:
       run: swift build -c release
     - name: Test (Debug)
       run: swift test -c debug
+
+  android:
+    name: Android
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        android-sdk: ['nightly-6.3']
+        android-api: ['28', '31']
+        android-ndk: ['r27d']
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+    - name: Setup Swift Android SDK
+      uses: skiptools/actions/setup-skip@v1
+      with:
+        gradle-version: 'none'
+        install-swift-android-sdk: true
+        swift-android-sdk-version: ${{ matrix.android-sdk }}
+        swift-android-ndk-version: ${{ matrix.android-ndk }}
+    - name: Build Swift Package for Android (aarch64)
+      run: |
+        ANDROID_SDK_VERSION=${{ matrix.android-api }} skip android build --arch aarch64 --android-api-level ${{ matrix.android-api }}
+    - name: Build Swift Package for Android (x86_64)
+      run: |
+        ANDROID_SDK_VERSION=${{ matrix.android-api }} skip android build --arch x86_64 --android-api-level ${{ matrix.android-api }}
+    - name: Test Swift Package on Android
+      # Canvas.drawGlyphs and swift-java's JVM lookup require API >= 31
+      if: ${{ matrix.android-api >= 31 }}
+      continue-on-error: true
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: ${{ matrix.android-api }}
+        arch: x86_64
+        script: |
+          ANDROID_SDK_VERSION=${{ matrix.android-api }} skip android test --android-api-level ${{ matrix.android-api }} --apk --verbose

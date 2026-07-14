@@ -6,12 +6,19 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+#if canImport(Cairo)
+
 import XCTest
-@testable import Silica
+@testable import SilicaCairo
 import FontConfig
 
 final class FontTests: XCTestCase {
-        
+
+    override func setUp() {
+        super.setUp()
+        CairoBackend.register()
+    }
+
     func testCreateFont() {
         
         #if os(Linux)
@@ -45,3 +52,5 @@ final class FontTests: XCTestCase {
         }
     }
 }
+
+#endif // canImport(Cairo)

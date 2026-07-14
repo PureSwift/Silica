@@ -7,7 +7,6 @@
 //
 
 import struct Foundation.CGFloat
-import Cairo
 
 public struct CGColor: Equatable {
     
@@ -62,21 +61,6 @@ public func == (lhs: CGColor, rhs: CGColor) -> Bool {
         && lhs.green == rhs.green
         && lhs.blue == rhs.blue
         && lhs.alpha == rhs.alpha
-}
-
-// MARK: - Internal Cairo Conversion
-
-internal extension Cairo.Pattern {
-    
-    convenience init(color: CGColor) {
-        
-        self.init(color: (Double(color.red),
-                          Double(color.green),
-                          Double(color.blue),
-                          Double(color.alpha)))
-        
-        assert(status.rawValue == 0, "Error creating Cairo.Pattern from Silica.Color: \(status)")
-    }
 }
 
 // MARK: - CoreGraphics API

@@ -16,7 +16,7 @@ import CoreGraphics
 #endif
 
 import Foundation
-@testable import Silica
+import Silica
 
 public final class TestStyleKit : NSObject {
 

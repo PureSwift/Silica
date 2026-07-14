@@ -11,13 +11,13 @@ import Foundation
 import FoundationNetworking
 #endif
 
-struct TestPath {
+public struct TestPath {
     
-    static let unitTests: String = try! createDirectory(at: NSTemporaryDirectory() + "SilicaTests" + "/")
+    public static let unitTests: String = try! createDirectory(at: NSTemporaryDirectory() + "SilicaTests" + "/")
     
-    static let assets: String = try! createDirectory(at: unitTests + "TestAssets" + "/")
+    public static let assets: String = try! createDirectory(at: unitTests + "TestAssets" + "/")
     
-    static let testData: String = try! createDirectory(at: unitTests + "TestData" + "/", removeContents: true)
+    public static let testData: String = try! createDirectory(at: unitTests + "TestData" + "/", removeContents: true)
     
     private static func createDirectory(at filePath: String, removeContents: Bool = false) throws -> String {
         
@@ -40,7 +40,7 @@ struct TestPath {
     }
 }
 
-extension TestAssetManager where HTTPClient == URLSession {
+public extension TestAssetManager where HTTPClient == URLSession {
     
     nonisolated(unsafe) static let shared: TestAssetManager<URLSession> = TestAssetManager(
         assets: testAssets,

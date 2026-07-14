@@ -73,3 +73,4 @@ docs
 
 # Finder
 .DS_Store
+.build-android/

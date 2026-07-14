@@ -6,8 +6,6 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
-import Cairo
-import CCairo
 import Foundation
 
 #if os(macOS)
@@ -40,10 +38,10 @@ public struct CGAffineTransform {
 #endif
 
 public extension CGAffineTransform {
-    
+
     static var identity: CGAffineTransform { CGAffineTransform(a: 1, b: 0, c: 0, d: 1, tx: 0, ty: 0) }
 }
-    
+
 // MARK: - Geometry Math
 
 // Immutable math
@@ -88,39 +86,6 @@ extension CGSize: CGAffineTransformMath {
         if newSize.height < 0 { newSize.height = -newSize.height }
         
         return newSize
-    }
-}
-
-// MARK: - Cairo Conversion
-
-extension CGAffineTransform: CairoConvertible {
-    
-    public typealias CairoType = Cairo.Matrix
-    
-    @inline(__always)
-    public init(cairo matrix: CairoType) {
-        
-        self.init(a: CGFloat(matrix.xx),
-                  b: CGFloat(matrix.xy),
-                  c: CGFloat(matrix.yx),
-                  d: CGFloat(matrix.yy),
-                  tx: CGFloat(matrix.x0),
-                  ty: CGFloat(matrix.y0))
-    }
-    
-    @inline(__always)
-    public func toCairo() -> CairoType {
-        
-        var matrix = Matrix()
-        
-        matrix.xx = Double(a)
-        matrix.xy = Double(b)
-        matrix.yx = Double(c)
-        matrix.yy = Double(d)
-        matrix.x0 = Double(tx)
-        matrix.y0 = Double(ty)
-        
-        return matrix
     }
 }
 

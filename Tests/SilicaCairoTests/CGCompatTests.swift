@@ -7,18 +7,25 @@
 //  bottom-left-origin (raw CoreGraphics) context mode.
 //
 
+#if canImport(Cairo)
+
 import XCTest
 import Foundation
 import Cairo
-@testable import Silica
+import SilicaCairo
 
 final class CGCompatTests: XCTestCase {
 
+    override func setUp() {
+        super.setUp()
+        CairoBackend.register()
+    }
+
     // MARK: - Utilities
 
-    private func makeBitmapContext(width: Int, height: Int, flipped: Bool = true) throws -> (Silica.CGContext, Cairo.Surface.Image) {
+    private func makeBitmapContext(width: Int, height: Int, flipped: Bool = true) throws -> (CairoContext, Cairo.Surface.Image) {
         let surface = try Cairo.Surface.Image(format: .argb32, width: width, height: height)
-        let context = try Silica.CGContext(
+        let context = try CairoContext(
             surface: surface,
             size: CGSize(width: width, height: height),
             flipped: flipped
@@ -41,6 +48,12 @@ final class CGCompatTests: XCTestCase {
             result = (bytes[offset + 2], bytes[offset + 1], bytes[offset])
         }
         return result
+    }
+
+    /// Reads one pixel as (red, green, blue) 0...255 from a Silica image (premultiplied RGBA).
+    private func pixel(_ image: Silica.CGImage, _ x: Int, _ y: Int) -> (red: UInt8, green: UInt8, blue: UInt8) {
+        let offset = y * image.bytesPerRow + x * 4
+        return (image.data[offset], image.data[offset + 1], image.data[offset + 2])
     }
 
     // MARK: - drawPath(.fillStroke)
@@ -87,7 +100,7 @@ final class CGCompatTests: XCTestCase {
         context.fillPath()
         surface.flush()
 
-        let snapshot = pixel(image.surface, 10, 10)
+        let snapshot = pixel(image, 10, 10)
         XCTAssertGreaterThan(snapshot.red, 200)
         XCTAssertLessThan(snapshot.green, 50)
     }
@@ -95,7 +108,7 @@ final class CGCompatTests: XCTestCase {
     func testMakeImageReturnsNilForPDFContext() throws {
         let filename = NSTemporaryDirectory() + "CGCompatTests-\(UUID()).pdf"
         let surface = try Cairo.Surface.PDF(filename: filename, width: 100, height: 100)
-        let context = try Silica.CGContext(surface: surface, size: CGSize(width: 100, height: 100))
+        let context = try CairoContext(surface: surface, size: CGSize(width: 100, height: 100))
         XCTAssertNil(context.makeImage())
     }
 
@@ -173,3 +186,5 @@ final class CGCompatTests: XCTestCase {
         XCTAssertFalse(inkExists(inDeviceRows: 44 ..< 60), "found ink below the baseline: glyphs are mirrored")
     }
 }
+
+#endif // canImport(Cairo)

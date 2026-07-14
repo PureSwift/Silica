@@ -23,6 +23,6 @@ public final class UIImage {
 
     /// Returns a data object that contains the image in PNG format.
     public func pngData() -> Data? {
-        return try? cgImage.surface.writePNG()
+        return SilicaBackend.default?.encodePNG(cgImage)
     }
 }

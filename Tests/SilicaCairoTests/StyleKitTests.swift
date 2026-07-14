@@ -6,13 +6,21 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+#if canImport(Cairo)
+
 import XCTest
 import Foundation
 import Cairo
-@testable import Silica
+import SilicaCairo
+import SilicaTestSupport
 
 final class StyleKitTests: XCTestCase {
-    
+
+    override func setUp() {
+        super.setUp()
+        CairoBackend.register()
+    }
+
     private func draw(_ drawingMethod: @autoclosure () -> (), _ name: String, _ size: CGSize) {
         
         let filename = TestPath.testData + name + ".pdf"
@@ -21,7 +29,7 @@ final class StyleKitTests: XCTestCase {
         
         let surface = try! Surface.PDF(filename: filename, width: Double(frame.width), height: Double(frame.height))
         
-        let context = try! Silica.CGContext(surface: surface, size: frame.size)
+        let context = try! CairoContext(surface: surface, size: frame.size)
         
         UIGraphicsPushContext(context)
         
@@ -87,3 +95,5 @@ final class StyleKitTests: XCTestCase {
         
     }
 }
+
+#endif // canImport(Cairo)
