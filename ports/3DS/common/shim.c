@@ -47,6 +47,10 @@ void ctru_puts(const char *s) {
 	printf("%s", s);
 }
 
+void ctru_printf_1i(const char *fmt, int a) {
+	printf(fmt, a);
+}
+
 //---------------------------------------------------------------------------------
 // Embedded Swift's String support references the Unicode normalization tables
 // (libswiftUnicodeDataTables.a) for non-ASCII comparison and hashing. The

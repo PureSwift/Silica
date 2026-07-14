@@ -13,5 +13,6 @@ int getentropy(void *buf, size_t buflen);
 
 // printf is variadic (not directly callable from Swift).
 void ctru_puts(const char *s);
+void ctru_printf_1i(const char *fmt, int a);
 
 #endif // SILICA_3DS_SHIM_H
