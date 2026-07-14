@@ -75,9 +75,12 @@ jobs:
       run: swift build --swift-sdk ${{ matrix.swift-sdk }} --target SilicaWeb
     - name: Build Example
       # the Embedded SDK needs the Unicode data tables linked explicitly; see Examples/WebCanvasDemo/Package.swift
+      # (this container's `run:` steps use `sh`, not `bash`, hence `case` instead of `[[ ... ]]`)
       run: |
-        env $( [[ "${{ matrix.swift-sdk }}" == *embedded ]] && echo SILICA_WASM_EMBEDDED=1 ) \
-          swift build --package-path Examples/WebCanvasDemo --swift-sdk ${{ matrix.swift-sdk }}
+        case "${{ matrix.swift-sdk }}" in
+          *embedded) export SILICA_WASM_EMBEDDED=1 ;;
+        esac
+        swift build --package-path Examples/WebCanvasDemo --swift-sdk ${{ matrix.swift-sdk }}
 
   android:
     name: Android
