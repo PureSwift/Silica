@@ -89,6 +89,45 @@ jobs:
         esac
         swift build --package-path Examples/WebCanvasDemo --swift-sdk ${{ matrix.swift-sdk }}
 
+  n3ds:
+    name: Nintendo 3DS (build homebrew demo)
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Swift
+      # devkitARM's toolchain is separate from this; SwiftyLab/setup-swift just
+      # gets us a release toolchain whose Embedded stdlib ships an
+      # armv6-none-none-eabi slice (6.3.2+ release toolchains already do).
+      uses: SwiftyLab/setup-swift@latest
+      with:
+        swift-version: "6.3.3"
+    - name: Swift Version
+      run: swift --version
+    # devkitPro's 3ds-dev group pulls in the ARM11 cross-compiler, libctru, and
+    # the bin2s/3dsxtool/smdhtool tools ports/3DS/Makefile depends on (3dstools
+    # and general-tools are both already members of the group).
+    - name: Install devkitPro (3ds-dev)
+      run: |
+        curl -L https://github.com/devkitPro/pacman/releases/latest/download/devkitpro-pacman-installer.pkg -o /tmp/devkitpro-pacman-installer.pkg
+        sudo installer -pkg /tmp/devkitpro-pacman-installer.pkg -target /
+        sudo dkp-pacman -Sy --noconfirm
+        sudo dkp-pacman -S --noconfirm 3ds-dev
+    - name: Build SilicaDemo.3dsx
+      env:
+        DEVKITPRO: /opt/devkitpro
+        DEVKITARM: /opt/devkitpro/devkitARM
+      run: |
+        export PATH="$DEVKITPRO/tools/bin:$DEVKITARM/bin:$PATH"
+        make -C ports/3DS clean
+        make -C ports/3DS SWIFTC="$(command -v swiftc)"
+    - name: Upload ROM
+      uses: actions/upload-artifact@v4
+      with:
+        name: silica-3ds-demo
+        path: ports/3DS/SilicaDemo.3dsx
+        if-no-files-found: error
+
   android:
     name: Android
     runs-on: ubuntu-24.04

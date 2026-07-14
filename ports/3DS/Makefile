@@ -77,12 +77,16 @@ SWIFTFLAGS	:=	-target armv6-none-none-eabi \
 			-Xcc -fmodule-map-file=$(COMMON)module.modulemap
 
 #---------------------------------------------------------------------------------
-# Sources: the Silica core (minus Foundation-dependent files) + the Silica3DS
-# software renderer (minus the Foundation-only backend registry) + this port.
+# Sources: the Silica core (minus Foundation-only files) + the Silica3DS
+# software renderer (minus the Foundation-only backend registration) + this port.
+# SilicaBackend.swift stays in: CGFont.init?(name:) references the type
+# unconditionally, and its `!canImport(Foundation)` branch (a closure-based
+# registry, since Embedded Swift disallows protocol metatype existentials)
+# compiles standalone -- nothing on the 3DS actually registers a backend
+# (fonts/PNG decode aren't implemented here), it just needs to typecheck.
 #---------------------------------------------------------------------------------
 CORE_EXCLUDE	:=	CGBitmapInfo.swift CGColorRenderingIntent.swift CGColorSpace.swift \
-			CGImageSource.swift CGImageSourcePNG.swift CGImageDestination.swift \
-			SilicaBackend.swift
+			CGImageSource.swift CGImageSourcePNG.swift CGImageDestination.swift
 CORE_SWIFT	:=	$(filter-out $(addprefix $(REPO_ROOT)/Sources/Silica/,$(CORE_EXCLUDE)), \
 			$(wildcard $(REPO_ROOT)/Sources/Silica/*.swift))
 
