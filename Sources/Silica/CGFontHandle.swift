@@ -6,7 +6,9 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
+#if canImport(Foundation)
 import struct Foundation.CGFloat
+#endif
 
 /// A platform font loaded by a rendering backend.
 ///

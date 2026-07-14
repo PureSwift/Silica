@@ -6,7 +6,9 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+#if canImport(Foundation)
 import struct Foundation.CGFloat
+#endif
 
 public final class UIFont {
     

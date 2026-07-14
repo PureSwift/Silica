@@ -6,7 +6,9 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+#if canImport(Foundation)
 import Foundation
+#endif
 
 public typealias NSParagraphStyle = NSMutableParagraphStyle
 public typealias NSStringDrawingContext = Void
@@ -122,7 +124,8 @@ public let NSForegroundColorAttributeName = "NSForegroundColorAttributeName"
 public let NSParagraphStyleAttributeName = "NSParagraphStyleAttributeName"
 
 public extension String {
-    
+
+    #if canImport(Foundation)
     /// UIKit compatility drawing
     func draw(in rect: CGRect, withAttributes attributes: [String: Any]) {
         
@@ -154,7 +157,8 @@ public extension String {
         
         return textFrame
     }
-    
+    #endif
+
     func draw(in rect: CGRect, context: Silica.CGContext, attributes: TextAttributes = TextAttributes()) {
         
         // set context values
@@ -211,8 +215,9 @@ public struct TextAttributes {
     public var paragraphStyle = ParagraphStyle()
 }
 
+#if canImport(Foundation)
 public extension TextAttributes {
-    
+
     init(UIKit attributes: [String: Any]) {
         
         var textAttributes = TextAttributes()
@@ -235,6 +240,7 @@ public extension TextAttributes {
         self = textAttributes
     }
 }
+#endif
 
 public struct ParagraphStyle {
     

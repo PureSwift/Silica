@@ -6,7 +6,9 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+#if canImport(Foundation)
 import struct Foundation.Data
+#endif
 
 public final class CGImageSourcePNG: CGImageSource {
 

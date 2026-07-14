@@ -6,9 +6,11 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+#if canImport(Foundation)
 import struct Foundation.CGFloat
 import struct Foundation.CGSize
 import struct Foundation.CGPoint
+#endif
 
 /// Silica's `Font` type.
 public struct CGFont {
@@ -44,15 +46,24 @@ public struct CGFont {
             else { return nil }
 
         // cache fonts per backend, since multiple backends may coexist in one process
+        #if canImport(Foundation)
         let cacheKey = "\(backend)/\(name)"
+        #else
+        let cacheKey = backend.name + "/" + name
+        #endif
 
         if let cachedFont = CGFont.cache[cacheKey] {
             self = cachedFont
             return
         }
 
+        #if canImport(Foundation)
         guard let font = backend.font(named: name)
             else { return nil }
+        #else
+        guard let font = backend.font(name)
+            else { return nil }
+        #endif
 
         CGFont.cache[cacheKey] = font
         self = font

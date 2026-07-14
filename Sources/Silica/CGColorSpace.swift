@@ -6,7 +6,9 @@
 //
 //
 /*
+#if canImport(Foundation)
 import struct Foundation.Data
+#endif
 import CLCMS
 import LittleCMS
 

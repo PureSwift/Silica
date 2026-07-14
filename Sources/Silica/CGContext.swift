@@ -14,7 +14,18 @@ import Glibc
 import Android
 #endif
 
+#if canImport(Foundation)
 import Foundation
+#endif
+
+/// Auxiliary options for transparency layers.
+///
+/// Embedded Swift does not support `Any`, so a `String` value type is used there instead.
+#if canImport(Foundation)
+public typealias CGAuxiliaryInfo = [String: Any]
+#else
+public typealias CGAuxiliaryInfo = [String: String]
+#endif
 
 /// An abstract two-dimensional drawing destination, modeled after the Quartz 2D drawing API.
 ///
@@ -146,7 +157,7 @@ public protocol CGContext: AnyObject {
 
     // MARK: - Transparency Layers
 
-    func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: [String: Any]?)
+    func beginTransparencyLayer(in rect: CGRect?, auxiliaryInfo: CGAuxiliaryInfo?)
 
     func endTransparencyLayer()
 
@@ -410,7 +421,7 @@ public extension CGContext {
 
     // MARK: Transparency Layers
 
-    func beginTransparencyLayer(auxiliaryInfo: [String: Any]? = nil) {
+    func beginTransparencyLayer(auxiliaryInfo: CGAuxiliaryInfo? = nil) {
         beginTransparencyLayer(in: nil, auxiliaryInfo: auxiliaryInfo)
     }
 
