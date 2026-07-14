@@ -6,7 +6,9 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+#if canImport(Foundation)
 import Foundation
+#endif
 
 public typealias NSParagraphStyle = NSMutableParagraphStyle
 public typealias NSStringDrawingContext = Void
@@ -122,7 +124,8 @@ public let NSForegroundColorAttributeName = "NSForegroundColorAttributeName"
 public let NSParagraphStyleAttributeName = "NSParagraphStyleAttributeName"
 
 public extension String {
-    
+
+    #if canImport(Foundation)
     /// UIKit compatility drawing
     func draw(in rect: CGRect, withAttributes attributes: [String: Any]) {
         
@@ -156,6 +159,7 @@ public extension String {
 
         return textFrame
     }
+    #endif
 
     func draw(in rect: CGRect, context: Silica.CGContext, attributes: TextAttributes = TextAttributes()) {
 
@@ -233,7 +237,7 @@ public extension String {
 
         var resultLines: [String] = []
 
-        for paragraph in self.components(separatedBy: "\n") {
+        for paragraph in self.split(separator: "\n", omittingEmptySubsequences: false) {
 
             guard paragraph.isEmpty == false else {
                 resultLines.append("")
@@ -244,7 +248,7 @@ public extension String {
 
             for word in paragraph.split(separator: " ", omittingEmptySubsequences: false) {
 
-                let candidate = currentLine.isEmpty ? String(word) : currentLine + " " + word
+                let candidate = currentLine.isEmpty ? String(word) : currentLine + " " + String(word)
 
                 let candidateWidth = font.singleLineWidth(text: candidate, fontSize: fontSize, textMatrix: textMatrix)
 
@@ -279,8 +283,9 @@ public struct TextAttributes {
     public var paragraphStyle = ParagraphStyle()
 }
 
+#if canImport(Foundation)
 public extension TextAttributes {
-    
+
     init(UIKit attributes: [String: Any]) {
         
         var textAttributes = TextAttributes()
@@ -303,6 +308,7 @@ public extension TextAttributes {
         self = textAttributes
     }
 }
+#endif
 
 public struct ParagraphStyle {
     

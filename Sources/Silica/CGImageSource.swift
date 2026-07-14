@@ -6,7 +6,9 @@
 //
 //
 
+#if canImport(Foundation)
 import struct Foundation.Data
+#endif
 
 /// This object abstracts the data-reading task. 
 /// An image source can read image data from a `Data` instance.
@@ -32,10 +34,12 @@ public enum CGImageSourceOption: String {
     case thumbnailMaxPixelSize = "kCGImageSourceThumbnailMaxPixelSize"
 }
 
+#if canImport(Foundation)
 public func CGImageSourceCreateWithData(_ data: Data, _ options: [CGImageSourceOption: Any]?) {
-    
-    
+
+
 }
+#endif
 
 @inline(__always)
 public func CGImageSourceGetType<T: CGImageSource>(_ imageSource: T) -> String {
