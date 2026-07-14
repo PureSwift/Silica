@@ -136,65 +136,133 @@ public extension String {
     }
     
     func boundingRect(with size: CGSize, options: NSStringDrawingOptions = NSStringDrawingOptions(), attributes: [String: Any], context: NSStringDrawingContext? = nil) -> CGRect {
-        
+
         guard let context = UIGraphicsGetCurrentContext()
             else { return CGRect.zero }
-        
+
         let textAttributes = TextAttributes(UIKit: attributes)
-        
-        var textFrame = self.contentFrame(for: CGRect(origin: CGPoint(), size: size), textMatrix: context.textMatrix, attributes: textAttributes)
-        
+
+        let wraps = options.contains(.usesLineFragmentOrigin)
+
+        var textFrame = self.contentFrame(for: CGRect(origin: CGPoint(), size: size), textMatrix: context.textMatrix, attributes: textAttributes, wraps: wraps)
+
         let font = textAttributes.font
-        
+
         let descender = font.cgFont.descent * font.pointSize
-        
-        
+
+
         textFrame.size.height = textFrame.size.height - descender
         //textFrame.size.height -= descender // Swift 3 error
-        
+
         return textFrame
     }
-    
+
     func draw(in rect: CGRect, context: Silica.CGContext, attributes: TextAttributes = TextAttributes()) {
-        
+
         // set context values
         context.setTextAttributes(attributes)
-        
-        // render
-        let textRect = self.contentFrame(for: rect, textMatrix: context.textMatrix, attributes: attributes)
-        
-        context.textPosition = textRect.origin
-        
-        context.show(text: self)
+
+        // word-wrap into lines that fit the bounding rect's width
+        let lines = self.wrappedLines(maxWidth: rect.width, attributes: attributes, textMatrix: context.textMatrix)
+
+        let lineHeight = attributes.font.pointSize
+
+        for (index, line) in lines.enumerated() {
+
+            let lineWidth = attributes.font.cgFont.singleLineWidth(text: line, fontSize: attributes.font.pointSize, textMatrix: context.textMatrix)
+
+            var x = rect.origin.x
+
+            switch attributes.paragraphStyle.alignment {
+
+            case .left: break // always left by default
+
+            case .center: x = rect.origin.x + (rect.width - lineWidth) / 2
+
+            case .right: x = rect.origin.x + (rect.width - lineWidth)
+            }
+
+            context.textPosition = CGPoint(x: x, y: rect.origin.y + (CGFloat(index) * lineHeight))
+
+            context.show(text: line)
+        }
     }
-    
-    func contentFrame(for bounds: CGRect, textMatrix: CGAffineTransform = .identity, attributes: TextAttributes = TextAttributes()) -> CGRect {
-        
+
+    func contentFrame(for bounds: CGRect, textMatrix: CGAffineTransform = .identity, attributes: TextAttributes = TextAttributes(), wraps: Bool = true) -> CGRect {
+
         // assume horizontal layout (not rendering non-latin languages)
-        
+
         // calculate frame
-        
-        let textWidth = attributes.font.cgFont.singleLineWidth(text: self, fontSize: attributes.font.pointSize, textMatrix: textMatrix)
-        
-        let lines: CGFloat = 1.0
-        
-        let textHeight = attributes.font.pointSize * lines
-        
+
+        let lines = wraps ? self.wrappedLines(maxWidth: bounds.width, attributes: attributes, textMatrix: textMatrix) : [self]
+
+        let textWidth = lines
+            .map { attributes.font.cgFont.singleLineWidth(text: $0, fontSize: attributes.font.pointSize, textMatrix: textMatrix) }
+            .max() ?? 0
+
+        let textHeight = attributes.font.pointSize * CGFloat(lines.count)
+
         var textRect = CGRect(x: bounds.origin.x,
                               y: bounds.origin.y,
                               width: textWidth,
-                              height: textHeight) // height == font.size
-        
+                              height: textHeight) // height == font.size * number of lines
+
         switch attributes.paragraphStyle.alignment {
-            
+
         case .left: break // always left by default
-            
+
         case .center: textRect.origin.x = (bounds.width - textRect.width) / 2
-            
+
         case .right: textRect.origin.x = bounds.width - textRect.width
         }
-        
+
         return textRect
+    }
+
+    /// Breaks the string into lines that fit within `maxWidth`, wrapping at word boundaries.
+    ///
+    /// Explicit `"\n"` characters always force a line break. A `maxWidth <= 0` disables
+    /// wrapping (matches the historical single-line behavior for unbounded / zero-size rects).
+    func wrappedLines(maxWidth: CGFloat, attributes: TextAttributes, textMatrix: CGAffineTransform) -> [String] {
+
+        guard maxWidth > 0, self.isEmpty == false
+            else { return [self] }
+
+        let font = attributes.font.cgFont
+        let fontSize = attributes.font.pointSize
+
+        var resultLines: [String] = []
+
+        for paragraph in self.components(separatedBy: "\n") {
+
+            guard paragraph.isEmpty == false else {
+                resultLines.append("")
+                continue
+            }
+
+            var currentLine = ""
+
+            for word in paragraph.split(separator: " ", omittingEmptySubsequences: false) {
+
+                let candidate = currentLine.isEmpty ? String(word) : currentLine + " " + word
+
+                let candidateWidth = font.singleLineWidth(text: candidate, fontSize: fontSize, textMatrix: textMatrix)
+
+                if candidateWidth <= maxWidth || currentLine.isEmpty {
+
+                    currentLine = candidate
+
+                } else {
+
+                    resultLines.append(currentLine)
+                    currentLine = String(word)
+                }
+            }
+
+            resultLines.append(currentLine)
+        }
+
+        return resultLines
     }
 }
 
