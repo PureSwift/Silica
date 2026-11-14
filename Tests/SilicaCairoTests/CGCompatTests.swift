@@ -132,6 +132,47 @@ final class CGCompatTests: XCTestCase {
         XCTAssertEqual(copy.elements.count, 10)
     }
 
+    // MARK: - Affine transforms
+
+    func testAffineTransformMapsToCairoMatrix() {
+        let transform = CGAffineTransform(a: 1, b: 2, c: 3, d: 4, tx: 5, ty: 6)
+        let matrix = transform.toCairo()
+        // x' = a·x + c·y + tx, y' = b·x + d·y + ty
+        XCTAssertEqual(matrix.xx, 1)
+        XCTAssertEqual(matrix.yx, 2)
+        XCTAssertEqual(matrix.xy, 3)
+        XCTAssertEqual(matrix.yy, 4)
+        XCTAssertEqual(matrix.x0, 5)
+        XCTAssertEqual(matrix.y0, 6)
+
+        let roundTrip = CGAffineTransform(cairo: matrix)
+        XCTAssertEqual(roundTrip.a, 1)
+        XCTAssertEqual(roundTrip.b, 2)
+        XCTAssertEqual(roundTrip.c, 3)
+        XCTAssertEqual(roundTrip.d, 4)
+        XCTAssertEqual(roundTrip.tx, 5)
+        XCTAssertEqual(roundTrip.ty, 6)
+    }
+
+    func testConcatenatedRotationDrawsInPlace() throws {
+        let (context, surface) = try makeBitmapContext(width: 40, height: 40)
+
+        // a quarter turn then a shift right: (x, y) maps to (30 - y, x),
+        // so a 20×5 rect at the origin becomes a 5×20 bar at x 25..30.
+        // With b and c transposed it would land at x 30..35, y -20..0.
+        context.concatenate(CGAffineTransform(a: 0, b: 1, c: -1, d: 0, tx: 30, ty: 0))
+        context.fillColor = CGColor(red: 1, green: 0, blue: 0)
+        context.addRect(CGRect(x: 0, y: 0, width: 20, height: 5))
+        context.fillPath()
+
+        let inside = pixel(surface, 27, 15)
+        XCTAssertGreaterThan(inside.red, 200)
+        XCTAssertLessThan(inside.green, 50)
+
+        let outside = pixel(surface, 33, 15)
+        XCTAssertGreaterThan(outside.green, 200)  // still white
+    }
+
     // MARK: - Bottom-left origin (raw CoreGraphics mode)
 
     func testBottomLeftOriginPlacesOriginRectAtBottom() throws {
