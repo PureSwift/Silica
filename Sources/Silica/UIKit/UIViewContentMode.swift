@@ -16,6 +16,7 @@ import Glibc
 import Foundation
 #endif
 
+@frozen
 public enum UIViewContentMode: Int, Sendable, CaseIterable {
     
     public init() { self = .scaleToFill }
