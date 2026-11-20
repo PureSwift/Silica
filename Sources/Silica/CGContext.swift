@@ -202,13 +202,15 @@ public extension CGContext {
     // MARK: Saving and Restoring the Graphics State
 
     /// Pushes a copy of the current graphics state onto the graphics state stack for the context.
+    /// A context the backend has put in an error (by a transform that cannot be inverted, say)
+    /// ignores it, as CoreGraphics ignores drawing it cannot do.
     func saveGState() {
-        try! save()
+        try? save()
     }
 
     /// Sets the current graphics state to the state most recently saved.
     func restoreGState() {
-        try! restore()
+        try? restore()
     }
 
     // MARK: Graphics State Attributes
@@ -266,11 +268,13 @@ public extension CGContext {
 
         let currentPoint = self.currentPoint ?? CGPoint()
 
+        // The cubic with the same curve: its control points two thirds of
+        // the way from each end to the quadratic's control point.
         let first = CGPoint(x: (currentPoint.x / 3.0) + (2.0 * point.x / 3.0),
                             y: (currentPoint.y / 3.0) + (2.0 * point.y / 3.0))
 
-        let second = CGPoint(x: (2.0 * currentPoint.x / 3.0) + (end.x / 3.0),
-                             y: (2.0 * currentPoint.y / 3.0) + (end.y / 3.0))
+        let second = CGPoint(x: (2.0 * point.x / 3.0) + (end.x / 3.0),
+                             y: (2.0 * point.y / 3.0) + (end.y / 3.0))
 
         addCurve(to: end, control1: first, control2: second)
     }
@@ -450,9 +454,28 @@ public extension CGContext {
             fontSize > 0.0 && text.isEmpty == false
             else { return }
 
-        let glyphs = text.unicodeScalars.map { font.glyph(for: $0) }
-
-        show(glyphs: glyphs)
+        // The font's own glyphs in runs; a character it lacks (an emoji, a symbol) is drawn from a font that has it.
+        let scalars = Array(text.unicodeScalars)
+        var run: [CGGlyph] = []
+        func flush() {
+            if !run.isEmpty { show(glyphs: run) }
+            run = []
+        }
+        for (index, scalar) in scalars.enumerated() {
+            // Selectors and joiners shape the characters beside them, and draw nothing themselves.
+            if scalar.value == 0xFE0F || scalar.value == 0xFE0E || scalar.value == 0x200D { continue }
+            let glyph = font.glyph(for: scalar)
+            let asEmoji = index + 1 < scalars.count && scalars[index + 1].value == 0xFE0F
+            if glyph == 0 || asEmoji, let (other, found) = CGFont.fallback(for: scalar, emojiFirst: true) {
+                flush()
+                setFont(other)
+                show(glyphs: [found])
+                setFont(font)
+                continue
+            }
+            run.append(glyph)
+        }
+        flush()
     }
 
     func show(glyphs: [CGGlyph]) {
@@ -492,6 +515,11 @@ public extension CGContext {
         guard let font = self.font,
             fontSize > 0.0 && glyphPositions.isEmpty == false
             else { return }
+
+        // Invisible text (and text that only adds to the clip) paints
+        // nothing; the text position still advances, which is how text is
+        // measured.
+        guard textDrawingMode != .invisible, textDrawingMode != .clip else { return }
 
         // Convert text-space positions to user-space baseline origins.
         // In Silica's default flipped (top-left origin) convention the text

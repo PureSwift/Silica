@@ -31,7 +31,7 @@ public enum CairoBackend: SilicaBackendProtocol {
 
     public static func font(named name: String) -> Silica.CGFont? {
 
-        return CGFont(name: name, configuration: .current)
+        return CGFont(name: name, configuration: .process)
     }
 
     public static func decodePNG(_ data: Data) -> Silica.CGImage? {
