@@ -60,7 +60,8 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Silica"
+            name: "Silica",
+            exclude: ["CMakeLists.txt"]
         ),
         .target(
             name: "SilicaCairo",
@@ -76,11 +77,13 @@ let package = Package(
                     package: "FontConfig",
                     condition: .when(platforms: [.macOS, .linux])
                 )
-            ]
+            ],
+            exclude: ["CMakeLists.txt"]
         ),
         .target(
             name: "SilicaCoreGraphics",
-            dependencies: ["Silica"]
+            dependencies: ["Silica"],
+            exclude: ["CMakeLists.txt"]
         ),
         .target(
             name: "SilicaAndroid",
