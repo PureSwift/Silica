@@ -58,6 +58,55 @@ jobs:
     - name: Test (Debug)
       run: swift test -c debug
 
+  cmake-macos:
+    name: CMake (macOS)
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Swift
+      uses: SwiftyLab/setup-swift@latest
+      with:
+        swift-version: "6.3.3"
+    - name: Install dependencies
+      run: brew install ninja
+    - name: Configure
+      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      # Silica and its Core Graphics backend, as shared libraries
+      run: cmake --build build
+    - name: Install
+      run: cmake --install build --prefix "$PWD/stage"
+
+  cmake-linux:
+    name: CMake (Linux)
+    runs-on: ubuntu-latest
+    container: swift:latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        apt-get update
+        apt-get install -y --no-install-recommends \
+          cmake ninja-build git pkg-config \
+          libcairo2-dev libfreetype-dev libfontconfig-dev
+    - name: Build the Cairo and FontConfig Swift modules
+      # the Cairo backend imports them, and they have no CMake build
+      run: .github/scripts/build-cairo-modules.sh "$PWD/modules"
+    - name: Configure
+      run: |
+        flags="-I $PWD/modules -L $PWD/modules"
+        for flag in $(pkg-config --cflags cairo fontconfig freetype2); do
+          flags="$flags -Xcc $flag"
+        done
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_Swift_FLAGS="$flags"
+    - name: Build
+      # Silica and its Cairo backend, as shared libraries
+      run: cmake --build build
+    - name: Install
+      run: cmake --install build --prefix "$PWD/stage"
+
   wasm:
     name: WebAssembly (${{ matrix.swift-sdk }})
     runs-on: ubuntu-latest
