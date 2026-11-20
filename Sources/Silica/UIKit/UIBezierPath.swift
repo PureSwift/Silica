@@ -6,10 +6,16 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
-#if os(macOS)
+#if canImport(Darwin)
 import Darwin
 #elseif os(Linux)
 import Glibc
+#endif
+
+// On Apple platforms other than macOS, Foundation doesn't bring in the
+// geometry types' members.
+#if canImport(CoreGraphics)
+import CoreGraphics
 #endif
 
 #if canImport(Foundation)

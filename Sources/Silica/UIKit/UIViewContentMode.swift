@@ -6,7 +6,7 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
-#if os(macOS)
+#if canImport(Darwin)
 import Darwin
 #elseif canImport(Glibc)
 import Glibc
