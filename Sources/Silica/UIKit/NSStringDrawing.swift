@@ -42,6 +42,7 @@ extension NSMutableParagraphStyle {
     }
 }
 
+@frozen
 public enum NSTextAlignment: Int {
     
     case left
@@ -68,6 +69,7 @@ extension NSTextAlignment {
     }
 }
 
+@frozen
 public enum NSLineBreakMode: Int {
     
     /// Wrap at word boundaries, default
@@ -317,6 +319,7 @@ public struct ParagraphStyle {
     public var alignment = TextAlignment()
 }
 
+@frozen
 public enum TextAlignment {
     
     public init() { self = .left }
