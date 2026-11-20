@@ -113,6 +113,17 @@ public extension CGFont {
 
     /// Returns the glyph index for the specified Unicode scalar.
     func glyph(for scalar: Unicode.Scalar) -> CGGlyph { handle.glyph(for: scalar) }
+
+    /// A font with a glyph for a character the drawing font lacks, and that glyph: the color emoji font, then
+    /// fonts of symbols and of many scripts.
+    static func fallback(for scalar: Unicode.Scalar, emojiFirst: Bool) -> (font: CGFont, glyph: CGGlyph)? {
+        for name in ["Noto Color Emoji", "Noto Sans Symbols2", "Noto Sans Symbols", "DejaVu Sans", "Noto Sans CJK SC"] {
+            guard let font = CGFont(name: name) else { continue }
+            let glyph = font.glyph(for: scalar)
+            if glyph != 0 { return (font, glyph) }
+        }
+        return nil
+    }
 }
 
 // MARK: - Text Math
