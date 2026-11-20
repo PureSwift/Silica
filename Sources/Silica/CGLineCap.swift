@@ -6,6 +6,7 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
+@frozen
 public enum CGLineCap: UInt32 {
 
     case butt
