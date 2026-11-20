@@ -7,6 +7,7 @@
 //
 
 /// Options for rendering text.
+@frozen
 public enum CGTextDrawingMode: CInt, Sendable {
     
     case fill
@@ -22,6 +23,7 @@ public enum CGTextDrawingMode: CInt, Sendable {
 }
 
 /// Options for rendering a path.
+@frozen
 public enum CGDrawingMode {
     
     /// Render the area contained within the path using the non-zero winding number rule.

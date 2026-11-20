@@ -46,6 +46,7 @@ public final class CGMutablePath: CGPath {
 // MARK: - Supporting Types
 
 /// A path element.
+@frozen
 public enum PathElement {
     
     /// The path element that starts a new subpath. The element holds a single point for the destination.
@@ -163,6 +164,7 @@ public struct CGPathElement {
 ///
 /// When filling a path, regions that a fill rule defines as interior to the path are painted.
 /// When clipping with a path, regions interior to the path remain visible after clipping.
+@frozen
 public enum CGPathFillRule: Int {
     
     /// A rule that considers a region to be interior to a path based on the number of times it is enclosed by path elements.
@@ -173,6 +175,7 @@ public enum CGPathFillRule: Int {
 }
 
 /// The type of element found in a path.
+@frozen
 public enum CGPathElementType {
     
     /// The path element that starts a new subpath. The element holds a single point for the destination.
