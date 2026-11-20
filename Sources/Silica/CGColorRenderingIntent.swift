@@ -13,6 +13,7 @@
 /// If you do not explicitly set the rendering intent,
 /// the graphics context uses the relative colorimetric rendering intent, 
 /// except when drawing sampled images.
+@frozen
 public enum ColorRenderingIntent {
     
     /// The default rendering intent for the graphics context.
