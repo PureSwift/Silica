@@ -10,7 +10,7 @@
 import Foundation
 #endif
 
-#if os(macOS)
+#if canImport(CoreGraphics)
 
 import struct CoreGraphics.CGAffineTransform
 public typealias CGAffineTransform = CoreGraphics.CGAffineTransform
