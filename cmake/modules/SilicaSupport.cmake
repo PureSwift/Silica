@@ -1,8 +1,6 @@
 # Helpers for Silica's targets: flags every module shares, and where they
 # install.
 
-include(GNUInstallDirs)
-
 # The Swift resource directory's name for the system: `linux`, `macosx`.
 if(NOT SWIFT_SYSTEM_NAME)
   if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
@@ -43,7 +41,7 @@ function(silica_add_library name)
   install(TARGETS ${name}
     ARCHIVE DESTINATION ${SILICA_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${SILICA_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    RUNTIME DESTINATION bin)
   install(FILES
       ${CMAKE_Swift_MODULE_DIRECTORY}/${name}.swiftmodule
       ${CMAKE_Swift_MODULE_DIRECTORY}/${name}.swiftdoc
