@@ -118,7 +118,29 @@ Web platform notes:
 - **Fonts**: font resolution is fuzzy on Linux (FontConfig) and Android (Typeface), but strict on macOS (CoreText descriptor matching by PostScript name or family name, with camel-case expansion, e.g. `"TimesNewRoman-Bold"` → family *Times New Roman*, bold).
 - Global alpha applies to images on the CoreGraphics backend but not on the Cairo backend.
 
-## Dependencies
+## Building with CMake
+
+For a system image (Buildroot and the like), CMake builds `Silica` and a
+backend (`SilicaCairo` on Linux, `SilicaCoreGraphics` on macOS) as shared
+libraries with library evolution, and installs them and their modules into
+the Swift resource directory (`lib/swift/<system>`), where apps find them
+like the OS's own frameworks:
+
+```bash
+cmake -B build -G Ninja -DCMAKE_INSTALL_PREFIX=/usr
+```
+
+```bash
+cmake --build build
+```
+
+```bash
+cmake --install build
+```
+
+`SilicaCairo` needs the `Cairo` and `FontConfig` Swift modules in the
+resource directory, or on search paths in `CMAKE_Swift_FLAGS`. SwiftPM stays
+the way to develop and test, and to build the other backends.
 
 - Linux/macOS (Cairo backend): `cairo`, `fontconfig`, `freetype` system libraries.
 - Android: [PureSwift/Android](https://github.com/PureSwift/Android) (pulled automatically; only built when compiling for Android).
