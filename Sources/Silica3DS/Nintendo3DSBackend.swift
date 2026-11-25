@@ -7,45 +7,44 @@
 //
 
 #if canImport(Foundation)
-
 import struct Foundation.Data
+#endif
+#if canImport(Silica)
 import Silica
+#endif
 
-/// Nintendo 3DS software rendering backend.
+/// The Nintendo 3DS rendering backend: bitmaps from the software rasterizer.
+/// It has no fonts or PNG codecs yet.
 public enum Nintendo3DSBackend: SilicaBackendProtocol {
 
-    /// Registers the 3DS software renderer as the default rendering backend.
+    /// Makes the 3DS software renderer the default rendering backend.
     public static func register() {
-
-        SilicaBackend.default = Nintendo3DSBackend.self
+        SilicaBackend.register(Nintendo3DSBackend.self, name: "Nintendo3DS")
     }
 
     internal static func registerIfNeeded() {
-
-        guard SilicaBackend.default == nil else { return }
-        register()
+        SilicaBackend.registerIfNeeded(Nintendo3DSBackend.self, name: "Nintendo3DS")
     }
 
     // MARK: - SilicaBackendProtocol
 
-    /// The 3DS backend has no font source yet
-    /// (the system font would require `fontGetSystemFont` via libctru).
-    public static func font(named name: String) -> Silica.CGFont? {
-
-        return nil
+    /// None yet: the system font would need `fontGetSystemFont` from libctru.
+    public static func fontFace(named name: String) -> (any FontFace)? {
+        nil
     }
 
-    /// The 3DS backend has no PNG codec yet.
-    public static func decodePNG(_ data: Data) -> Silica.CGImage? {
-
-        return nil
+    /// None yet: there's no PNG codec.
+    public static func decodePNG(_ data: Data) -> Image? {
+        nil
     }
 
-    /// The 3DS backend has no PNG codec yet.
-    public static func encodePNG(_ image: Silica.CGImage) -> Data? {
+    /// None yet: there's no PNG codec.
+    public static func encodePNG(_ image: Image) -> Data? {
+        nil
+    }
 
-        return nil
+    /// A bitmap supersampled at the scale, rounded up.
+    public static func makeBitmapRenderer(size: Size, scale: Double) -> (any Renderer)? {
+        try? Nintendo3DSRenderer(bitmap: size, scale: Int(scale.rounded(.up)))
     }
 }
-
-#endif // canImport(Foundation)
