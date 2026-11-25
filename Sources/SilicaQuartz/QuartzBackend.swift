@@ -1,6 +1,6 @@
 //
-//  CoreGraphicsBackend.swift
-//  SilicaCoreGraphics
+//  QuartzBackend.swift
+//  SilicaQuartz
 //
 //  Created by Alsey Coleman Miller on 7/13/26.
 //  Copyright © 2026 PureSwift. All rights reserved.
@@ -14,62 +14,52 @@ import Foundation
 import Silica
 
 /// Apple CoreGraphics (Quartz) rendering backend.
-public enum CoreGraphicsBackend: SilicaBackendProtocol {
+/// The Quartz rendering backend: fonts from Core Text, PNG codecs from
+/// ImageIO, and bitmaps from Core Graphics.
+public enum QuartzBackend: SilicaBackendProtocol {
 
-    /// Registers CoreGraphics as the default rendering backend.
+    /// Makes Quartz the default rendering backend.
     public static func register() {
-
-        SilicaBackend.default = CoreGraphicsBackend.self
+        SilicaBackend.register(QuartzBackend.self, name: "Quartz")
     }
 
     internal static func registerIfNeeded() {
-
-        guard SilicaBackend.default == nil else { return }
-        register()
+        SilicaBackend.registerIfNeeded(QuartzBackend.self, name: "Quartz")
     }
 
     // MARK: - SilicaBackendProtocol
 
-    public static func font(named name: String) -> Silica.CGFont? {
-
-        guard let handle = CoreTextFontHandle(name: name)
-            else { return nil }
-
-        return Silica.CGFont(name: name, family: handle.familyName, handle: handle)
+    public static func fontFace(named name: String) -> (any FontFace)? {
+        CoreTextFontHandle(name: name)
     }
 
-    public static func decodePNG(_ data: Data) -> Silica.CGImage? {
-
+    public static func decodePNG(_ data: Data) -> Silica.Image? {
         guard let source = ImageIO.CGImageSourceCreateWithData(data as CFData, nil),
             let nativeImage = ImageIO.CGImageSourceCreateImageAtIndex(source, 0, nil)
             else { return nil }
-
-        return Silica.CGImage(nativeImage)
+        return Silica.Image(nativeImage)
     }
 
-    public static func encodePNG(_ image: Silica.CGImage) -> Data? {
-
+    public static func encodePNG(_ image: Silica.Image) -> Data? {
         guard let nativeImage = image.toCoreGraphics(),
             let data = CFDataCreateMutable(nil, 0),
             let destination = ImageIO.CGImageDestinationCreateWithData(data, "public.png" as CFString, 1, nil)
             else { return nil }
-
         ImageIO.CGImageDestinationAddImage(destination, nativeImage, nil)
-
-        guard ImageIO.CGImageDestinationFinalize(destination)
-            else { return nil }
-
+        guard ImageIO.CGImageDestinationFinalize(destination) else { return nil }
         return data as Data
+    }
+
+    public static func makeBitmapRenderer(size: Size, scale: Double) -> (any Renderer)? {
+        try? QuartzRenderer(bitmap: size, scale: scale)
     }
 }
 
-// MARK: - CGImage Conversion
+public extension Silica.Image {
 
-public extension Silica.CGImage {
-
-    /// Creates a Silica bitmap image from a Quartz image,
+    /// An image of a Quartz image's pixels,
     /// normalizing the pixel format to premultiplied RGBA.
-    convenience init?(_ nativeImage: CoreGraphics.CGImage) {
+    convenience init?(_ nativeImage: CoreGraphics.CGImage, scale: Double = 1) {
 
         let width = nativeImage.width
         let height = nativeImage.height
@@ -96,7 +86,7 @@ public extension Silica.CGImage {
         guard rendered
             else { return nil }
 
-        self.init(width: width, height: height, bytesPerRow: bytesPerRow, data: data)
+        self.init(width: width, height: height, bytesPerRow: bytesPerRow, data: data, scale: scale)
     }
 
     /// Converts to a Quartz image (zero-copy; the pixel formats match).
