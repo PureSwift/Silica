@@ -57,7 +57,10 @@ public enum CoreGraphicsObjects {
         case is ColorObject: return .color
         case is GradientObject: return .gradient
         case is ImageObject: return .image
+        #if canImport(Cairo)
+        // contexts draw with Cairo, where there is Cairo
         case is ContextObject: return .context
+        #endif
         default: return nil
         }
     }
