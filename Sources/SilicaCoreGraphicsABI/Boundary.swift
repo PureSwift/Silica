@@ -41,6 +41,10 @@ public enum CoreGraphicsObjects {
         case context
         case dataProvider
         case font
+        case layer
+        case pattern
+        case function
+        case shading
     }
 
     /// Core Foundation, for the functions that take or return its objects
@@ -66,10 +70,14 @@ public enum CoreGraphicsObjects {
         case is GradientObject: return .gradient
         case is ImageObject: return .image
         case is DataProviderObject: return .dataProvider
+        case is PatternObject: return .pattern
+        case is FunctionObject: return .function
+        case is ShadingObject: return .shading
         #if canImport(Cairo)
         // contexts draw with Cairo, where there is Cairo
         case is ContextObject: return .context
         case is FontObject: return .font
+        case is LayerObject: return .layer
         #endif
         default: return nil
         }
