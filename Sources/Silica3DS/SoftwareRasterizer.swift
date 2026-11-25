@@ -13,7 +13,7 @@ import Glibc
 #endif
 
 #if canImport(Foundation)
-import Foundation
+import struct Foundation.Data
 #endif
 #if canImport(Silica)
 import Silica
@@ -52,9 +52,9 @@ internal struct RasterColor {
         self.alpha = alpha
     }
 
-    init(_ color: CGColor) {
+    init(_ color: Color) {
 
-        func clamp(_ value: CGFloat) -> CGFloat { max(0, min(1, value)) }
+        func clamp(_ value: Double) -> Double { max(0, min(1, value)) }
 
         let alpha = clamp(color.alpha)
 
@@ -68,7 +68,7 @@ internal struct RasterColor {
 // MARK: - Rasterizer
 
 /// A minimal scanline rasterizer for filling polygons with the winding or
-/// even-odd rule, used by `Nintendo3DSContext` (the Nintendo 3DS has no
+/// even-odd rule, used by `Nintendo3DSRenderer` (the Nintendo 3DS has no
 /// system vector graphics library).
 ///
 /// Geometry is flattened to line segments; sampling is one sample per pixel
@@ -78,14 +78,14 @@ internal enum SoftwareRasterizer {
 
     // MARK: Flattening
 
-    static let defaultTolerance: CGFloat = 0.2
+    static let defaultTolerance: Double = 0.2
 
     /// Flattens path elements into polylines (one per subpath).
-    static func flatten(_ elements: [PathElement], tolerance: CGFloat = defaultTolerance) -> [(points: [CGPoint], closed: Bool)] {
+    static func flatten(_ elements: [Path.Element], tolerance: Double = defaultTolerance) -> [(points: [Point], closed: Bool)] {
 
-        var subpaths = [(points: [CGPoint], closed: Bool)]()
-        var current = [CGPoint]()
-        var start = CGPoint()
+        var subpaths = [(points: [Point], closed: Bool)]()
+        var current = [Point]()
+        var start = Point()
 
         func endSubpath(closed: Bool) {
             if current.count > 1 {
@@ -98,26 +98,26 @@ internal enum SoftwareRasterizer {
 
             switch element {
 
-            case let .moveToPoint(point):
+            case let .move(point):
                 endSubpath(closed: false)
                 start = point
                 current = [point]
 
-            case let .addLineToPoint(point):
+            case let .line(point):
                 if current.isEmpty { current = [start] }
                 current.append(point)
 
-            case let .addQuadCurveToPoint(control, end):
+            case let .quadCurve(end, control):
                 if current.isEmpty { current = [start] }
                 let origin = current[current.count - 1]
                 // promote to cubic
-                let control1 = CGPoint(x: (origin.x / 3.0) + (2.0 * control.x / 3.0),
+                let control1 = Point(x: (origin.x / 3.0) + (2.0 * control.x / 3.0),
                                        y: (origin.y / 3.0) + (2.0 * control.y / 3.0))
-                let control2 = CGPoint(x: (2.0 * control.x / 3.0) + (end.x / 3.0),
+                let control2 = Point(x: (2.0 * control.x / 3.0) + (end.x / 3.0),
                                        y: (2.0 * control.y / 3.0) + (end.y / 3.0))
                 flattenCubic(origin, control1, control2, end, tolerance, 0, into: &current)
 
-            case let .addCurveToPoint(control1, control2, end):
+            case let .curve(end, control1, control2):
                 if current.isEmpty { current = [start] }
                 let origin = current[current.count - 1]
                 flattenCubic(origin, control1, control2, end, tolerance, 0, into: &current)
@@ -138,8 +138,8 @@ internal enum SoftwareRasterizer {
         return subpaths
     }
 
-    private static func flattenCubic(_ p0: CGPoint, _ c1: CGPoint, _ c2: CGPoint, _ p1: CGPoint,
-                                     _ tolerance: CGFloat, _ depth: Int, into points: inout [CGPoint]) {
+    private static func flattenCubic(_ p0: Point, _ c1: Point, _ c2: Point, _ p1: Point,
+                                     _ tolerance: Double, _ depth: Int, into points: inout [Point]) {
 
         if depth > 16 || cubicFlatness(p0, c1, c2, p1) <= tolerance {
             points.append(p1)
@@ -147,8 +147,8 @@ internal enum SoftwareRasterizer {
         }
 
         // subdivide at t = 0.5 (de Casteljau)
-        func mid(_ a: CGPoint, _ b: CGPoint) -> CGPoint {
-            CGPoint(x: (a.x + b.x) / 2, y: (a.y + b.y) / 2)
+        func mid(_ a: Point, _ b: Point) -> Point {
+            Point(x: (a.x + b.x) / 2, y: (a.y + b.y) / 2)
         }
 
         let ab = mid(p0, c1), bc = mid(c1, c2), cd = mid(c2, p1)
@@ -160,9 +160,9 @@ internal enum SoftwareRasterizer {
     }
 
     /// Maximum distance of the control points from the chord.
-    private static func cubicFlatness(_ p0: CGPoint, _ c1: CGPoint, _ c2: CGPoint, _ p1: CGPoint) -> CGFloat {
+    private static func cubicFlatness(_ p0: Point, _ c1: Point, _ c2: Point, _ p1: Point) -> Double {
 
-        func distance(_ point: CGPoint) -> CGFloat {
+        func distance(_ point: Point) -> Double {
             let dx = p1.x - p0.x
             let dy = p1.y - p0.y
             let lengthSquared = dx * dx + dy * dy
@@ -180,14 +180,14 @@ internal enum SoftwareRasterizer {
     // MARK: Filling
 
     private struct Edge {
-        let yTop: CGFloat
-        let yBottom: CGFloat
-        let xAtTop: CGFloat
-        let slope: CGFloat  // dx / dy
+        let yTop: Double
+        let yBottom: Double
+        let xAtTop: Double
+        let slope: Double  // dx / dy
         let winding: Int
     }
 
-    private static func edges(of polygons: [[CGPoint]]) -> [Edge] {
+    private static func edges(of polygons: [[Point]]) -> [Edge] {
 
         var edges = [Edge]()
 
@@ -219,9 +219,9 @@ internal enum SoftwareRasterizer {
     }
 
     /// Computes the filled spans for one scanline (sampled at `y`).
-    private static func spans(edges: [Edge], y: CGFloat, evenOdd: Bool) -> [(start: CGFloat, end: CGFloat)] {
+    private static func spans(edges: [Edge], y: Double, evenOdd: Bool) -> [(start: Double, end: Double)] {
 
-        var crossings = [(x: CGFloat, winding: Int)]()
+        var crossings = [(x: Double, winding: Int)]()
 
         for edge in edges where edge.yTop <= y && y < edge.yBottom {
             crossings.append((edge.xAtTop + (y - edge.yTop) * edge.slope, edge.winding))
@@ -231,7 +231,7 @@ internal enum SoftwareRasterizer {
 
         crossings.sort { $0.x < $1.x }
 
-        var result = [(start: CGFloat, end: CGFloat)]()
+        var result = [(start: Double, end: Double)]()
 
         if evenOdd {
             var index = 0
@@ -241,7 +241,7 @@ internal enum SoftwareRasterizer {
             }
         } else {
             var winding = 0
-            var spanStart: CGFloat = 0
+            var spanStart: Double = 0
             for crossing in crossings {
                 let previous = winding
                 winding += crossing.winding
@@ -258,7 +258,7 @@ internal enum SoftwareRasterizer {
 
     /// Fills polygons into the surface with the given color, respecting an
     /// optional clip mask (one byte of coverage per pixel).
-    static func fill(_ polygons: [[CGPoint]],
+    static func fill(_ polygons: [[Point]],
                      evenOdd: Bool,
                      into surface: SoftwareSurface,
                      color: RasterColor,
@@ -279,7 +279,7 @@ internal enum SoftwareRasterizer {
 
             for pixelY in yMinimum ... yMaximum {
 
-                let sampleY = CGFloat(pixelY) + 0.5
+                let sampleY = Double(pixelY) + 0.5
 
                 for span in spans(edges: allEdges, y: sampleY, evenOdd: evenOdd) {
 
@@ -304,7 +304,7 @@ internal enum SoftwareRasterizer {
     }
 
     /// Rasterizes polygons into a coverage mask (255 inside, 0 outside).
-    static func mask(_ polygons: [[CGPoint]],
+    static func mask(_ polygons: [[Point]],
                      evenOdd: Bool,
                      width: Int,
                      height: Int) -> [UInt8] {
@@ -324,7 +324,7 @@ internal enum SoftwareRasterizer {
 
         for pixelY in yMinimum ... yMaximum {
 
-            let sampleY = CGFloat(pixelY) + 0.5
+            let sampleY = Double(pixelY) + 0.5
 
             for span in spans(edges: allEdges, y: sampleY, evenOdd: evenOdd) {
 
@@ -364,7 +364,7 @@ internal enum SoftwareRasterizer {
     }
 
     /// Composites `source` onto `destination` (same dimensions) with a global alpha.
-    static func composite(_ source: SoftwareSurface, onto destination: SoftwareSurface, alpha: CGFloat) {
+    static func composite(_ source: SoftwareSurface, onto destination: SoftwareSurface, alpha: Double) {
 
         precondition(source.width == destination.width && source.height == destination.height)
 
@@ -400,22 +400,22 @@ internal enum SoftwareRasterizer {
     ///
     /// Every polygon is normalized to a consistent orientation so that filling
     /// their union with the nonzero winding rule yields the stroked region.
-    static func strokePolygons(_ subpaths: [(points: [CGPoint], closed: Bool)],
-                               width: CGFloat,
-                               cap: CGLineCap,
-                               join: CGLineJoin,
-                               miterLimit: CGFloat,
-                               dash: (phase: CGFloat, lengths: [CGFloat])) -> [[CGPoint]] {
+    static func strokePolygons(_ subpaths: [(points: [Point], closed: Bool)],
+                               width: Double,
+                               cap: LineCap,
+                               join: LineJoin,
+                               miterLimit: Double,
+                               dash: (phase: Double, lengths: [Double])) -> [[Point]] {
 
         let halfWidth = max(width, 0) / 2
 
         guard halfWidth > 0 else { return [] }
 
-        var polygons = [[CGPoint]]()
+        var polygons = [[Point]]()
 
         for subpath in subpaths {
 
-            let polylines: [[CGPoint]]
+            let polylines: [[Point]]
 
             if dash.lengths.isEmpty || dash.lengths.allSatisfy({ $0 <= 0 }) {
                 polylines = [subpath.points]
@@ -438,10 +438,10 @@ internal enum SoftwareRasterizer {
                     guard let normal = normal(from: p0, to: p1, length: halfWidth) else { continue }
 
                     polygons.append(normalized([
-                        CGPoint(x: p0.x + normal.dx, y: p0.y + normal.dy),
-                        CGPoint(x: p1.x + normal.dx, y: p1.y + normal.dy),
-                        CGPoint(x: p1.x - normal.dx, y: p1.y - normal.dy),
-                        CGPoint(x: p0.x - normal.dx, y: p0.y - normal.dy)
+                        Point(x: p0.x + normal.dx, y: p0.y + normal.dy),
+                        Point(x: p1.x + normal.dx, y: p1.y + normal.dy),
+                        Point(x: p1.x - normal.dx, y: p1.y - normal.dy),
+                        Point(x: p0.x - normal.dx, y: p0.y - normal.dy)
                     ]))
                 }
 
@@ -479,7 +479,7 @@ internal enum SoftwareRasterizer {
         return polygons
     }
 
-    private static func normal(from p0: CGPoint, to p1: CGPoint, length: CGFloat) -> (dx: CGFloat, dy: CGFloat)? {
+    private static func normal(from p0: Point, to p1: Point, length: Double) -> (dx: Double, dy: Double)? {
 
         let dx = p1.x - p0.x
         let dy = p1.y - p0.y
@@ -490,8 +490,8 @@ internal enum SoftwareRasterizer {
         return (dx: -dy / magnitude * length, dy: dx / magnitude * length)
     }
 
-    private static func joinPolygons(at vertex: CGPoint, from before: CGPoint, to after: CGPoint,
-                                     halfWidth: CGFloat, join: CGLineJoin, miterLimit: CGFloat) -> [[CGPoint]] {
+    private static func joinPolygons(at vertex: Point, from before: Point, to after: Point,
+                                     halfWidth: Double, join: LineJoin, miterLimit: Double) -> [[Point]] {
 
         switch join {
 
@@ -508,18 +508,18 @@ internal enum SoftwareRasterizer {
                 else { return [] }
 
             // outer side of the turn: the side where the two offset lines diverge
-            let direction1 = CGPoint(x: vertex.x - before.x, y: vertex.y - before.y)
-            let direction2 = CGPoint(x: after.x - vertex.x, y: after.y - vertex.y)
+            let direction1 = Point(x: vertex.x - before.x, y: vertex.y - before.y)
+            let direction2 = Point(x: after.x - vertex.x, y: after.y - vertex.y)
             let cross = direction1.x * direction2.y - direction1.y * direction2.x
 
             guard cross != 0 else { return [] }  // collinear: no join needed
 
             // normals point to the left of travel; the outer side is the
             // right side when turning left, and vice versa
-            let side: CGFloat = cross > 0 ? -1 : 1
+            let side: Double = cross > 0 ? -1 : 1
 
-            let outer1 = CGPoint(x: vertex.x + normal1.dx * side, y: vertex.y + normal1.dy * side)
-            let outer2 = CGPoint(x: vertex.x + normal2.dx * side, y: vertex.y + normal2.dy * side)
+            let outer1 = Point(x: vertex.x + normal1.dx * side, y: vertex.y + normal1.dy * side)
+            let outer2 = Point(x: vertex.x + normal2.dx * side, y: vertex.y + normal2.dy * side)
 
             // miter length check: 1 / sin(θ/2) vs miter limit
             let bisectorX = normal1.dx * side + normal2.dx * side
@@ -539,14 +539,14 @@ internal enum SoftwareRasterizer {
                 return bevelPolygons(at: vertex, from: before, to: after, halfWidth: halfWidth)
             }
 
-            let miterPoint = CGPoint(x: vertex.x + bisectorX / bisectorLength * miterLength,
+            let miterPoint = Point(x: vertex.x + bisectorX / bisectorLength * miterLength,
                                      y: vertex.y + bisectorY / bisectorLength * miterLength)
 
             return [normalized([vertex, outer1, miterPoint, outer2])]
         }
     }
 
-    private static func bevelPolygons(at vertex: CGPoint, from before: CGPoint, to after: CGPoint, halfWidth: CGFloat) -> [[CGPoint]] {
+    private static func bevelPolygons(at vertex: Point, from before: Point, to after: Point, halfWidth: Double) -> [[Point]] {
 
         guard let normal1 = normal(from: before, to: vertex, length: halfWidth),
             let normal2 = normal(from: vertex, to: after, length: halfWidth)
@@ -557,18 +557,18 @@ internal enum SoftwareRasterizer {
         return [
             normalized([
                 vertex,
-                CGPoint(x: vertex.x + normal1.dx, y: vertex.y + normal1.dy),
-                CGPoint(x: vertex.x + normal2.dx, y: vertex.y + normal2.dy)
+                Point(x: vertex.x + normal1.dx, y: vertex.y + normal1.dy),
+                Point(x: vertex.x + normal2.dx, y: vertex.y + normal2.dy)
             ]),
             normalized([
                 vertex,
-                CGPoint(x: vertex.x - normal1.dx, y: vertex.y - normal1.dy),
-                CGPoint(x: vertex.x - normal2.dx, y: vertex.y - normal2.dy)
+                Point(x: vertex.x - normal1.dx, y: vertex.y - normal1.dy),
+                Point(x: vertex.x - normal2.dx, y: vertex.y - normal2.dy)
             ])
         ]
     }
 
-    private static func capPolygon(at end: CGPoint, towards neighbor: CGPoint, halfWidth: CGFloat, cap: CGLineCap) -> [CGPoint]? {
+    private static func capPolygon(at end: Point, towards neighbor: Point, halfWidth: Double, cap: LineCap) -> [Point]? {
 
         switch cap {
 
@@ -593,23 +593,23 @@ internal enum SoftwareRasterizer {
             let outY = dy / magnitude * halfWidth
 
             return normalized([
-                CGPoint(x: end.x + normal.dx, y: end.y + normal.dy),
-                CGPoint(x: end.x + normal.dx + outX, y: end.y + normal.dy + outY),
-                CGPoint(x: end.x - normal.dx + outX, y: end.y - normal.dy + outY),
-                CGPoint(x: end.x - normal.dx, y: end.y - normal.dy)
+                Point(x: end.x + normal.dx, y: end.y + normal.dy),
+                Point(x: end.x + normal.dx + outX, y: end.y + normal.dy + outY),
+                Point(x: end.x - normal.dx + outX, y: end.y - normal.dy + outY),
+                Point(x: end.x - normal.dx, y: end.y - normal.dy)
             ])
         }
     }
 
-    private static func circle(at center: CGPoint, radius: CGFloat, segments: Int = 16) -> [CGPoint] {
+    private static func circle(at center: Point, radius: Double, segments: Int = 16) -> [Point] {
 
-        var points = [CGPoint]()
+        var points = [Point]()
         points.reserveCapacity(segments)
 
         for index in 0 ..< segments {
-            let angle = 2 * CGFloat.pi * CGFloat(index) / CGFloat(segments)
-            points.append(CGPoint(x: center.x + radius * CGFloat(cos(Double(angle))),
-                                  y: center.y + radius * CGFloat(sin(Double(angle)))))
+            let angle = 2 * Double.pi * Double(index) / Double(segments)
+            points.append(Point(x: center.x + radius * Double(cos(Double(angle))),
+                                  y: center.y + radius * Double(sin(Double(angle)))))
         }
 
         return points
@@ -617,9 +617,9 @@ internal enum SoftwareRasterizer {
 
     /// Normalizes polygon orientation (positive signed area) so overlapping
     /// stroke pieces never cancel under the nonzero winding rule.
-    private static func normalized(_ polygon: [CGPoint]) -> [CGPoint] {
+    private static func normalized(_ polygon: [Point]) -> [Point] {
 
-        var area: CGFloat = 0
+        var area: Double = 0
         var previous = polygon[polygon.count - 1]
 
         for point in polygon {
@@ -633,15 +633,15 @@ internal enum SoftwareRasterizer {
     // MARK: Dashing
 
     /// Splits a polyline into "on" polylines according to a dash pattern.
-    private static func dashed(_ points: [CGPoint], phase: CGFloat, lengths: [CGFloat]) -> [[CGPoint]] {
+    private static func dashed(_ points: [Point], phase: Double, lengths: [Double]) -> [[Point]] {
 
         let pattern = lengths.map { max(0, $0) }
         let patternLength = pattern.reduce(0, +)
 
         guard patternLength > 0, points.count > 1 else { return [points] }
 
-        var result = [[CGPoint]]()
-        var current = [CGPoint]()
+        var result = [[Point]]()
+        var current = [Point]()
 
         // position within the pattern
         var patternIndex = 0
@@ -679,7 +679,7 @@ internal enum SoftwareRasterizer {
                     if isOn { current.append(p1) }
                 } else {
                     let t = remaining / segmentLength
-                    let split = CGPoint(x: p0.x + (p1.x - p0.x) * t, y: p0.y + (p1.y - p0.y) * t)
+                    let split = Point(x: p0.x + (p1.x - p0.x) * t, y: p0.y + (p1.y - p0.y) * t)
                     if isOn { current.append(split) }
                     segmentLength -= remaining
                     p0 = split
