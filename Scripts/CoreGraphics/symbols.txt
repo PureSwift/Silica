@@ -1,7 +1,8 @@
 # The CoreGraphics symbols libCoreGraphics exports: Darwin's public drawing
 # API (contexts, bitmap contexts, paths, geometry, colors and color spaces,
-# images, data providers, gradients, fonts, layers). Displays, events,
-# windows, PDF documents, ImageIO and HDR stay with Perry.
+# images, data providers, gradients, patterns, functions, shadings, fonts,
+# layers). Displays, events, windows, PDF documents, ImageIO and HDR stay
+# with Perry.
 #
 # A symbol here that nothing implements yet is a stub that reports the gap:
 # see gen_stubs.py. Data symbols are marked `data`.
@@ -39,12 +40,14 @@ CGColorCreateCopyWithAlpha
 CGColorCreateGenericGray
 CGColorCreateGenericRGB
 CGColorCreateSRGB
+CGColorCreateWithPattern
 CGColorEqualToColor
 CGColorGetAlpha
 CGColorGetColorSpace
 CGColorGetComponents
 CGColorGetConstantColor
 CGColorGetNumberOfComponents
+CGColorGetPattern
 CGColorGetTypeID
 CGColorRelease
 CGColorRetain
@@ -108,6 +111,7 @@ CGContextDrawLayerInRect
 CGContextDrawLinearGradient
 CGContextDrawPath
 CGContextDrawRadialGradient
+CGContextDrawShading
 CGContextDrawTiledImage
 CGContextEOClip
 CGContextEOFillPath
@@ -148,6 +152,7 @@ CGContextSetCharacterSpacing
 CGContextSetFillColor
 CGContextSetFillColorSpace
 CGContextSetFillColorWithColor
+CGContextSetFillPattern
 CGContextSetFlatness
 CGContextSetFont
 CGContextSetFontSize
@@ -159,6 +164,7 @@ CGContextSetLineDash
 CGContextSetLineJoin
 CGContextSetLineWidth
 CGContextSetMiterLimit
+CGContextSetPatternPhase
 CGContextSetRGBFillColor
 CGContextSetRGBStrokeColor
 CGContextSetRenderingIntent
@@ -171,6 +177,7 @@ CGContextSetShouldSubpixelQuantizeFonts
 CGContextSetStrokeColor
 CGContextSetStrokeColorSpace
 CGContextSetStrokeColorWithColor
+CGContextSetStrokePattern
 CGContextSetTextDrawingMode
 CGContextSetTextMatrix
 CGContextSetTextPosition
@@ -221,6 +228,10 @@ CGFontGetUnitsPerEm
 CGFontGetXHeight
 CGFontRelease
 CGFontRetain
+CGFunctionCreate
+CGFunctionGetTypeID
+CGFunctionRelease
+CGFunctionRetain
 CGGradientCreateWithColorComponents
 CGGradientCreateWithColors
 CGGradientGetTypeID
@@ -306,6 +317,10 @@ CGPathIsRect
 CGPathMoveToPoint
 CGPathRelease
 CGPathRetain
+CGPatternCreate
+CGPatternGetTypeID
+CGPatternRelease
+CGPatternRetain
 CGPointApplyAffineTransform
 CGPointEqualToPoint
 CGPointZero data
@@ -335,6 +350,11 @@ CGRectOffset
 CGRectStandardize
 CGRectUnion
 CGRectZero data
+CGShadingCreateAxial
+CGShadingCreateRadial
+CGShadingGetTypeID
+CGShadingRelease
+CGShadingRetain
 CGSizeApplyAffineTransform
 CGSizeEqualToSize
 CGSizeZero data
