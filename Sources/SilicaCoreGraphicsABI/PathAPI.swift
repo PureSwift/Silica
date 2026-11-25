@@ -274,9 +274,14 @@ private func build(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineT
     forEachElement(of: object.path) { function(info, $0) }
 }
 
-@c @implementation public func CGPathApplyWithBlock(_ path: SilicaCGPathRef, _ block: CGPathApplyBlock) {
-    guard let object = object(path, as: PathObject.self) else { return }
-    forEachElement(of: object.path) { block($0) }
+/// Calls the block through the blocks ABI: a block is a pointer to its
+/// class, two 32-bit integers, then the function it calls with itself first.
+/// Swift's own block bridging crashes some compilers in `@implementation`.
+@c(CGPathApplyWithBlock) public func applyWithBlock(_ path: SilicaCGPathRef?, _ block: UnsafeRawPointer?) {
+    guard let block, let object = object(path, as: PathObject.self) else { return }
+    typealias Invoke = @convention(c) (UnsafeRawPointer, UnsafePointer<CGPathElement>) -> Void
+    let invoke = block.load(fromByteOffset: MemoryLayout<UnsafeRawPointer>.size + 8, as: Invoke.self)
+    forEachElement(of: object.path) { invoke(block, $0) }
 }
 
 /// Each of a path's elements as CoreGraphics hands them out, valid while `body` runs.
