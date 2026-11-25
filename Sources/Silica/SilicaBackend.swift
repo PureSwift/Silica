@@ -7,73 +7,96 @@
 //
 
 #if canImport(Foundation)
-import struct Foundation.Data
+import Foundation
 #endif
 
-/// A rendering backend providing fonts and image decoding for operations
-/// performed without an explicit graphics context
-/// (e.g. `CGFont(name:)`, `UIFont(name:size:)`, `CGImageSourcePNG(data:)`).
+/// A rendering backend: what draws without a context of its own, such as
+/// fonts by name (`Font(name:size:)`), PNG decoding (`Image(png:)`) and
+/// bitmaps (`BitmapContext`).
 public protocol SilicaBackendProtocol {
 
-    /// Loads the platform font with the specified Silica font name (e.g. `"TimesNewRoman-Bold"`).
-    static func font(named name: String) -> CGFont?
+    /// A platform font by name (e.g. `"TimesNewRoman-Bold"`).
+    static func fontFace(named name: String) -> (any FontFace)?
 
-    /// Decodes PNG data into a bitmap image.
-    static func decodePNG(_ data: Data) -> CGImage?
+    /// Decodes PNG data into an image.
+    static func decodePNG(_ data: Data) -> Image?
 
-    /// Encodes a bitmap image as PNG data.
-    static func encodePNG(_ image: CGImage) -> Data?
+    /// Encodes an image as PNG data.
+    static func encodePNG(_ image: Image) -> Data?
+
+    /// A bitmap renderer `size` points across, with `scale` pixels per point.
+    static func makeBitmapRenderer(size: Size, scale: Double) -> (any Renderer)?
 }
 
-#if canImport(Foundation)
-
-/// Global rendering backend registration.
-public enum SilicaBackend {
-
-    /// The default rendering backend.
-    ///
-    /// Backend libraries register themselves when a graphics context is created,
-    /// or explicitly via their `register()` method (e.g. `CairoBackend.register()`).
-    nonisolated(unsafe) public static var `default`: (any SilicaBackendProtocol.Type)?
-}
-
-#else
-
-/// Global rendering backend registration.
+/// The registered default rendering backend.
 ///
-/// Embedded Swift does not support protocol metatype existentials, so the
-/// registered backend is stored as a set of entry points instead.
+/// A backend registers itself when its first renderer is made, or with its
+/// `register()` method (e.g. `CairoBackend.register()`).
 public enum SilicaBackend {
 
-    /// Entry points of a registered rendering backend.
+    /// Entry points of a registered backend. Embedded Swift has no
+    /// existential metatypes, so the backend is kept as these.
     public struct Backend {
 
-        /// Backend name, used to key the font cache.
+        /// The backend's name, which keys the font cache.
         public let name: String
 
-        public let font: (String) -> CGFont?
+        public let fontFace: (String) -> (any FontFace)?
 
-        public let decodePNG: (Data) -> CGImage?
+        public let decodePNG: (Data) -> Image?
 
-        public let encodePNG: (CGImage) -> Data?
+        public let encodePNG: (Image) -> Data?
+
+        public let makeBitmapRenderer: (Size, Double) -> (any Renderer)?
     }
 
-    /// The default rendering backend.
-    ///
-    /// Backend libraries register themselves when a graphics context is created,
-    /// or explicitly via their `register()` method (e.g. `WebBackend.register()`).
+    /// The default backend.
     nonisolated(unsafe) public static var `default`: Backend?
 
-    /// Registers the specified backend type as the default rendering backend.
-    public static func register<T: SilicaBackendProtocol>(_ backend: T.Type, name: String) {
+    /// Fonts loaded so far, by backend and name.
+    nonisolated(unsafe) internal static var fontFaces: [String: any FontFace] = [:]
 
+    /// Makes a backend the default.
+    public static func register<T: SilicaBackendProtocol>(_ backend: T.Type, name: String) {
         `default` = Backend(
             name: name,
-            font: { T.font(named: $0) },
+            fontFace: { T.fontFace(named: $0) },
             decodePNG: { T.decodePNG($0) },
-            encodePNG: { T.encodePNG($0) }
+            encodePNG: { T.encodePNG($0) },
+            makeBitmapRenderer: { T.makeBitmapRenderer(size: $0, scale: $1) }
         )
     }
-}
 
-#endif
+    /// Makes a backend the default if there isn't one.
+    public static func registerIfNeeded<T: SilicaBackendProtocol>(_ backend: T.Type, name: String) {
+        guard `default` == nil else { return }
+        register(backend, name: name)
+    }
+
+    /// A font by name from the default backend, loaded once.
+    public static func fontFace(named name: String) -> (any FontFace)? {
+        guard let backend = `default` else { return nil }
+        let key = backend.name + "/" + name
+        if let face = fontFaces[key] {
+            return face
+        }
+        guard let face = backend.fontFace(name) else { return nil }
+        fontFaces[key] = face
+        return face
+    }
+
+    /// Decodes PNG data with the default backend.
+    public static func decodePNG(_ data: Data) -> Image? {
+        `default`?.decodePNG(data)
+    }
+
+    /// Encodes an image as PNG with the default backend.
+    public static func encodePNG(_ image: Image) -> Data? {
+        `default`?.encodePNG(image)
+    }
+
+    /// A bitmap renderer from the default backend.
+    public static func makeBitmapRenderer(size: Size, scale: Double) -> (any Renderer)? {
+        `default`?.makeBitmapRenderer(size, scale)
+    }
+}
