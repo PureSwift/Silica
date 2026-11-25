@@ -79,8 +79,17 @@ CG_EXTERN CGImageRef CG_NULLABLE CGImageCreate(size_t width, size_t height, size
                                                CGDataProviderRef CG_NULLABLE provider, const CGFloat * CG_NULLABLE decode,
                                                bool shouldInterpolate, CGColorRenderingIntent intent);
 CG_EXTERN CGImageRef CG_NULLABLE CGImageCreateCopy(CGImageRef CG_NULLABLE image);
+/* A mask of 1, 2, 4 or 8 bits a sample, rows from the top: where a sample is
+ * 0 (after `decode`) it paints, where it's 1 it doesn't. */
+CG_EXTERN CGImageRef CG_NULLABLE CGImageMaskCreate(size_t width, size_t height, size_t bitsPerComponent, size_t bitsPerPixel,
+                                                   size_t bytesPerRow, CGDataProviderRef CG_NULLABLE provider,
+                                                   const CGFloat * CG_NULLABLE decode, bool shouldInterpolate);
+/* The image masked: by an image mask, or by a gray image whose samples are
+ * the alpha. The mask is scaled to the image. */
+CG_EXTERN CGImageRef CG_NULLABLE CGImageCreateWithMask(CGImageRef CG_NULLABLE image, CGImageRef CG_NULLABLE mask);
 /* The part of the image in `rect`, in pixels from its top left, rounded out
- * to whole pixels; NULL when it's outside the image. */
+ * to whole pixels; NULL when it's outside the image. Silica doesn't crop
+ * image masks or masked images: NULL. */
 CG_EXTERN CGImageRef CG_NULLABLE CGImageCreateWithImageInRect(CGImageRef CG_NULLABLE image, CGRect rect);
 
 CG_EXTERN size_t CGImageGetWidth(CGImageRef CG_NULLABLE image);
@@ -95,6 +104,8 @@ CG_EXTERN CGImageByteOrderInfo CGImageGetByteOrderInfo(CGImageRef CG_NULLABLE im
 CG_EXTERN bool CGImageGetShouldInterpolate(CGImageRef CG_NULLABLE image);
 CG_EXTERN CGColorRenderingIntent CGImageGetRenderingIntent(CGImageRef CG_NULLABLE image);
 CG_EXTERN bool CGImageIsMask(CGImageRef CG_NULLABLE image);
+/* The decode array the image was made with, two values a component, or NULL. */
+CG_EXTERN const CGFloat * CG_NULLABLE CGImageGetDecode(CGImageRef CG_NULLABLE image);
 /* A provider of the image's pixels. */
 CG_EXTERN CGDataProviderRef CG_NULLABLE CGImageGetDataProvider(CGImageRef CG_NULLABLE image);
 
