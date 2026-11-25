@@ -1,0 +1,457 @@
+-- plain
+min/mid/max x: 10 25 40
+min/mid/max y: 20 40 60
+width/height: 30 40
+standardize: 10 20 30 40
+isEmpty: false
+isNull: false
+isInfinite: false
+inset 2 3: 12 23 26 34
+inset -2 -3: 8 17 34 46
+inset 100 1: inf inf 0 0
+integral: 10 20 30 40
+offset 1 2: 11 22 30 40
+contains 15 25: true
+contains -15 -15: false
+contains min corner: true
+contains max corner: false
+divide edge 0 slice: 10 20 7 40
+divide edge 0 remainder: 17 20 23 40
+divide edge 1 slice: 10 20 30 7
+divide edge 1 remainder: 10 27 30 33
+divide edge 2 slice: 33 20 7 40
+divide edge 2 remainder: 10 20 23 40
+divide edge 3 slice: 10 53 30 7
+divide edge 3 remainder: 10 20 30 33
+divide past slice: 10 20 30 40
+divide past remainder: 40 20 0 40
+divide negative slice: 10 20 0 40
+divide negative remainder: 10 20 30 40
+union plain: 10 20 30 40
+intersection plain: 10 20 30 40
+intersects plain: true
+containsRect plain: true
+equal plain: true
+union negative: -20 -20 60 80
+intersection negative: 10 20 0 0
+intersects negative: false
+containsRect negative: false
+equal negative: false
+union zero: 0 0 40 60
+intersection zero: inf inf 0 0
+intersects zero: false
+containsRect zero: false
+equal zero: false
+union thin: 5 5 35 55
+intersection thin: inf inf 0 0
+intersects thin: false
+containsRect thin: false
+equal thin: false
+union null: 10 20 30 40
+intersection null: inf inf 0 0
+intersects null: false
+containsRect null: true
+equal null: false
+union infinite: -huge -huge huge huge
+intersection infinite: 10 20 30 40
+intersects infinite: true
+containsRect infinite: false
+equal infinite: false
+union fractional: 0.5 1.25 39.5 58.75
+intersection fractional: inf inf 0 0
+intersects fractional: false
+containsRect fractional: false
+equal fractional: false
+-- negative
+min/mid/max x: -20 -5 10
+min/mid/max y: -20 0 20
+width/height: 30 40
+standardize: -20 -20 30 40
+isEmpty: false
+isNull: false
+isInfinite: false
+inset 2 3: -18 -17 26 34
+inset -2 -3: -22 -23 34 46
+inset 100 1: inf inf 0 0
+integral: -20 -20 30 40
+offset 1 2: -19 -18 30 40
+contains 15 25: false
+contains -15 -15: true
+contains min corner: true
+contains max corner: false
+divide edge 0 slice: -20 -20 7 40
+divide edge 0 remainder: -13 -20 23 40
+divide edge 1 slice: -20 -20 30 7
+divide edge 1 remainder: -20 -13 30 33
+divide edge 2 slice: 3 -20 7 40
+divide edge 2 remainder: -20 -20 23 40
+divide edge 3 slice: -20 13 30 7
+divide edge 3 remainder: -20 -20 30 33
+divide past slice: -20 -20 30 40
+divide past remainder: 10 -20 0 40
+divide negative slice: -20 -20 0 40
+divide negative remainder: -20 -20 30 40
+union plain: -20 -20 60 80
+intersection plain: 10 20 0 0
+intersects plain: false
+containsRect plain: false
+equal plain: false
+union negative: -20 -20 30 40
+intersection negative: -20 -20 30 40
+intersects negative: true
+containsRect negative: true
+equal negative: true
+union zero: -20 -20 30 40
+intersection zero: 0 0 0 0
+intersects zero: true
+containsRect zero: true
+equal zero: false
+union thin: -20 -20 30 40
+intersection thin: 5 5 0 10
+intersects thin: true
+containsRect thin: true
+equal thin: false
+union null: 10 20 -30 -40
+intersection null: inf inf 0 0
+intersects null: false
+containsRect null: true
+equal null: false
+union infinite: -huge -huge huge huge
+intersection infinite: -20 -20 30 40
+intersects infinite: true
+containsRect infinite: false
+equal infinite: false
+union fractional: -20 -20 30.8 40
+intersection fractional: 0.5 1.25 9.5 2.6
+intersects fractional: true
+containsRect fractional: false
+equal fractional: false
+-- zero
+min/mid/max x: 0 0 0
+min/mid/max y: 0 0 0
+width/height: 0 0
+standardize: 0 0 0 0
+isEmpty: true
+isNull: false
+isInfinite: false
+inset 2 3: inf inf 0 0
+inset -2 -3: -2 -3 4 6
+inset 100 1: inf inf 0 0
+integral: 0 0 0 0
+offset 1 2: 1 2 0 0
+contains 15 25: false
+contains -15 -15: false
+contains min corner: false
+contains max corner: false
+divide edge 0 slice: 0 0 0 0
+divide edge 0 remainder: 0 0 0 0
+divide edge 1 slice: 0 0 0 0
+divide edge 1 remainder: 0 0 0 0
+divide edge 2 slice: 0 0 0 0
+divide edge 2 remainder: 0 0 0 0
+divide edge 3 slice: 0 0 0 0
+divide edge 3 remainder: 0 0 0 0
+divide past slice: 0 0 0 0
+divide past remainder: 0 0 0 0
+divide negative slice: 0 0 0 0
+divide negative remainder: 0 0 0 0
+union plain: 0 0 40 60
+intersection plain: inf inf 0 0
+intersects plain: false
+containsRect plain: false
+equal plain: false
+union negative: -20 -20 30 40
+intersection negative: 0 0 0 0
+intersects negative: true
+containsRect negative: false
+equal negative: false
+union zero: 0 0 0 0
+intersection zero: 0 0 0 0
+intersects zero: true
+containsRect zero: true
+equal zero: true
+union thin: 0 0 5 15
+intersection thin: inf inf 0 0
+intersects thin: false
+containsRect thin: false
+equal thin: false
+union null: 0 0 0 0
+intersection null: inf inf 0 0
+intersects null: false
+containsRect null: true
+equal null: false
+union infinite: -huge -huge huge huge
+intersection infinite: 0 0 0 0
+intersects infinite: true
+containsRect infinite: false
+equal infinite: false
+union fractional: 0 0 10.8 3.85
+intersection fractional: inf inf 0 0
+intersects fractional: false
+containsRect fractional: false
+equal fractional: false
+-- thin
+min/mid/max x: 5 5 5
+min/mid/max y: 5 10 15
+width/height: 0 10
+standardize: 5 5 0 10
+isEmpty: true
+isNull: false
+isInfinite: false
+inset 2 3: inf inf 0 0
+inset -2 -3: 3 2 4 16
+inset 100 1: inf inf 0 0
+integral: 5 5 0 10
+offset 1 2: 6 7 0 10
+contains 15 25: false
+contains -15 -15: false
+contains min corner: false
+contains max corner: false
+divide edge 0 slice: 5 5 0 10
+divide edge 0 remainder: 5 5 0 10
+divide edge 1 slice: 5 5 0 7
+divide edge 1 remainder: 5 12 0 3
+divide edge 2 slice: 5 5 0 10
+divide edge 2 remainder: 5 5 0 10
+divide edge 3 slice: 5 8 0 7
+divide edge 3 remainder: 5 5 0 3
+divide past slice: 5 5 0 10
+divide past remainder: 5 5 0 10
+divide negative slice: 5 5 0 10
+divide negative remainder: 5 5 0 10
+union plain: 5 5 35 55
+intersection plain: inf inf 0 0
+intersects plain: false
+containsRect plain: false
+equal plain: false
+union negative: -20 -20 30 40
+intersection negative: 5 5 0 10
+intersects negative: true
+containsRect negative: false
+equal negative: false
+union zero: 0 0 5 15
+intersection zero: inf inf 0 0
+intersects zero: false
+containsRect zero: false
+equal zero: false
+union thin: 5 5 0 10
+intersection thin: 5 5 0 10
+intersects thin: true
+containsRect thin: true
+equal thin: true
+union null: 5 5 0 10
+intersection null: inf inf 0 0
+intersects null: false
+containsRect null: true
+equal null: false
+union infinite: -huge -huge huge huge
+intersection infinite: 5 5 0 10
+intersects infinite: true
+containsRect infinite: false
+equal infinite: false
+union fractional: 0.5 1.25 10.3 13.75
+intersection fractional: inf inf 0 0
+intersects fractional: false
+containsRect fractional: false
+equal fractional: false
+-- null
+min/mid/max x: inf inf inf
+min/mid/max y: inf inf inf
+width/height: 0 0
+standardize: inf inf 0 0
+isEmpty: true
+isNull: true
+isInfinite: false
+inset 2 3: inf inf 0 0
+inset -2 -3: inf inf 0 0
+inset 100 1: inf inf 0 0
+integral: inf inf 0 0
+offset 1 2: inf inf 0 0
+contains 15 25: false
+contains -15 -15: false
+contains min corner: false
+contains max corner: false
+divide edge 0 slice: inf inf 0 0
+divide edge 0 remainder: inf inf 0 0
+divide edge 1 slice: inf inf 0 0
+divide edge 1 remainder: inf inf 0 0
+divide edge 2 slice: inf inf 0 0
+divide edge 2 remainder: inf inf 0 0
+divide edge 3 slice: inf inf 0 0
+divide edge 3 remainder: inf inf 0 0
+divide past slice: inf inf 0 0
+divide past remainder: inf inf 0 0
+divide negative slice: inf inf 0 0
+divide negative remainder: inf inf 0 0
+union plain: 10 20 30 40
+intersection plain: inf inf 0 0
+intersects plain: false
+containsRect plain: false
+equal plain: false
+union negative: 10 20 -30 -40
+intersection negative: inf inf 0 0
+intersects negative: false
+containsRect negative: false
+equal negative: false
+union zero: 0 0 0 0
+intersection zero: inf inf 0 0
+intersects zero: false
+containsRect zero: false
+equal zero: false
+union thin: 5 5 0 10
+intersection thin: inf inf 0 0
+intersects thin: false
+containsRect thin: false
+equal thin: false
+union null: inf inf 0 0
+intersection null: inf inf 0 0
+intersects null: false
+containsRect null: true
+equal null: true
+union infinite: -huge -huge huge huge
+intersection infinite: inf inf 0 0
+intersects infinite: false
+containsRect infinite: false
+equal infinite: false
+union fractional: 0.5 1.25 10.3 2.6
+intersection fractional: inf inf 0 0
+intersects fractional: false
+containsRect fractional: false
+equal fractional: false
+-- infinite
+min/mid/max x: -huge 0 huge
+min/mid/max y: -huge 0 huge
+width/height: huge huge
+standardize: -huge -huge huge huge
+isEmpty: false
+isNull: false
+isInfinite: true
+inset 2 3: -huge -huge huge huge
+inset -2 -3: -huge -huge huge huge
+inset 100 1: -huge -huge huge huge
+integral: -huge -huge huge huge
+offset 1 2: -huge -huge huge huge
+contains 15 25: true
+contains -15 -15: true
+contains min corner: true
+contains max corner: false
+divide edge 0 slice: -huge -huge 7 huge
+divide edge 0 remainder: -huge -huge huge huge
+divide edge 1 slice: -huge -huge huge 7
+divide edge 1 remainder: -huge -huge huge huge
+divide edge 2 slice: huge -huge 7 huge
+divide edge 2 remainder: -huge -huge huge huge
+divide edge 3 slice: -huge huge huge 7
+divide edge 3 remainder: -huge -huge huge huge
+divide past slice: -huge -huge 1000 huge
+divide past remainder: -huge -huge huge huge
+divide negative slice: -huge -huge 0 huge
+divide negative remainder: -huge -huge huge huge
+union plain: -huge -huge huge huge
+intersection plain: 10 20 30 40
+intersects plain: true
+containsRect plain: true
+equal plain: false
+union negative: -huge -huge huge huge
+intersection negative: -20 -20 30 40
+intersects negative: true
+containsRect negative: true
+equal negative: false
+union zero: -huge -huge huge huge
+intersection zero: 0 0 0 0
+intersects zero: true
+containsRect zero: true
+equal zero: false
+union thin: -huge -huge huge huge
+intersection thin: 5 5 0 10
+intersects thin: true
+containsRect thin: true
+equal thin: false
+union null: -huge -huge huge huge
+intersection null: inf inf 0 0
+intersects null: false
+containsRect null: true
+equal null: false
+union infinite: -huge -huge huge huge
+intersection infinite: -huge -huge huge huge
+intersects infinite: true
+containsRect infinite: true
+equal infinite: true
+union fractional: -huge -huge huge huge
+intersection fractional: 0.5 1.25 10.3 2.6
+intersects fractional: true
+containsRect fractional: true
+equal fractional: false
+-- fractional
+min/mid/max x: 0.5 5.65 10.8
+min/mid/max y: 1.25 2.55 3.85
+width/height: 10.3 2.6
+standardize: 0.5 1.25 10.3 2.6
+isEmpty: false
+isNull: false
+isInfinite: false
+inset 2 3: inf inf 0 0
+inset -2 -3: -1.5 -1.75 14.3 8.6
+inset 100 1: inf inf 0 0
+integral: 0 1 11 3
+offset 1 2: 1.5 3.25 10.3 2.6
+contains 15 25: false
+contains -15 -15: false
+contains min corner: true
+contains max corner: false
+divide edge 0 slice: 0.5 1.25 7 2.6
+divide edge 0 remainder: 7.5 1.25 3.3 2.6
+divide edge 1 slice: 0.5 1.25 10.3 2.6
+divide edge 1 remainder: 0.5 3.85 10.3 0
+divide edge 2 slice: 3.8 1.25 7 2.6
+divide edge 2 remainder: 0.5 1.25 3.3 2.6
+divide edge 3 slice: 0.5 1.25 10.3 2.6
+divide edge 3 remainder: 0.5 1.25 10.3 0
+divide past slice: 0.5 1.25 10.3 2.6
+divide past remainder: 10.8 1.25 0 2.6
+divide negative slice: 0.5 1.25 0 2.6
+divide negative remainder: 0.5 1.25 10.3 2.6
+union plain: 0.5 1.25 39.5 58.75
+intersection plain: inf inf 0 0
+intersects plain: false
+containsRect plain: false
+equal plain: false
+union negative: -20 -20 30.8 40
+intersection negative: 0.5 1.25 9.5 2.6
+intersects negative: true
+containsRect negative: false
+equal negative: false
+union zero: 0 0 10.8 3.85
+intersection zero: inf inf 0 0
+intersects zero: false
+containsRect zero: false
+equal zero: false
+union thin: 0.5 1.25 10.3 13.75
+intersection thin: inf inf 0 0
+intersects thin: false
+containsRect thin: false
+equal thin: false
+union null: 0.5 1.25 10.3 2.6
+intersection null: inf inf 0 0
+intersects null: false
+containsRect null: true
+equal null: false
+union infinite: -huge -huge huge huge
+intersection infinite: 0.5 1.25 10.3 2.6
+intersects infinite: true
+containsRect infinite: false
+equal infinite: false
+union fractional: 0.5 1.25 10.3 2.6
+intersection fractional: 0.5 1.25 10.3 2.6
+intersects fractional: true
+containsRect fractional: true
+equal fractional: true
+-- touching
+intersection: 10 0 0 10
+intersects: false
+equal standardized: true
+point equal: true
+size equal: false
+zero: 0 0 0 0
+point zero: 0 0
+size zero: 0 0
