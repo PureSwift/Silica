@@ -110,6 +110,7 @@ internal extension GraphicsContext {
         var blendMode: BlendMode = .normal
         var shadow: Shadow?
         var shouldAntialias = true
+        var interpolationQuality: InterpolationQuality = .default
         var font: Font?
         var characterSpacing: Double = 0
         var textDrawingMode: TextDrawingMode = .fill
@@ -313,6 +314,19 @@ public extension GraphicsContext {
 
     func setShouldAntialias(_ shouldAntialias: Bool) {
         self.shouldAntialias = shouldAntialias
+    }
+
+    /// How images are sampled when they're scaled.
+    var interpolationQuality: InterpolationQuality {
+        get { state.interpolationQuality }
+        set {
+            state.interpolationQuality = newValue
+            renderer.setInterpolationQuality(newValue)
+        }
+    }
+
+    func setInterpolationQuality(_ quality: InterpolationQuality) {
+        interpolationQuality = quality
     }
 
     // MARK: - Path

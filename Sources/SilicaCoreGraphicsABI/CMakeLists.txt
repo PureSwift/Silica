@@ -21,8 +21,11 @@ set_target_properties(CoreGraphics PROPERTIES
 target_include_directories(CoreGraphics PRIVATE
   ${PROJECT_SOURCE_DIR}/Sources/CSilicaCoreGraphics/include)
 
+# contexts draw with Silica's Cairo renderer
 target_link_libraries(CoreGraphics PRIVATE
-  Silica)
+  Silica
+  SilicaCairo
+  Cairo)
 
 target_link_options(CoreGraphics PRIVATE
   "LINKER:--version-script=${exports}/exports.map"

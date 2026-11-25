@@ -1,0 +1,14 @@
+# Lines Silica prints in place of Apple's, accepted.
+#
+# Scaling an image up with the default interpolation: Apple's filter keeps
+# each pixel's color to within a couple of pixels of its neighbors, Cairo's
+# bilinear filter blends across the whole pixel. With kCGInterpolationNone
+# both take the nearest pixel, and agree.
+image top left: 249 5 0 255
+image bottom left: 13 5 247 255
+image bottom right: 247 255 247 255
+#
+# A color made with CGColorCreateGenericRGB: Apple converts it from the
+# Generic RGB space to the context's, which moves pure blue toward green.
+# Silica has no color management: Generic RGB is sRGB.
+shadow: 0 0 256 256

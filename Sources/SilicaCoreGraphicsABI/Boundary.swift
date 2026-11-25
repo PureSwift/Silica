@@ -15,48 +15,69 @@ import Silica
 
 // MARK: - Objects
 
-/// What a `CGPathRef` points to: a path in Silica's terms.
-public protocol CoreGraphicsPath: AnyObject {
-
-    var path: Silica.Path { get set }
-}
-
-/// Makes the objects CoreGraphics' references point to.
+/// The objects CoreGraphics' references point to.
 ///
-/// A reference is a retained Swift object, passed as an opaque pointer. A
-/// runtime that needs its own objects behind the references (Perry, whose
-/// Core Foundation and Objective-C runtime retain and describe them) replaces
-/// these factories before the first object is made, with objects that conform
-/// to the same protocols.
+/// A reference (`CGPathRef`, `CGContextRef`, …) is a retained object, passed
+/// as an opaque pointer. Each kind of reference has an object of its own
+/// class here. A runtime that needs objects of its own behind the references
+/// (Perry, whose Core Foundation and Objective-C runtime retain and describe
+/// them) sets `wrap` and `unwrap` before the first reference is made: `wrap`
+/// puts each new object inside one of its own, and `unwrap` takes it back out.
 public enum CoreGraphicsObjects {
 
-    /// Makes a path object.
-    nonisolated(unsafe) public static var makePath: (Silica.Path) -> any CoreGraphicsPath = { PathObject(path: $0) }
+    /// What a new reference points to, holding the object: the object itself by default.
+    nonisolated(unsafe) public static var wrap: (AnyObject) -> AnyObject = { $0 }
 
-    /// The type identifier `CGPathGetTypeID()` returns.
-    nonisolated(unsafe) public static var pathTypeID: UInt = 0x5349_4C50 // "SILP"
-}
+    /// The object inside what a reference points to, or nil if it holds none.
+    nonisolated(unsafe) public static var unwrap: (AnyObject) -> AnyObject? = { $0 }
 
-internal final class PathObject: CoreGraphicsPath {
+    /// The kinds of objects, which `CG…GetTypeID()` tell apart.
+    public enum Kind: UInt, CaseIterable, Sendable {
+        case path
+        case colorSpace
+        case color
+        case gradient
+        case image
+        case context
+    }
 
-    var path: Silica.Path
+    /// The first type identifier: each kind's is this plus its raw value.
+    nonisolated(unsafe) public static var typeIDBase: UInt = 0x5349_4C00 // "SIL"
 
-    init(path: Silica.Path) {
-        self.path = path
+    /// The type identifier of a kind of object.
+    public static func typeID(of kind: Kind) -> UInt {
+        typeIDBase + kind.rawValue
+    }
+
+    /// The kind of an object made here, as `wrap` receives it.
+    public static func kind(of object: AnyObject) -> Kind? {
+        switch object {
+        case is PathObject: return .path
+        case is ColorSpaceObject: return .colorSpace
+        case is ColorObject: return .color
+        case is GradientObject: return .gradient
+        case is ImageObject: return .image
+        #if canImport(Cairo)
+        // contexts draw with Cairo, where there is Cairo
+        case is ContextObject: return .context
+        #endif
+        default: return nil
+        }
     }
 }
 
 // MARK: - References
 
-/// The object a reference points to, without retaining it.
-internal func object(_ reference: OpaquePointer?) -> AnyObject? {
+/// The object a reference points to, of a kind, without retaining it.
+internal func object<T: AnyObject>(_ reference: OpaquePointer?, as type: T.Type = T.self) -> T? {
     guard let reference else { return nil }
-    return Unmanaged<AnyObject>.fromOpaque(UnsafeRawPointer(reference)).takeUnretainedValue()
+    let target = Unmanaged<AnyObject>.fromOpaque(UnsafeRawPointer(reference)).takeUnretainedValue()
+    return CoreGraphicsObjects.unwrap(target) as? T
 }
 
-/// A reference to an object, retained once for the caller to release.
-internal func retainedReference(_ object: AnyObject) -> OpaquePointer {
-    OpaquePointer(Unmanaged.passRetained(object).toOpaque())
+/// A new reference to an object, retained once for the caller to release.
+internal func makeReference(_ object: AnyObject) -> OpaquePointer {
+    OpaquePointer(Unmanaged.passRetained(CoreGraphicsObjects.wrap(object)).toOpaque())
 }
 
 internal func retain(_ reference: OpaquePointer?) {
@@ -69,13 +90,20 @@ internal func release(_ reference: OpaquePointer?) {
     Unmanaged<AnyObject>.fromOpaque(UnsafeRawPointer(reference)).release()
 }
 
-internal func pathObject(_ reference: OpaquePointer?) -> (any CoreGraphicsPath)? {
-    object(reference) as? any CoreGraphicsPath
-}
+/// A reference an object keeps to another, owning it: the reference it was
+/// handed, retained, so the object a caller later gets back is the same one.
+internal final class Retained {
 
-/// A new path object's reference, retained for the caller.
-internal func makePathReference(_ path: Silica.Path) -> OpaquePointer {
-    retainedReference(CoreGraphicsObjects.makePath(path))
+    let reference: OpaquePointer
+
+    init(_ reference: OpaquePointer) {
+        retain(reference)
+        self.reference = reference
+    }
+
+    deinit {
+        release(reference)
+    }
 }
 
 // MARK: - Geometry

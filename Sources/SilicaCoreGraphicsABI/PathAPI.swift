@@ -15,8 +15,23 @@ import Silica
 
 // The functions of CGPath.h, in its order.
 
+/// What a `CGPathRef` points to.
+internal final class PathObject {
+
+    var path: Silica.Path
+
+    init(path: Silica.Path) {
+        self.path = path
+    }
+}
+
+/// A new path's reference, retained for the caller.
+internal func makePathReference(_ path: Silica.Path) -> OpaquePointer {
+    makeReference(PathObject(path: path))
+}
+
 @c @implementation public func CGPathGetTypeID() -> UInt {
-    CoreGraphicsObjects.pathTypeID
+    CoreGraphicsObjects.typeID(of: .path)
 }
 
 // MARK: - Creating
@@ -26,24 +41,24 @@ import Silica
 }
 
 @c @implementation public func CGPathCreateCopy(_ path: SilicaCGPathRef?) -> SilicaCGPathRef? {
-    guard let object = pathObject(path) else { return nil }
+    guard let object = object(path, as: PathObject.self) else { return nil }
     return makePathReference(object.path)
 }
 
 @c @implementation public func CGPathCreateCopyByTransformingPath(_ path: SilicaCGPathRef?,
                                                                   _ transform: UnsafePointer<CGAffineTransform>?) -> SilicaCGPathRef? {
-    guard let object = pathObject(path) else { return nil }
+    guard let object = object(path, as: PathObject.self) else { return nil }
     return makePathReference(object.path.applying(SilicaCoreGraphicsABI.transform(transform)))
 }
 
 @c @implementation public func CGPathCreateMutableCopy(_ path: SilicaCGPathRef?) -> SilicaCGMutablePathRef? {
-    guard let object = pathObject(path) else { return nil }
+    guard let object = object(path, as: PathObject.self) else { return nil }
     return makePathReference(object.path)
 }
 
 @c @implementation public func CGPathCreateMutableCopyByTransformingPath(_ path: SilicaCGPathRef?,
                                                                         _ transform: UnsafePointer<CGAffineTransform>?) -> SilicaCGMutablePathRef? {
-    guard let object = pathObject(path) else { return nil }
+    guard let object = object(path, as: PathObject.self) else { return nil }
     return makePathReference(object.path.applying(SilicaCoreGraphicsABI.transform(transform)))
 }
 
@@ -77,7 +92,7 @@ import Silica
 
 @c @implementation public func CGPathEqualToPath(_ path1: SilicaCGPathRef?, _ path2: SilicaCGPathRef?) -> Bool {
     if path1 == path2 { return true }
-    guard let first = pathObject(path1), let second = pathObject(path2) else { return false }
+    guard let first = object(path1, as: PathObject.self), let second = object(path2, as: PathObject.self) else { return false }
     return first.path == second.path
 }
 
@@ -85,7 +100,7 @@ import Silica
 
 /// Adds elements built in the path's space, transformed by `m`.
 private func build(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineTransform>?, _ body: (inout Silica.Path) -> Void) {
-    guard let object = pathObject(path) else { return }
+    guard let object = object(path, as: PathObject.self) else { return }
     var added = Silica.Path()
     // continue from the current point, untransformed, so arcs and lines join it
     let current = object.path.currentPoint
@@ -99,18 +114,18 @@ private func build(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineT
 }
 
 @c @implementation public func CGPathMoveToPoint(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineTransform>?, _ x: Double, _ y: Double) {
-    pathObject(path)?.path.elements.append(.move(to: Point(x: x, y: y).applying(transform(m))))
+    object(path, as: PathObject.self)?.path.elements.append(.move(to: Point(x: x, y: y).applying(transform(m))))
 }
 
 /// Ignored without a current point, as in CoreGraphics.
 @c @implementation public func CGPathAddLineToPoint(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineTransform>?, _ x: Double, _ y: Double) {
-    guard let object = pathObject(path), object.path.currentPoint != nil else { return }
+    guard let object = object(path, as: PathObject.self), object.path.currentPoint != nil else { return }
     object.path.elements.append(.line(to: Point(x: x, y: y).applying(transform(m))))
 }
 
 @c @implementation public func CGPathAddQuadCurveToPoint(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineTransform>?,
                                                          _ cpx: Double, _ cpy: Double, _ x: Double, _ y: Double) {
-    guard let object = pathObject(path), object.path.currentPoint != nil else { return }
+    guard let object = object(path, as: PathObject.self), object.path.currentPoint != nil else { return }
     let t = transform(m)
     object.path.elements.append(.quadCurve(to: Point(x: x, y: y).applying(t), control: Point(x: cpx, y: cpy).applying(t)))
 }
@@ -118,7 +133,7 @@ private func build(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineT
 @c @implementation public func CGPathAddCurveToPoint(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineTransform>?,
                                                      _ cp1x: Double, _ cp1y: Double, _ cp2x: Double, _ cp2y: Double,
                                                      _ x: Double, _ y: Double) {
-    guard let object = pathObject(path), object.path.currentPoint != nil else { return }
+    guard let object = object(path, as: PathObject.self), object.path.currentPoint != nil else { return }
     let t = transform(m)
     object.path.elements.append(.curve(to: Point(x: x, y: y).applying(t),
                                        control1: Point(x: cp1x, y: cp1y).applying(t),
@@ -126,7 +141,7 @@ private func build(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineT
 }
 
 @c @implementation public func CGPathCloseSubpath(_ path: SilicaCGMutablePathRef?) {
-    pathObject(path)?.path.closeSubpath()
+    object(path, as: PathObject.self)?.path.closeSubpath()
 }
 
 @c @implementation public func CGPathAddRect(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineTransform>?, _ rect: CGRect) {
@@ -179,26 +194,26 @@ private func build(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineT
 
 @c @implementation public func CGPathAddArcToPoint(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineTransform>?,
                                                    _ x1: Double, _ y1: Double, _ x2: Double, _ y2: Double, _ radius: Double) {
-    guard let object = pathObject(path), object.path.currentPoint != nil else { return }
+    guard let object = object(path, as: PathObject.self), object.path.currentPoint != nil else { return }
     build(path, m) {
         $0.addArc(tangent1End: Point(x: x1, y: y1), tangent2End: Point(x: x2, y: y2), radius: radius)
     }
 }
 
 @c @implementation public func CGPathAddPath(_ path1: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineTransform>?, _ path2: SilicaCGPathRef?) {
-    guard let target = pathObject(path1), let source = pathObject(path2) else { return }
+    guard let target = object(path1, as: PathObject.self), let source = object(path2, as: PathObject.self) else { return }
     target.path.addPath(source.path, transform: transform(m))
 }
 
 // MARK: - Examining
 
 @c @implementation public func CGPathIsEmpty(_ path: SilicaCGPathRef?) -> Bool {
-    pathObject(path)?.path.isEmpty ?? true
+    object(path, as: PathObject.self)?.path.isEmpty ?? true
 }
 
 /// One rectangle: a move, three or four lines along the axes, and a close.
 @c @implementation public func CGPathIsRect(_ path: SilicaCGPathRef?, _ rect: UnsafeMutablePointer<CGRect>?) -> Bool {
-    guard let elements = pathObject(path)?.path.elements else { return false }
+    guard let elements = object(path, as: PathObject.self)?.path.elements else { return false }
     var points: [Point] = []
     for (index, element) in elements.enumerated() {
         switch element {
@@ -232,30 +247,30 @@ private func build(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineT
 }
 
 @c @implementation public func CGPathGetCurrentPoint(_ path: SilicaCGPathRef?) -> CGPoint {
-    guard let point = pathObject(path)?.path.currentPoint else { return CGPointZero }
+    guard let point = object(path, as: PathObject.self)?.path.currentPoint else { return CGPointZero }
     return CGPoint(point)
 }
 
 @c @implementation public func CGPathGetBoundingBox(_ path: SilicaCGPathRef?) -> CGRect {
-    guard let object = pathObject(path), object.path.isEmpty == false else { return CGRectNull }
+    guard let object = object(path, as: PathObject.self), object.path.isEmpty == false else { return CGRectNull }
     return CGRect(object.path.controlPointBounds)
 }
 
 @c @implementation public func CGPathGetPathBoundingBox(_ path: SilicaCGPathRef?) -> CGRect {
-    guard let object = pathObject(path), object.path.isEmpty == false else { return CGRectNull }
+    guard let object = object(path, as: PathObject.self), object.path.isEmpty == false else { return CGRectNull }
     return CGRect(object.path.boundingRect)
 }
 
 @c @implementation public func CGPathContainsPoint(_ path: SilicaCGPathRef?, _ m: UnsafePointer<CGAffineTransform>?,
                                                    _ point: CGPoint, _ eoFill: Bool) -> Bool {
-    guard let object = pathObject(path) else { return false }
+    guard let object = object(path, as: PathObject.self) else { return false }
     return object.path.contains(point.silica.applying(transform(m)), using: eoFill ? .evenOdd : .winding)
 }
 
 // MARK: - Applying
 
 @c @implementation public func CGPathApply(_ path: SilicaCGPathRef?, _ info: UnsafeMutableRawPointer?, _ function: CGPathApplierFunction?) {
-    guard let object = pathObject(path), let function else { return }
+    guard let object = object(path, as: PathObject.self), let function else { return }
     for element in object.path.elements {
         let type: CGPathElementType
         var points: [CGPoint]
