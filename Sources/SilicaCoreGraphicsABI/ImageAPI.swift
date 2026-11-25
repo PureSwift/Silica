@@ -13,6 +13,9 @@
 import CSilicaCoreGraphics
 import Silica
 import struct Foundation.Data
+#if canImport(Cairo)
+import Cairo
+#endif
 
 #if canImport(Glibc)
 import Glibc
@@ -192,7 +195,8 @@ private func unpremultiply(_ component: UInt8, _ alpha: UInt8) -> UInt8 {
 
 // MARK: - Images
 
-/// What a `CGImageRef` points to: pixels of a format, rows from the top.
+/// What a `CGImageRef` points to: pixels of a format, rows from the top, or
+/// an image mask's samples.
 internal final class ImageObject {
 
     let width: Int
@@ -205,8 +209,18 @@ internal final class ImageObject {
     let shouldInterpolate: Bool
     let renderingIntent: Int32
 
+    /// An image mask's bits a sample, or nil for an image.
+    let maskBits: Int?
+
+    /// The mask an image is masked by.
+    let mask: ImageObject?
+
+    /// The decode array, where `CGImageGetDecode` points.
+    let decode: UnsafeMutableBufferPointer<Double>?
+
     init(width: Int, height: Int, bitsPerComponent: Int, bytesPerRow: Int, format: PixelFormat,
-         space: OpaquePointer?, data: [UInt8], shouldInterpolate: Bool = true, renderingIntent: Int32 = 0) {
+         space: OpaquePointer?, data: [UInt8], shouldInterpolate: Bool = true, renderingIntent: Int32 = 0,
+         maskBits: Int? = nil, mask: ImageObject? = nil, decode: [Double]? = nil) {
         self.width = width
         self.height = height
         self.bitsPerComponent = bitsPerComponent
@@ -216,7 +230,56 @@ internal final class ImageObject {
         self.data = data
         self.shouldInterpolate = shouldInterpolate
         self.renderingIntent = renderingIntent
+        self.maskBits = maskBits
+        self.mask = mask
+        self.decode = decode.map { values in
+            let buffer = UnsafeMutableBufferPointer<Double>.allocate(capacity: values.count)
+            _ = buffer.initialize(from: values)
+            return buffer
+        }
     }
+
+    deinit {
+        decode?.deallocate()
+    }
+
+    var isMask: Bool { maskBits != nil }
+
+    /// How much of each pixel the image lets through as a mask, a byte a
+    /// pixel, rows from the top: an image mask where its samples are 0 (after
+    /// decoding), a gray image as its gray, an alpha-only image as its alpha.
+    lazy var coverage: [UInt8] = {
+        var bytes = [UInt8](repeating: 0, count: width * height)
+        if let bits = maskBits {
+            let maximum = Double((1 << bits) - 1)
+            let low = decode?[0] ?? 0, high = decode?[1] ?? 1
+            for y in 0 ..< height {
+                for x in 0 ..< width {
+                    let bit = x * bits
+                    let byte = data[y * bytesPerRow + bit / 8]
+                    let sample = Int(byte) >> (8 - bits - bit % 8) & ((1 << bits) - 1)
+                    let value = low + Double(sample) / maximum * (high - low)
+                    bytes[y * width + x] = UInt8((min(max(1 - value, 0), 1) * 255).rounded())
+                }
+            }
+            return bytes
+        }
+        data.withUnsafeBytes { source in
+            for y in 0 ..< height {
+                for x in 0 ..< width {
+                    let (r, g, b, a) = format.read(source.baseAddress! + y * bytesPerRow + x * format.bytesPerPixel)
+                    let value: UInt8
+                    switch format.layout {
+                    case .alphaOnly: value = a
+                    case .gray: value = r
+                    case .rgb: value = UInt8((grayLevel(red: Double(r) / 255, green: Double(g) / 255, blue: Double(b) / 255) * 255).rounded())
+                    }
+                    bytes[y * width + x] = value
+                }
+            }
+        }
+        return bytes
+    }()
 
     /// A provider of the pixels, made once.
     lazy var provider: Retained = {
@@ -226,9 +289,17 @@ internal final class ImageObject {
         return retained
     }()
 
-    /// The image as Silica draws it: premultiplied RGBA, made once.
+    /// The image as Silica draws it: premultiplied RGBA, made once. An image
+    /// mask is black where it lets through; a masked image, transparent where
+    /// its mask doesn't.
     lazy var silica: Silica.Image = {
         var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        if isMask {
+            for (index, alpha) in coverage.enumerated() {
+                pixels[index * 4 + 3] = alpha
+            }
+            return Silica.Image(width: width, height: height, data: Data(pixels))
+        }
         data.withUnsafeBytes { source in
             for y in 0 ..< height {
                 for x in 0 ..< width {
@@ -238,8 +309,41 @@ internal final class ImageObject {
                 }
             }
         }
+        if let mask {
+            // the mask's nearest sample, scaled to the image
+            let coverage = mask.coverage
+            for y in 0 ..< height {
+                let maskY = min(y * mask.height / height, mask.height - 1)
+                for x in 0 ..< width {
+                    let maskX = min(x * mask.width / width, mask.width - 1)
+                    let scale = Int(coverage[maskY * mask.width + maskX])
+                    let offset = (y * width + x) * 4
+                    for component in offset ..< offset + 4 {
+                        pixels[component] = UInt8((Int(pixels[component]) * scale + 127) / 255)
+                    }
+                }
+            }
+        }
         return Silica.Image(width: width, height: height, data: Data(pixels))
     }()
+
+    #if canImport(Cairo)
+    /// The coverage as a Cairo alpha surface, to clip to.
+    func maskSurface() -> Cairo.Surface.Image? {
+        guard let surface = try? Cairo.Surface.Image(format: .a8, width: width, height: height) else { return nil }
+        let stride = surface.stride
+        let coverage = self.coverage
+        _ = surface.withUnsafeMutableBytes { pixels in
+            for y in 0 ..< height {
+                for x in 0 ..< width {
+                    pixels[y * stride + x] = coverage[y * width + x]
+                }
+            }
+        }
+        surface.markDirty()
+        return surface
+    }
+    #endif
 }
 
 @c @implementation public func CGImageGetTypeID() -> UInt {
@@ -266,6 +370,9 @@ internal final class ImageObject {
           let format = PixelFormat(bitsPerComponent: bitsPerComponent, bitsPerPixel: bitsPerPixel,
                                    model: alphaOnly ? nil : model, bitmapInfo: bitmapInfo),
           bytesPerRow >= width * format.bytesPerPixel else { return nil }
+    // two values a color component
+    let components = alphaOnly ? 1 : object(space, as: ColorSpaceObject.self)?.numberOfComponents ?? 0
+    let decodeValues = decode.map { decode in (0 ..< components * 2).map { decode[$0] } }
     // the last row needs only its pixels
     let needed = bytesPerRow * (height - 1) + width * format.bytesPerPixel
     guard provider.count >= needed else { return nil }
@@ -274,7 +381,42 @@ internal final class ImageObject {
     }
     return makeReference(ImageObject(width: width, height: height, bitsPerComponent: bitsPerComponent, bytesPerRow: bytesPerRow,
                                      format: format, space: space, data: data, shouldInterpolate: shouldInterpolate,
-                                     renderingIntent: intent))
+                                     renderingIntent: intent, decode: decodeValues))
+}
+
+@c @implementation public func CGImageMaskCreate(_ width: Int, _ height: Int, _ bitsPerComponent: Int, _ bitsPerPixel: Int,
+                                                 _ bytesPerRow: Int, _ provider: SilicaCGDataProviderRef?,
+                                                 _ decode: UnsafePointer<Double>?, _ shouldInterpolate: Bool) -> SilicaCGImageRef? {
+    guard width > 0, height > 0, [1, 2, 4, 8].contains(bitsPerComponent), bitsPerPixel == bitsPerComponent,
+          bytesPerRow >= (width * bitsPerPixel + 7) / 8,
+          let provider = object(provider, as: DataProviderObject.self) else { return nil }
+    let needed = bytesPerRow * (height - 1) + (width * bitsPerPixel + 7) / 8
+    guard provider.count >= needed else { return nil }
+    let data = provider.withUnsafeBytes { bytes in
+        [UInt8](bytes.prefix(min(bytes.count, bytesPerRow * height))) + [UInt8](repeating: 0, count: max(0, bytesPerRow * height - bytes.count))
+    }
+    // a mask's pixels as an alpha-only format's, for what reads them as bytes
+    let format = PixelFormat(bitsPerComponent: 8, bitsPerPixel: 8, model: nil, bitmapInfo: CGBitmapInfo(kCGImageAlphaOnly))!
+    return makeReference(ImageObject(width: width, height: height, bitsPerComponent: bitsPerComponent, bytesPerRow: bytesPerRow,
+                                     format: format, space: nil, data: data, shouldInterpolate: shouldInterpolate,
+                                     maskBits: bitsPerPixel, decode: decode.map { [$0[0], $0[1]] }))
+}
+
+/// An image masked by an image mask, or by a gray (or alpha-only) image.
+@c @implementation public func CGImageCreateWithMask(_ image: SilicaCGImageRef?, _ mask: SilicaCGImageRef?) -> SilicaCGImageRef? {
+    guard let source = object(image, as: ImageObject.self), source.isMask == false,
+          let mask = object(mask, as: ImageObject.self), mask.mask == nil else { return nil }
+    if mask.isMask == false {
+        switch mask.format.layout {
+        case .gray(alpha: nil), .alphaOnly: break
+        default: return nil
+        }
+    }
+    return makeReference(ImageObject(width: source.width, height: source.height, bitsPerComponent: source.bitsPerComponent,
+                                     bytesPerRow: source.bytesPerRow, format: source.format, space: source.space?.reference,
+                                     data: source.data, shouldInterpolate: source.shouldInterpolate,
+                                     renderingIntent: source.renderingIntent, mask: mask,
+                                     decode: source.decode.map(Array.init)))
 }
 
 /// The same image: images don't change, so the copy is the image, retained.
@@ -284,7 +426,8 @@ internal final class ImageObject {
 }
 
 @c @implementation public func CGImageCreateWithImageInRect(_ image: SilicaCGImageRef?, _ rect: CGRect) -> SilicaCGImageRef? {
-    guard let source = object(image, as: ImageObject.self) else { return nil }
+    // a mask's samples aren't whole bytes, nor is a masked image's mask cropped with it
+    guard let source = object(image, as: ImageObject.self), source.isMask == false, source.mask == nil else { return nil }
     let bounds = Silica.Rect(x: 0, y: 0, width: Double(source.width), height: Double(source.height))
     let crop = rect.silica.standardized.integral.intersection(bounds)
     guard crop.isNull == false, crop.width > 0, crop.height > 0 else { return nil }
@@ -298,7 +441,8 @@ internal final class ImageObject {
     }
     return makeReference(ImageObject(width: width, height: height, bitsPerComponent: source.bitsPerComponent, bytesPerRow: rowBytes,
                                      format: source.format, space: source.space?.reference, data: data,
-                                     shouldInterpolate: source.shouldInterpolate, renderingIntent: source.renderingIntent))
+                                     shouldInterpolate: source.shouldInterpolate, renderingIntent: source.renderingIntent,
+                                     decode: source.decode.map(Array.init)))
 }
 
 @c @implementation public func CGImageGetWidth(_ image: SilicaCGImageRef?) -> Int {
@@ -314,7 +458,8 @@ internal final class ImageObject {
 }
 
 @c @implementation public func CGImageGetBitsPerPixel(_ image: SilicaCGImageRef?) -> Int {
-    object(image, as: ImageObject.self)?.format.bitsPerPixel ?? 0
+    guard let image = object(image, as: ImageObject.self) else { return 0 }
+    return image.maskBits ?? image.format.bitsPerPixel
 }
 
 @c @implementation public func CGImageGetBytesPerRow(_ image: SilicaCGImageRef?) -> Int {
@@ -350,9 +495,12 @@ internal final class ImageObject {
     object(image, as: ImageObject.self)?.provider.reference
 }
 
-/// Silica's images are never masks yet.
 @c @implementation public func CGImageIsMask(_ image: SilicaCGImageRef?) -> Bool {
-    false
+    object(image, as: ImageObject.self)?.isMask ?? false
+}
+
+@c @implementation public func CGImageGetDecode(_ image: SilicaCGImageRef?) -> UnsafePointer<Double>? {
+    object(image, as: ImageObject.self)?.decode.flatMap { UnsafePointer($0.baseAddress) }
 }
 
 #endif
