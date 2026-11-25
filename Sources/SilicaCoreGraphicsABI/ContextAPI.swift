@@ -229,9 +229,11 @@ internal final class ContextObject {
 
     /// What CoreGraphics keeps in the graphics state that Silica doesn't.
     struct State {
-        var fillSpace: ColorSpaceObject.Model = .rgb
-        var strokeSpace: ColorSpaceObject.Model = .rgb
+        var fillSpace = ColorSpaceObject.rgb
+        var strokeSpace = ColorSpaceObject.rgb
         var renderingIntent: Int32 = 0
+        /// Where patterns set from now lie, moved in base space.
+        var patternPhase = Silica.Size()
         var shouldAntialias = true
         /// The font size, which CoreGraphics sets apart from the font.
         var fontSize: Double = 12
@@ -257,7 +259,7 @@ internal final class ContextObject {
     }
 }
 
-private func contextObject(_ reference: SilicaCGContextRef?) -> ContextObject? {
+internal func contextObject(_ reference: SilicaCGContextRef?) -> ContextObject? {
     object(reference, as: ContextObject.self)
 }
 
@@ -556,6 +558,27 @@ private func withCurrentPoint(_ c: SilicaCGContextRef?, _ body: (GraphicsContext
     contextObject(c)?.context.clip(to: (0 ..< max(count, 0)).map { rects[$0].silica })
 }
 
+@c @implementation public func CGContextClipToMask(_ c: SilicaCGContextRef?, _ rect: CGRect, _ mask: SilicaCGImageRef?) {
+    guard let target = contextObject(c), let mask = object(mask, as: ImageObject.self) else { return }
+    target.clip(toMask: mask, in: rect.silica)
+}
+
+extension ContextObject {
+
+    /// Clips to a mask upright in a rectangle: nothing is drawn outside it.
+    func clip(toMask mask: ImageObject, in rect: Silica.Rect) {
+        context.clip(to: rect)
+        let rect = rect.standardized
+        guard rect.width > 0, rect.height > 0, let surface = mask.maskSurface() else { return }
+        // the mask draws upright when y points down, as an image does
+        let flip = Silica.AffineTransform(a: 1, b: 0, c: 0, d: -1, tx: 0, ty: rect.minY + rect.maxY)
+        let renderer = bitmap.renderer
+        renderer.concatenate(flip)
+        renderer.clip(toMask: surface, width: mask.width, height: mask.height, in: rect)
+        renderer.concatenate(flip)
+    }
+}
+
 @c @implementation public func CGContextGetClipBoundingBox(_ c: SilicaCGContextRef?) -> CGRect {
     guard let target = contextObject(c) else { return CGRectNull }
     let bounds = target.context.clipBoundingBox
@@ -564,68 +587,79 @@ private func withCurrentPoint(_ c: SilicaCGContextRef?, _ body: (GraphicsContext
 
 // MARK: Colors
 
+/// A pattern color sets its pattern.
 @c @implementation public func CGContextSetFillColorWithColor(_ c: SilicaCGContextRef?, _ color: SilicaCGColorRef?) {
     guard let target = contextObject(c), let color = object(color, as: ColorObject.self) else { return }
-    target.state.fillSpace = color.colorSpace.model
-    target.context.fillColor = color.silica
+    target.state.fillSpace = color.colorSpace
+    if let pattern = color.pattern.flatMap({ object($0.reference, as: PatternObject.self) }) {
+        target.setPattern(pattern, space: color.colorSpace, components: Array(color.components), stroke: false)
+    } else {
+        target.context.fillColor = color.silica
+    }
 }
 
 @c @implementation public func CGContextSetStrokeColorWithColor(_ c: SilicaCGContextRef?, _ color: SilicaCGColorRef?) {
     guard let target = contextObject(c), let color = object(color, as: ColorObject.self) else { return }
-    target.state.strokeSpace = color.colorSpace.model
-    target.context.strokeColor = color.silica
+    target.state.strokeSpace = color.colorSpace
+    if let pattern = color.pattern.flatMap({ object($0.reference, as: PatternObject.self) }) {
+        target.setPattern(pattern, space: color.colorSpace, components: Array(color.components), stroke: true)
+    } else {
+        target.context.strokeColor = color.silica
+    }
 }
 
 /// Sets the space, and the color to the space's black.
 @c @implementation public func CGContextSetFillColorSpace(_ c: SilicaCGContextRef?, _ space: SilicaCGColorSpaceRef?) {
     guard let target = contextObject(c), let space = object(space, as: ColorSpaceObject.self) else { return }
-    target.state.fillSpace = space.model
+    target.state.fillSpace = space
     target.context.fillColor = .black
 }
 
 @c @implementation public func CGContextSetStrokeColorSpace(_ c: SilicaCGContextRef?, _ space: SilicaCGColorSpaceRef?) {
     guard let target = contextObject(c), let space = object(space, as: ColorSpaceObject.self) else { return }
-    target.state.strokeSpace = space.model
+    target.state.strokeSpace = space
     target.context.strokeColor = .black
 }
 
-private func color(_ components: UnsafePointer<Double>, in model: ColorSpaceObject.Model) -> Silica.Color {
-    let space = ColorSpaceObject(model: model)
+/// A color of components in a space, or nil in a pattern space, whose colors
+/// are set as patterns.
+private func color(_ components: UnsafePointer<Double>, in space: ColorSpaceObject) -> Silica.Color? {
+    guard space.model != .pattern else { return nil }
     let values = (0 ..< space.numberOfComponents + 1).map { components[$0] }
     return space.color(Array(values.dropLast()), alpha: values.last!)
 }
 
 @c @implementation public func CGContextSetFillColor(_ c: SilicaCGContextRef?, _ components: UnsafePointer<Double>?) {
-    guard let target = contextObject(c), let components else { return }
-    target.context.fillColor = color(components, in: target.state.fillSpace)
+    guard let target = contextObject(c), let components, let color = color(components, in: target.state.fillSpace) else { return }
+    target.context.fillColor = color
 }
 
 @c @implementation public func CGContextSetStrokeColor(_ c: SilicaCGContextRef?, _ components: UnsafePointer<Double>?) {
-    guard let target = contextObject(c), let components else { return }
-    target.context.strokeColor = color(components, in: target.state.strokeSpace)
+    guard let target = contextObject(c), let components, let color = color(components, in: target.state.strokeSpace) else { return }
+    target.context.strokeColor = color
 }
 
 @c @implementation public func CGContextSetGrayFillColor(_ c: SilicaCGContextRef?, _ gray: Double, _ alpha: Double) {
     guard let target = contextObject(c) else { return }
-    target.state.fillSpace = .gray
+    target.state.fillSpace = ColorSpaceObject.gray
     target.context.fillColor = Silica.Color(white: gray, alpha: alpha)
 }
 
 @c @implementation public func CGContextSetGrayStrokeColor(_ c: SilicaCGContextRef?, _ gray: Double, _ alpha: Double) {
     guard let target = contextObject(c) else { return }
-    target.state.strokeSpace = .gray
+    target.state.strokeSpace = ColorSpaceObject.gray
     target.context.strokeColor = Silica.Color(white: gray, alpha: alpha)
 }
 
 @c @implementation public func CGContextSetRGBFillColor(_ c: SilicaCGContextRef?, _ red: Double, _ green: Double, _ blue: Double, _ alpha: Double) {
     guard let target = contextObject(c) else { return }
-    target.state.fillSpace = .rgb
+    target.state.fillSpace = ColorSpaceObject.rgb
     target.context.fillColor = Silica.Color(red: red, green: green, blue: blue, alpha: alpha)
 }
 
 @c @implementation public func CGContextSetRGBStrokeColor(_ c: SilicaCGContextRef?, _ red: Double, _ green: Double, _ blue: Double, _ alpha: Double) {
     guard let target = contextObject(c) else { return }
-    target.state.strokeSpace = .rgb
+    target.state.strokeSpace = ColorSpaceObject.rgb
     target.context.strokeColor = Silica.Color(red: red, green: green, blue: blue, alpha: alpha)
 }
 
@@ -685,8 +719,16 @@ private func gradientOptions(_ options: CGGradientDrawingOptions) -> GradientOpt
 
 // MARK: Images
 
+/// An image mask fills the rectangle through itself.
 @c @implementation public func CGContextDrawImage(_ c: SilicaCGContextRef?, _ rect: CGRect, _ image: SilicaCGImageRef?) {
     guard let target = contextObject(c), let image = object(image, as: ImageObject.self) else { return }
+    guard image.isMask == false else {
+        CGContextSaveGState(c)
+        target.clip(toMask: image, in: rect.silica)
+        target.context.fill(rect.silica)
+        CGContextRestoreGState(c)
+        return
+    }
     target.context.draw(image.silica, in: rect.silica)
 }
 
@@ -859,7 +901,7 @@ private func deviceTransform(_ target: ContextObject) -> Silica.AffineTransform 
 
 // MARK: - Bitmap Contexts
 
-private func makeBitmapContext(_ data: UnsafeMutableRawPointer?, _ width: Int, _ height: Int, _ bitsPerComponent: Int,
+internal func makeBitmapContext(_ data: UnsafeMutableRawPointer?, _ width: Int, _ height: Int, _ bitsPerComponent: Int,
                                _ bytesPerRow: Int, _ space: SilicaCGColorSpaceRef?, _ bitmapInfo: UInt32,
                                _ release: ((UnsafeMutableRawPointer) -> Void)?) -> SilicaCGContextRef? {
     guard width > 0, height > 0, width < 1 << 15, height < 1 << 15 else { return nil }
