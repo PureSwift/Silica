@@ -17,8 +17,12 @@
 #include "CGColorSpace.h"
 #include "CGColor.h"
 #include "CGGradient.h"
+#include "CGPattern.h"
+#include "CGFunction.h"
+#include "CGShading.h"
 #include "CGImage.h"
 #include "CGContext.h"
 #include "CGBitmapContext.h"
+#include "CGLayer.h"
 
 #endif /* SILICA_COREGRAPHICS_H */

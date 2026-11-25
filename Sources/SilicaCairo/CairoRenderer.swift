@@ -22,8 +22,9 @@ import Silica
 /// A renderer drawing with Cairo: into a PDF, a bitmap, or any Cairo surface.
 ///
 /// Cairo keeps the transform, the clip, the stroke style, the blend mode and
-/// antialiasing in its own graphics state. The colors, the alpha and the
-/// shadow are kept here, since Cairo paints with a single source.
+/// antialiasing in its own graphics state. The colors, the alpha, the shadow
+/// and a clip to a mask are kept here, since Cairo paints with a single
+/// source and clips only to paths.
 public final class CairoRenderer: Renderer {
 
     // MARK: - Properties
@@ -91,12 +92,10 @@ public final class CairoRenderer: Renderer {
     public func saveState() {
         context.save()
         stack.append(state)
-        state.masks = []
     }
 
     public func restoreState() {
         guard let saved = stack.popLast() else { return }
-        paintMasks()
         context.restore()
         state = saved
     }
@@ -117,12 +116,16 @@ public final class CairoRenderer: Renderer {
         context.antialias = shouldAntialias ? CAIRO_ANTIALIAS_DEFAULT : CAIRO_ANTIALIAS_NONE
     }
 
+    /// Paints with the color, in place of a fill source.
     public func setFillColor(_ color: Color) {
         state.fillColor = color
+        state.fillSource = nil
     }
 
+    /// Strokes with the color, in place of a stroke source.
     public func setStrokeColor(_ color: Color) {
         state.strokeColor = color
+        state.strokeSource = nil
     }
 
     public func setStrokeStyle(_ style: StrokeStyle) {
@@ -144,18 +147,18 @@ public final class CairoRenderer: Renderer {
     // MARK: - Painting
 
     public func fill(_ path: Silica.Path, rule: FillRule) {
-        withShadow {
+        painting(withSource: state.fillSource != nil) {
             setPath(path)
             context.fillRule = rule.toCairo()
-            context.source = pattern(state.fillColor)
+            context.source = fillPattern()
             context.fill()
         }
     }
 
     public func stroke(_ path: Silica.Path) {
-        withShadow {
+        painting(withSource: state.strokeSource != nil) {
             setPath(path)
-            context.source = pattern(state.strokeColor)
+            context.source = strokePattern()
             context.stroke()
         }
     }
@@ -172,8 +175,16 @@ public final class CairoRenderer: Renderer {
         context.newPath()
         addRect(rect)
         context.clip()
-        context.operator = CAIRO_OPERATOR_CLEAR
-        context.paint()
+        if let mask = state.clipMask {
+            // cleared as much as the mask lets through
+            context.operator = CAIRO_OPERATOR_DEST_OUT
+            context.setSource(color: (0, 0, 0, 1))
+            context.matrix = .identity
+            context.mask(surface: mask, at: (0, 0))
+        } else {
+            context.operator = CAIRO_OPERATOR_CLEAR
+            context.paint()
+        }
         context.restore()
     }
 
@@ -207,14 +218,14 @@ public final class CairoRenderer: Renderer {
         state.layers.append(layer)
         state.alpha = 1
         state.shadow = nil
-        state.masks = []
+        // the mask clips the layer as it's composited
+        state.clipMask = nil
         context.operator = CAIRO_OPERATOR_OVER
         context.pushGroup()
     }
 
     public func endTransparencyLayer() {
         guard let layer = state.layers.last, let saved = stack.popLast() else { return }
-        paintMasks()
         let group = context.popGroup()
         // the group pattern lines up with device space under an identity matrix
         group.matrix = .identity
@@ -224,7 +235,7 @@ public final class CairoRenderer: Renderer {
         context.matrix = .identity
         context.operator = layer.blendMode
         state.shadow = layer.shadow
-        withShadow {
+        painting(withSource: false) {
             context.source = group
             context.paint(alpha: layer.alpha)
         }
@@ -243,22 +254,28 @@ public final class CairoRenderer: Renderer {
         context.fontFace = face.scaledFont.face
         context.setFont(matrix: fontMatrix)
         let count = Int32(cairoGlyphs.count)
-        withShadow {
+        let usesSource: Bool
+        switch mode {
+        case .fill, .fillClip: usesSource = state.fillSource != nil
+        case .stroke, .strokeClip: usesSource = state.strokeSource != nil
+        default: usesSource = state.fillSource != nil || state.strokeSource != nil
+        }
+        painting(withSource: usesSource) {
             switch mode {
             case .fill, .fillClip:
-                context.source = pattern(state.fillColor)
+                context.source = fillPattern()
                 context.withUnsafePointer { cairo_show_glyphs($0, &cairoGlyphs, count) }
             case .stroke, .strokeClip:
                 context.newPath()
                 context.withUnsafePointer { cairo_glyph_path($0, &cairoGlyphs, count) }
-                context.source = pattern(state.strokeColor)
+                context.source = strokePattern()
                 context.stroke()
             case .fillStroke, .fillStrokeClip:
                 context.newPath()
                 context.withUnsafePointer { cairo_glyph_path($0, &cairoGlyphs, count) }
-                context.source = pattern(state.fillColor)
+                context.source = fillPattern()
                 context.fillPreserve()
-                context.source = pattern(state.strokeColor)
+                context.source = strokePattern()
                 context.stroke()
             case .invisible, .clip:
                 break
@@ -312,7 +329,7 @@ public extension CairoRenderer {
         case .high: filter = CAIRO_FILTER_BEST
         }
         pattern.withUnsafePointer { cairo_pattern_set_filter($0, filter) }
-        withShadow {
+        painting(withSource: false) {
             context.save()
             context.source = pattern
             context.newPath()
@@ -323,12 +340,49 @@ public extension CairoRenderer {
         }
     }
 
+    /// A pattern painted in place of a color, and where it lies.
+    struct Source {
+
+        public let pattern: Cairo.Pattern
+
+        /// From device space to the pattern's space: where the pattern lies
+        /// whatever the transform is when it's painted.
+        public let deviceMatrix: Cairo.Matrix
+
+        public init(pattern: Cairo.Pattern, deviceMatrix: Cairo.Matrix) {
+            self.pattern = pattern
+            self.deviceMatrix = deviceMatrix
+        }
+    }
+
+    /// Fills with a pattern in place of the fill color, until the fill color
+    /// is set again: a CoreGraphics pattern or tiled image.
+    func setFillSource(_ source: Source?) {
+        state.fillSource = source
+    }
+
+    /// Strokes with a pattern in place of the stroke color, until the stroke
+    /// color is set again.
+    func setStrokeSource(_ source: Source?) {
+        state.strokeSource = source
+    }
+
+    /// Paints a pattern within the clip, with the alpha, the blend mode and
+    /// the shadow.
+    func paint(_ source: Source) {
+        painting(withSource: true) {
+            context.source = resolve(source)
+            context.paint()
+        }
+    }
+
     /// Clips what's drawn until the graphics state is restored to an
     /// alpha-only surface of `width` by `height` pixels in `rect`, as
-    /// CGContextClipToMask does: what's drawn goes to a group, painted through
-    /// the mask on restore. Outside the rectangle nothing is drawn. The mask
-    /// is drawn into a device-sized surface now, since the transform may change.
-    func beginMask(_ mask: Cairo.Surface.Image, width: Int, height: Int, in rect: Rect) {
+    /// CGContextClipToMask does: each painting after goes through the mask.
+    /// Outside the rectangle nothing is drawn. The mask is drawn into a
+    /// device-sized surface now, since the transform may change, and a mask
+    /// clipped to before multiplies it.
+    func clip(toMask mask: Cairo.Surface.Image, width: Int, height: Int, in rect: Rect) {
         guard let device = try? Cairo.Surface.Image(format: .a8,
                                                     width: max(Int(ceil(size.width * scale)), 1),
                                                     height: max(Int(ceil(size.height * scale)), 1))
@@ -346,9 +400,14 @@ public extension CairoRenderer {
         painter.addRectangle(x: rect.origin.x, y: rect.origin.y, width: rect.size.width, height: rect.size.height)
         painter.clip()
         painter.paint()
+        if let previous = state.clipMask {
+            painter.matrix = .identity
+            painter.operator = CAIRO_OPERATOR_IN
+            painter.source = Pattern(surface: previous)
+            painter.paint()
+        }
         device.flush()
-        context.pushGroup()
-        state.masks.append(device)
+        state.clipMask = device
     }
 
     /// Flushes drawing to the surface's memory.
@@ -378,16 +437,35 @@ private extension CairoRenderer {
         var alpha: Double = 1
         var shadow: Shadow?
         var interpolationQuality: InterpolationQuality = .default
+        /// The pattern filled with in place of the fill color.
+        var fillSource: Source?
+        /// The pattern stroked with in place of the stroke color.
+        var strokeSource: Source?
         /// The transparency layers begun, innermost last.
         var layers: [Layer] = []
-        /// Masks clipped to since the state was saved: each began a group that
-        /// restoring paints through it.
-        var masks: [Cairo.Surface.Image] = []
+        /// The mask clipped to, in device space: what's painted goes through it.
+        var clipMask: Cairo.Surface.Image?
     }
 
     /// A color with the alpha applied.
     func pattern(_ color: Color) -> Cairo.Pattern {
         Pattern(color: color.opacity(state.alpha))
+    }
+
+    func fillPattern() -> Cairo.Pattern {
+        state.fillSource.map(resolve) ?? pattern(state.fillColor)
+    }
+
+    func strokePattern() -> Cairo.Pattern {
+        state.strokeSource.map(resolve) ?? pattern(state.strokeColor)
+    }
+
+    /// A source's pattern, placed for the transform now.
+    func resolve(_ source: Source) -> Cairo.Pattern {
+        var matrix = Matrix.identity
+        matrix.multiply(a: context.matrix, b: source.deviceMatrix)
+        source.pattern.matrix = matrix
+        return source.pattern
     }
 
     func addRect(_ rect: Rect) {
@@ -431,20 +509,53 @@ private extension CairoRenderer {
         }
         // Cairo extends both ends or neither
         pattern.extend = options.isEmpty ? .none : .pad
-        context.source = pattern
-        context.paint()
+        painting(withSource: false, shadow: false) {
+            context.source = pattern
+            context.paint()
+        }
     }
 
-    /// Paints what was drawn since each mask was clipped to, through the mask.
-    func paintMasks() {
-        for mask in state.masks.reversed() {
-            context.popGroupToSource()
+    /// Paints what `body` paints, with the shadow, through the clip mask if
+    /// there is one. A pattern can't carry the alpha as a color does: when one
+    /// paints, the alpha is applied to what's painted as a whole.
+    func painting(withSource usesSource: Bool, shadow: Bool = true, _ body: () -> Void) {
+        func draw() {
+            if shadow {
+                withShadow(body)
+            } else {
+                body()
+            }
+        }
+        let alpha = state.alpha
+        let appliesAlpha = usesSource && alpha < 1
+        guard state.clipMask != nil || appliesAlpha else {
+            draw()
+            return
+        }
+        // painted into a group, then blended through the mask
+        let blendMode = context.operator
+        context.pushGroup()
+        context.operator = CAIRO_OPERATOR_OVER
+        if appliesAlpha {
+            state.alpha = 1
+        }
+        draw()
+        if appliesAlpha {
+            state.alpha = alpha
+            context.operator = CAIRO_OPERATOR_DEST_IN
+            context.setSource(color: (0, 0, 0, alpha))
+            context.paint()
+        }
+        context.popGroupToSource()
+        context.operator = blendMode
+        if let mask = state.clipMask {
             context.save()
             context.matrix = .identity
             context.mask(surface: mask, at: (0, 0))
             context.restore()
+        } else {
+            context.paint()
         }
-        state.masks = []
     }
 
     /// Draws with the shadow, if there is one: what `body` draws goes to a

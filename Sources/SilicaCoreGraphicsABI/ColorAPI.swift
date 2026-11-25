@@ -18,19 +18,30 @@ import Silica
 // MARK: - Color Spaces
 
 /// What a `CGColorSpaceRef` points to. Silica draws in sRGB: RGB spaces are
-/// sRGB, gray is its gray, and CMYK converts naively.
+/// sRGB, gray is its gray, and CMYK converts naively. A pattern space's
+/// colors are patterns, painted in its base space's colors if they're
+/// stencils.
 internal final class ColorSpaceObject {
 
     enum Model: Int32 {
         case gray = 0
         case rgb = 1
         case cmyk = 2
+        case pattern = 6
     }
 
     let model: Model
 
-    init(model: Model) {
+    /// A pattern space's base space.
+    let base: Retained?
+
+    init(model: Model, base: OpaquePointer? = nil) {
         self.model = model
+        self.base = base.map(Retained.init)
+    }
+
+    var baseSpace: ColorSpaceObject? {
+        base.flatMap { object($0.reference, as: ColorSpaceObject.self) }
     }
 
     var numberOfComponents: Int {
@@ -38,13 +49,17 @@ internal final class ColorSpaceObject {
         case .gray: return 1
         case .rgb: return 3
         case .cmyk: return 4
+        case .pattern: return baseSpace?.numberOfComponents ?? 0
         }
     }
 
-    /// A color of components in this space and alpha, in sRGB.
+    /// A color of components in this space and alpha, in sRGB: for a pattern
+    /// space, the color a stencil is painted in.
     func color(_ components: [Double], alpha: Double) -> Silica.Color {
         func component(_ index: Int) -> Double { index < components.count ? components[index] : 0 }
         switch model {
+        case .pattern:
+            return baseSpace?.color(components, alpha: alpha) ?? Silica.Color(white: 0, alpha: alpha)
         case .gray:
             return Silica.Color(white: component(0), alpha: alpha)
         case .rgb:
@@ -60,6 +75,10 @@ internal final class ColorSpaceObject {
     nonisolated(unsafe) static let deviceRGB = makeReference(ColorSpaceObject(model: .rgb))
     nonisolated(unsafe) static let deviceGray = makeReference(ColorSpaceObject(model: .gray))
     nonisolated(unsafe) static let deviceCMYK = makeReference(ColorSpaceObject(model: .cmyk))
+
+    /// The shared spaces' objects.
+    nonisolated(unsafe) static let rgb = object(deviceRGB, as: ColorSpaceObject.self)!
+    nonisolated(unsafe) static let gray = object(deviceGray, as: ColorSpaceObject.self)!
 }
 
 @c @implementation public func CGColorSpaceGetTypeID() -> UInt {
@@ -99,9 +118,28 @@ internal final class ColorSpaceObject {
     object(space, as: ColorSpaceObject.self)?.numberOfComponents ?? 0
 }
 
+@c @implementation public func CGColorSpaceCreatePattern(_ baseSpace: SilicaCGColorSpaceRef?) -> SilicaCGColorSpaceRef? {
+    if let baseSpace {
+        // a pattern's colors aren't patterns
+        guard let base = object(baseSpace, as: ColorSpaceObject.self), base.model != .pattern else { return nil }
+    }
+    return makeReference(ColorSpaceObject(model: .pattern, base: baseSpace))
+}
+
+@c @implementation public func CGColorSpaceGetBaseColorSpace(_ space: SilicaCGColorSpaceRef?) -> SilicaCGColorSpaceRef? {
+    object(space, as: ColorSpaceObject.self)?.base?.reference
+}
+
+@c @implementation public func CGColorSpaceCopyBaseColorSpace(_ space: SilicaCGColorSpaceRef?) -> SilicaCGColorSpaceRef? {
+    guard let base = object(space, as: ColorSpaceObject.self)?.base?.reference else { return nil }
+    retain(base)
+    return base
+}
+
 // MARK: - Colors
 
-/// What a `CGColorRef` points to: components in a space, then alpha.
+/// What a `CGColorRef` points to: components in a space, then alpha, or a
+/// pattern and the components it's painted with.
 internal final class ColorObject {
 
     let space: Retained
@@ -111,11 +149,15 @@ internal final class ColorObject {
     /// The components and alpha, where `CGColorGetComponents` points.
     let components: UnsafeMutableBufferPointer<Double>
 
-    init(space reference: SilicaCGColorSpaceRef, components: [Double]) {
+    /// A pattern color's pattern.
+    let pattern: Retained?
+
+    init(space reference: SilicaCGColorSpaceRef, components: [Double], pattern: OpaquePointer? = nil) {
         self.space = Retained(reference)
         self.colorSpace = object(reference, as: ColorSpaceObject.self)!
         self.components = UnsafeMutableBufferPointer.allocate(capacity: components.count)
         _ = self.components.initialize(from: components)
+        self.pattern = pattern.map(Retained.init)
     }
 
     deinit {
@@ -159,12 +201,14 @@ internal func makeColorReference(space: SilicaCGColorSpaceRef, components: [Doub
 
 @c @implementation public func CGColorCreateCopy(_ color: SilicaCGColorRef?) -> SilicaCGColorRef? {
     guard let color = object(color, as: ColorObject.self) else { return nil }
-    return makeColorReference(space: color.space.reference, components: Array(color.components))
+    return makeReference(ColorObject(space: color.space.reference, components: Array(color.components),
+                                     pattern: color.pattern?.reference))
 }
 
 @c @implementation public func CGColorCreateCopyWithAlpha(_ color: SilicaCGColorRef?, _ alpha: Double) -> SilicaCGColorRef? {
     guard let color = object(color, as: ColorObject.self) else { return nil }
-    return makeColorReference(space: color.space.reference, components: Array(color.components.dropLast()) + [alpha])
+    return makeReference(ColorObject(space: color.space.reference, components: Array(color.components.dropLast()) + [alpha],
+                                     pattern: color.pattern?.reference))
 }
 
 @c @implementation public func CGColorRetain(_ color: SilicaCGColorRef?) -> SilicaCGColorRef? {
@@ -181,6 +225,7 @@ internal func makeColorReference(space: SilicaCGColorSpaceRef, components: [Doub
     if color1 == color2 { return true }
     guard let first = object(color1, as: ColorObject.self), let second = object(color2, as: ColorObject.self) else { return false }
     return first.colorSpace.model == second.colorSpace.model && Array(first.components) == Array(second.components)
+        && first.pattern?.reference == second.pattern?.reference
 }
 
 @c @implementation public func CGColorGetNumberOfComponents(_ color: SilicaCGColorRef?) -> Int {
@@ -198,6 +243,18 @@ internal func makeColorReference(space: SilicaCGColorSpaceRef, components: [Doub
 
 @c @implementation public func CGColorGetColorSpace(_ color: SilicaCGColorRef?) -> SilicaCGColorSpaceRef? {
     object(color, as: ColorObject.self)?.space.reference
+}
+
+@c @implementation public func CGColorCreateWithPattern(_ space: SilicaCGColorSpaceRef?, _ pattern: SilicaCGPatternRef?,
+                                                        _ components: UnsafePointer<Double>?) -> SilicaCGColorRef? {
+    guard let space, let colorSpace = object(space, as: ColorSpaceObject.self), colorSpace.model == .pattern,
+          let pattern, object(pattern, as: PatternObject.self) != nil, let components else { return nil }
+    let count = colorSpace.numberOfComponents + 1
+    return makeReference(ColorObject(space: space, components: (0 ..< count).map { components[$0] }, pattern: pattern))
+}
+
+@c @implementation public func CGColorGetPattern(_ color: SilicaCGColorRef?) -> SilicaCGPatternRef? {
+    object(color, as: ColorObject.self)?.pattern?.reference
 }
 
 // MARK: - Gradients
