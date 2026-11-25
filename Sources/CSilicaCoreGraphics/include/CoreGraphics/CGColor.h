@@ -10,6 +10,7 @@
 
 #include "CGBase.h"
 #include "CGColorSpace.h"
+#include "CGPattern.h"
 
 CG_EXTERN_C_BEGIN
 CG_ASSUME_NONNULL_BEGIN
@@ -39,6 +40,12 @@ CG_EXTERN size_t CGColorGetNumberOfComponents(CGColorRef CG_NULLABLE color);
 CG_EXTERN const CGFloat * CG_NULLABLE CGColorGetComponents(CGColorRef CG_NULLABLE color);
 CG_EXTERN CGFloat CGColorGetAlpha(CGColorRef CG_NULLABLE color);
 CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorGetColorSpace(CGColorRef CG_NULLABLE color);
+
+/* A pattern as a color, in a pattern space: `components` are the base
+ * space's components and alpha for an uncolored pattern, or alpha alone. */
+CG_EXTERN CGColorRef CG_NULLABLE CGColorCreateWithPattern(CGColorSpaceRef CG_NULLABLE space, CGPatternRef CG_NULLABLE pattern,
+                                                          const CGFloat * CG_NULLABLE components);
+CG_EXTERN CGPatternRef CG_NULLABLE CGColorGetPattern(CGColorRef CG_NULLABLE color);
 
 CG_ASSUME_NONNULL_END
 CG_EXTERN_C_END
