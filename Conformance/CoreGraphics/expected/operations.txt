@@ -1,0 +1,124 @@
+-- transforms
+identity: scale 1 1 shear 0 rotation 0 translation 0 0
+scale: scale 2 3 shear 0 rotation 0 translation 0 0
+rotation: scale 1 1 shear 0 rotation 0.523599 translation 0 0
+translation: scale 1 1 shear 0 rotation 0 translation 5 7
+shear: scale 1 1 shear 0.5 rotation 0 translation 0 0
+flip x: scale -1 1 shear 0 rotation 0 translation 0 0
+flip y: scale -1 1 shear 0 rotation -3.14159 translation 0 0
+made: 1.91067 0.59104 0.546444 3.30929 4 5
+made, decomposed: scale 2 3 shear 0.5 rotation 0.3 translation 4 5
+rotated: 0 1 -1 0 0 0
+-- applying
+block elements: 5 sum 40
+-- flattening
+flattened: curves 0 closes 1 lines some
+flattened box: 0.00 0.00 10.00 10.00
+flattened (5, 5): inside
+-- dashing
+dashes: 3
+dashed box: 0.00 0.00 10.00 0.00
+dashes from 1: 3
+dashed from 1 box: 0.00 0.00 9.00 0.00
+dashed and moved box: 0.00 5.00 10.00 0.00
+square dashes: 2
+square dashed box: 0.00 0.00 10.00 10.00
+-- stroking
+butt: 0.00 -2.00 10.00 4.00
+butt (5, 1.5): inside
+butt (5, 2.5): outside
+butt (-1, 0): outside
+square: -2.00 -2.00 14.00 4.00
+square (-1.5, 1.5): inside
+round (11.5, 0): inside
+round (11.8, 1.8): outside
+round (-1.5, 0): inside
+moved: 0.00 3.00 10.00 4.00
+miter: 0.00 -1.00 11.00 11.00
+miter (10.9, -0.9): inside
+bevel (10.9, -0.9): outside
+bevel (10.4, -0.4): inside
+round join (10.9, -0.9): outside
+round join (10.6, -0.6): inside
+miter over its limit (10.9, -0.9): outside
+closed: -1.00 -1.00 12.00 12.00
+closed (0, 5): inside
+closed (5, 5): outside
+closed corner (-0.9, -0.9): inside
+no width: 0.00 0.00 10.00 0.00
+-- areas
+union: 0.00 0.00 15.00 15.00
+union (2, 2): inside
+union (12, 12): inside
+union (12, 2): outside
+union (7, 7): inside
+intersection: 5.00 5.00 5.00 5.00
+intersection (7, 7): inside
+intersection (2, 2): outside
+subtraction: 0.00 0.00 10.00 10.00
+subtraction (7, 7): outside
+subtraction (2, 2): inside
+subtraction (8, 2): inside
+symmetric difference: 0.00 0.00 15.00 15.00
+symmetric difference (7, 7): outside
+symmetric difference (2, 2): inside
+symmetric difference (12, 12): inside
+disjoint intersection: empty
+union beside: 0.00 0.00 20.00 10.00
+union beside (10, 5): inside
+normalized even-odd: 0.00 0.00 10.00 10.00
+normalized even-odd (5, 5): outside
+normalized even-odd (1, 1): inside
+normalized winding (5, 5): inside
+even-odd union (5, 5): outside
+even-odd union (52, 52): inside
+square less circle (5, 5): outside
+square less circle (0.5, 0.5): inside
+square less circle (9.5, 9.5): inside
+-- intersecting
+overlapping: true
+disjoint: false
+inside: true
+-- lines
+line inside: 0.00 5.00 10.00 0.00
+line inside pieces: 1
+line outside: -5.00 5.00 20.00 0.00
+line outside pieces: 2
+line missing: empty
+-- contexts
+stroked path: 2.00 8.00 16.00 4.00
+stroked inside: 255 0 0 255
+stroked outside: 0 0 0 0
+reset clip: 0 0 20 20
+after reset: 0 0 255 255
+-- color spaces
+calibrated gray: model 0 components 1
+calibrated rgb: model 1 components 3
+indexed: model 5 components 1 colors 2 base model 1
+indexed table: 255 0 0 0 0 255
+indexed too many: true
+indexed of indexed: true
+rgb colors: 0
+indexed color: 0 0 255 255
+indexed fill: 255 0 0 255
+linearized rgb: false
+extended rgb: false
+linearized indexed: false
+-- matching colors
+red in gray: components 2 alpha 0.50 model 0
+gray in rgb: 0.50 0.50 0.50
+matched to indexed: true
+-- images
+pixel format: 0
+type: true
+copy in gray: true
+copy in rgb: yes model 1
+masked by color: yes bpp 24 alpha info 0
+masked red: 0 0 0 0
+kept blue: 0 0 255 255
+png: 2x2 bpc 8 bpp 32
+png top left: 255 0 0 255
+png top right: 0 128 0 128
+png bottom left: 0 0 255 255
+png bottom right: 255 255 255 255
+not a png: true
