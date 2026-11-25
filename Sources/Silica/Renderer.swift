@@ -50,6 +50,10 @@ public protocol Renderer: AnyObject {
     /// The shadow what's drawn casts, or nil for none.
     func setShadow(_ shadow: Shadow?)
 
+    /// How images are sampled when they're scaled. A renderer that can't
+    /// choose ignores it.
+    func setInterpolationQuality(_ quality: InterpolationQuality)
+
     // MARK: Painting
 
     /// Fills a path with the fill color.
@@ -104,4 +108,9 @@ public protocol Renderer: AnyObject {
 
     /// What's drawn so far as an image, or nil for a destination that isn't a bitmap.
     func makeImage() -> Image?
+}
+
+public extension Renderer {
+
+    func setInterpolationQuality(_ quality: InterpolationQuality) { }
 }
