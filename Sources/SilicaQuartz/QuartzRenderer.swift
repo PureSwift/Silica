@@ -151,6 +151,19 @@ public final class QuartzRenderer: Renderer {
         nativeContext.setLineDash(phase: style.dashPhase, lengths: style.dash.map { CGFloat($0) })
     }
 
+    public func setInterpolationQuality(_ quality: InterpolationQuality) {
+        state.interpolationQuality = quality
+        let native: CGInterpolationQuality
+        switch quality {
+        case .default: native = .default
+        case .none: native = .none
+        case .low: native = .low
+        case .medium: native = .medium
+        case .high: native = .high
+        }
+        nativeContext.interpolationQuality = native
+    }
+
     public func setShadow(_ shadow: Shadow?) {
         state.shadow = shadow
         guard let shadow else {
@@ -199,7 +212,6 @@ public final class QuartzRenderer: Renderer {
         nativeContext.saveGState()
         nativeContext.translateBy(x: 0, y: rect.minY + rect.maxY)
         nativeContext.scaleBy(x: 1, y: -1)
-        nativeContext.interpolationQuality = .default
         nativeContext.draw(nativeImage, in: rect.toCoreGraphics())
         nativeContext.restoreGState()
     }
@@ -275,6 +287,7 @@ public final class QuartzRenderer: Renderer {
         setBlendMode(state.blendMode)
         setShouldAntialias(state.shouldAntialias)
         setShadow(state.shadow)
+        setInterpolationQuality(state.interpolationQuality)
     }
 
     public func endPage() {
@@ -316,6 +329,7 @@ private extension QuartzRenderer {
         var blendMode: BlendMode = .normal
         var shouldAntialias = true
         var shadow: Shadow?
+        var interpolationQuality: InterpolationQuality = .default
     }
 
     /// The flip to y-down and the scale, under everything drawn.
