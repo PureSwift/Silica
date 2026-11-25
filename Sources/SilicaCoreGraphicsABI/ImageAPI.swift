@@ -218,6 +218,14 @@ internal final class ImageObject {
         self.renderingIntent = renderingIntent
     }
 
+    /// A provider of the pixels, made once.
+    lazy var provider: Retained = {
+        let reference = makeReference(DataProviderObject(bytes: data))
+        let retained = Retained(reference)
+        release(reference)
+        return retained
+    }()
+
     /// The image as Silica draws it: premultiplied RGBA, made once.
     lazy var silica: Silica.Image = {
         var pixels = [UInt8](repeating: 0, count: width * height * 4)
@@ -245,6 +253,28 @@ internal final class ImageObject {
 
 @c @implementation public func CGImageRelease(_ image: SilicaCGImageRef?) {
     release(image)
+}
+
+@c @implementation public func CGImageCreate(_ width: Int, _ height: Int, _ bitsPerComponent: Int, _ bitsPerPixel: Int,
+                                             _ bytesPerRow: Int, _ space: SilicaCGColorSpaceRef?, _ bitmapInfo: CGBitmapInfo,
+                                             _ provider: SilicaCGDataProviderRef?, _ decode: UnsafePointer<Double>?,
+                                             _ shouldInterpolate: Bool, _ intent: CGColorRenderingIntent) -> SilicaCGImageRef? {
+    guard width > 0, height > 0, let provider = object(provider, as: DataProviderObject.self) else { return nil }
+    let alphaOnly = bitmapInfo & 0x1F == 7
+    let model = object(space, as: ColorSpaceObject.self)?.model
+    guard alphaOnly || model != nil,
+          let format = PixelFormat(bitsPerComponent: bitsPerComponent, bitsPerPixel: bitsPerPixel,
+                                   model: alphaOnly ? nil : model, bitmapInfo: bitmapInfo),
+          bytesPerRow >= width * format.bytesPerPixel else { return nil }
+    // the last row needs only its pixels
+    let needed = bytesPerRow * (height - 1) + width * format.bytesPerPixel
+    guard provider.count >= needed else { return nil }
+    let data = provider.withUnsafeBytes { bytes in
+        [UInt8](bytes.prefix(min(bytes.count, bytesPerRow * height))) + [UInt8](repeating: 0, count: max(0, bytesPerRow * height - bytes.count))
+    }
+    return makeReference(ImageObject(width: width, height: height, bitsPerComponent: bitsPerComponent, bytesPerRow: bytesPerRow,
+                                     format: format, space: space, data: data, shouldInterpolate: shouldInterpolate,
+                                     renderingIntent: intent))
 }
 
 /// The same image: images don't change, so the copy is the image, retained.
@@ -313,6 +343,11 @@ internal final class ImageObject {
 
 @c @implementation public func CGImageGetRenderingIntent(_ image: SilicaCGImageRef?) -> CGColorRenderingIntent {
     object(image, as: ImageObject.self)?.renderingIntent ?? 0
+}
+
+/// A provider of the image's pixels, which the image keeps.
+@c @implementation public func CGImageGetDataProvider(_ image: SilicaCGImageRef?) -> SilicaCGDataProviderRef? {
+    object(image, as: ImageObject.self)?.provider.reference
 }
 
 /// Silica's images are never masks yet.
