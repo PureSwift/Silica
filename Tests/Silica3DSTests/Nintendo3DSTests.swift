@@ -23,21 +23,21 @@ final class Nintendo3DSTests: XCTestCase {
 
     // MARK: - Utilities
 
-    private func makeContext(width: Int, height: Int, scale: Int = 1) throws -> Nintendo3DSContext {
-        let context = try Nintendo3DSContext(bitmap: CGSize(width: width, height: height), scale: scale)
+    private func makeContext(width: Int, height: Int, scale: Int = 1) throws -> GraphicsContext {
+        let context = GraphicsContext(try Nintendo3DSRenderer(bitmap: Size(width: Double(width), height: Double(height)), scale: scale))
         // white background
         context.fillColor = .white
-        context.addRect(CGRect(x: 0, y: 0, width: CGFloat(width), height: CGFloat(height)))
+        context.addRect(Rect(x: 0, y: 0, width: Double(width), height: Double(height)))
         context.fillPath()
         return context
     }
 
-    private func pixel(_ image: Silica.CGImage, _ x: Int, _ y: Int) -> (red: UInt8, green: UInt8, blue: UInt8) {
+    private func pixel(_ image: Silica.Image, _ x: Int, _ y: Int) -> (red: UInt8, green: UInt8, blue: UInt8) {
         let offset = y * image.bytesPerRow + x * 4
         return (image.data[offset], image.data[offset + 1], image.data[offset + 2])
     }
 
-    private func pixel(_ context: Nintendo3DSContext, _ x: Int, _ y: Int) -> (red: UInt8, green: UInt8, blue: UInt8) {
+    private func pixel(_ context: GraphicsContext, _ x: Int, _ y: Int) -> (red: UInt8, green: UInt8, blue: UInt8) {
         return pixel(context.makeImage()!, x, y)
     }
 
@@ -46,8 +46,8 @@ final class Nintendo3DSTests: XCTestCase {
     func testFillRect() throws {
         let context = try makeContext(width: 40, height: 40)
 
-        context.fillColor = CGColor(red: 1, green: 0, blue: 0)
-        context.addRect(CGRect(x: 10, y: 10, width: 20, height: 20))
+        context.fillColor = Color(red: 1, green: 0, blue: 0)
+        context.addRect(Rect(x: 10, y: 10, width: 20, height: 20))
         context.fillPath()
 
         let interior = pixel(context, 20, 20)
@@ -62,9 +62,9 @@ final class Nintendo3DSTests: XCTestCase {
         let context = try makeContext(width: 40, height: 40)
 
         // two nested rects: even-odd leaves a hole
-        context.fillColor = CGColor(red: 0, green: 0, blue: 1)
-        context.addRect(CGRect(x: 5, y: 5, width: 30, height: 30))
-        context.addRect(CGRect(x: 15, y: 15, width: 10, height: 10))
+        context.fillColor = Color(red: 0, green: 0, blue: 1)
+        context.addRect(Rect(x: 5, y: 5, width: 30, height: 30))
+        context.addRect(Rect(x: 15, y: 15, width: 10, height: 10))
         context.fillPath(using: .evenOdd)
 
         let ring = pixel(context, 10, 20)
@@ -79,9 +79,9 @@ final class Nintendo3DSTests: XCTestCase {
         let context = try makeContext(width: 40, height: 40)
 
         // same nested rects wound identically: nonzero fills the hole
-        context.fillColor = CGColor(red: 0, green: 0, blue: 1)
-        context.addRect(CGRect(x: 5, y: 5, width: 30, height: 30))
-        context.addRect(CGRect(x: 15, y: 15, width: 10, height: 10))
+        context.fillColor = Color(red: 0, green: 0, blue: 1)
+        context.addRect(Rect(x: 5, y: 5, width: 30, height: 30))
+        context.addRect(Rect(x: 15, y: 15, width: 10, height: 10))
         context.fillPath(using: .winding)
 
         let center = pixel(context, 20, 20)
@@ -91,8 +91,8 @@ final class Nintendo3DSTests: XCTestCase {
     func testCircleFill() throws {
         let context = try makeContext(width: 40, height: 40)
 
-        context.fillColor = CGColor(red: 0, green: 1, blue: 0)
-        context.addArc(center: CGPoint(x: 20, y: 20), radius: 10, startAngle: 0, endAngle: 2 * .pi, clockwise: false)
+        context.fillColor = Color(red: 0, green: 1, blue: 0)
+        context.addArc(center: Point(x: 20, y: 20), radius: 10, startAngle: 0, endAngle: 2 * .pi, clockwise: false)
         context.fillPath()
 
         let center = pixel(context, 20, 20)
@@ -110,8 +110,8 @@ final class Nintendo3DSTests: XCTestCase {
 
         context.saveGState()
         context.translateBy(x: 20, y: 20)
-        context.fillColor = CGColor(red: 1, green: 0, blue: 0)
-        context.addRect(CGRect(x: 0, y: 0, width: 10, height: 10))
+        context.fillColor = Color(red: 1, green: 0, blue: 0)
+        context.addRect(Rect(x: 0, y: 0, width: 10, height: 10))
         context.fillPath()
         context.restoreGState()
 
@@ -129,11 +129,11 @@ final class Nintendo3DSTests: XCTestCase {
         // a 2pt stroke under 5x scale must paint ~10 device pixels wide
         context.saveGState()
         context.scaleBy(x: 5, y: 5)
-        context.strokeColor = CGColor(red: 0, green: 0, blue: 1)
+        context.strokeColor = Color(red: 0, green: 0, blue: 1)
         context.lineWidth = 2
         context.beginPath()
-        context.move(to: CGPoint(x: 1, y: 6))
-        context.addLine(to: CGPoint(x: 11, y: 6))
+        context.move(to: Point(x: 1, y: 6))
+        context.addLine(to: Point(x: 11, y: 6))
         context.strokePath()
         context.restoreGState()
 
@@ -150,9 +150,9 @@ final class Nintendo3DSTests: XCTestCase {
     func testStrokeRect() throws {
         let context = try makeContext(width: 40, height: 40)
 
-        context.strokeColor = CGColor(red: 0, green: 0, blue: 1)
+        context.strokeColor = Color(red: 0, green: 0, blue: 1)
         context.lineWidth = 4
-        context.addRect(CGRect(x: 10, y: 10, width: 20, height: 20))
+        context.addRect(Rect(x: 10, y: 10, width: 20, height: 20))
         context.strokePath()
 
         // border stroked
@@ -169,12 +169,12 @@ final class Nintendo3DSTests: XCTestCase {
     func testDashedStroke() throws {
         let context = try makeContext(width: 40, height: 40)
 
-        context.strokeColor = CGColor(red: 1, green: 0, blue: 0)
+        context.strokeColor = Color(red: 1, green: 0, blue: 0)
         context.lineWidth = 4
         context.setLineDash(phase: 0, lengths: [6, 6])
         context.beginPath()
-        context.move(to: CGPoint(x: 2, y: 20))
-        context.addLine(to: CGPoint(x: 38, y: 20))
+        context.move(to: Point(x: 2, y: 20))
+        context.addLine(to: Point(x: 38, y: 20))
         context.strokePath()
 
         // "on" segment at the start
@@ -190,10 +190,10 @@ final class Nintendo3DSTests: XCTestCase {
     func testFillStroke() throws {
         let context = try makeContext(width: 40, height: 40)
 
-        context.fillColor = CGColor(red: 1, green: 0, blue: 0)
-        context.strokeColor = CGColor(red: 0, green: 0, blue: 1)
+        context.fillColor = Color(red: 1, green: 0, blue: 0)
+        context.strokeColor = Color(red: 0, green: 0, blue: 1)
         context.lineWidth = 4
-        context.addRect(CGRect(x: 10, y: 10, width: 20, height: 20))
+        context.addRect(Rect(x: 10, y: 10, width: 20, height: 20))
         context.drawPath(using: .fillStroke)
 
         let interior = pixel(context, 20, 20)
@@ -212,11 +212,11 @@ final class Nintendo3DSTests: XCTestCase {
 
         context.saveGState()
         context.beginPath()
-        context.addRect(CGRect(x: 0, y: 0, width: 20, height: 40))
+        context.addRect(Rect(x: 0, y: 0, width: 20, height: 40))
         context.clip()
 
-        context.fillColor = CGColor(red: 1, green: 0, blue: 0)
-        context.addRect(CGRect(x: 0, y: 0, width: 40, height: 40))
+        context.fillColor = Color(red: 1, green: 0, blue: 0)
+        context.addRect(Rect(x: 0, y: 0, width: 40, height: 40))
         context.fillPath()
         context.restoreGState()
 
@@ -227,8 +227,8 @@ final class Nintendo3DSTests: XCTestCase {
         XCTAssertGreaterThan(pixel(context, 30, 20).green, 200)
 
         // clip restored: full-width fill covers everything
-        context.fillColor = CGColor(red: 0, green: 0, blue: 1)
-        context.addRect(CGRect(x: 0, y: 0, width: 40, height: 40))
+        context.fillColor = Color(red: 0, green: 0, blue: 1)
+        context.addRect(Rect(x: 0, y: 0, width: 40, height: 40))
         context.fillPath()
         XCTAssertGreaterThan(pixel(context, 30, 20).blue, 200)
     }
@@ -239,11 +239,11 @@ final class Nintendo3DSTests: XCTestCase {
         let context = try makeContext(width: 40, height: 40)
 
         context.setAlpha(0.5)
-        context.beginTransparencyLayer(auxiliaryInfo: nil)
+        context.beginTransparencyLayer()
 
         // inside the layer alpha resets to 1
-        context.fillColor = CGColor(red: 1, green: 0, blue: 0)
-        context.addRect(CGRect(x: 0, y: 0, width: 40, height: 40))
+        context.fillColor = Color(red: 1, green: 0, blue: 0)
+        context.addRect(Rect(x: 0, y: 0, width: 40, height: 40))
         context.fillPath()
 
         context.endTransparencyLayer()
@@ -260,9 +260,9 @@ final class Nintendo3DSTests: XCTestCase {
     func testShadow() throws {
         let context = try makeContext(width: 40, height: 40)
 
-        context.setShadow(offset: CGSize(width: 8, height: 8), radius: 0, color: CGColor(red: 0, green: 0, blue: 1))
-        context.fillColor = CGColor(red: 1, green: 0, blue: 0)
-        context.addRect(CGRect(x: 5, y: 5, width: 15, height: 15))
+        context.setShadow(offset: Size(width: 8, height: 8), blur: 0, color: Color(red: 0, green: 0, blue: 1))
+        context.fillColor = Color(red: 1, green: 0, blue: 0)
+        context.addRect(Rect(x: 5, y: 5, width: 15, height: 15))
         context.fillPath()
 
         // shape
@@ -282,14 +282,10 @@ final class Nintendo3DSTests: XCTestCase {
         var data = Data(count: 8)
         data[0] = 255; data[3] = 255            // top: red
         data[6] = 255; data[7] = 255            // bottom: blue
-        let image = Silica.CGImage(width: 1, height: 2, bytesPerRow: 4, data: data)
+        let image = Silica.Image(width: 1, height: 2, bytesPerRow: 4, data: data)
 
-        // draw with the UIKit-style pre-flip (as PaintCode/TestStyleKit do)
-        context.saveGState()
-        context.translateBy(x: 0, y: 40)
-        context.scaleBy(x: 1, y: -1)
-        context.draw(image, in: CGRect(x: 0, y: 0, width: 40, height: 40))
-        context.restoreGState()
+        // images draw upright
+        context.draw(image, in: Rect(x: 0, y: 0, width: 40, height: 40))
 
         // upright result: red on top, blue on bottom
         XCTAssertGreaterThan(pixel(context, 20, 10).red, 200)
@@ -301,11 +297,11 @@ final class Nintendo3DSTests: XCTestCase {
     // MARK: - Supersampling
 
     func testSupersampledEdgeIsSmoothed() throws {
-        let context = try Nintendo3DSContext(bitmap: CGSize(width: 4, height: 4), scale: 2)
+        let context = GraphicsContext(try Nintendo3DSRenderer(bitmap: Size(width: 4, height: 4), scale: 2))
 
         // half-pixel-covering rect: at scale 2, one device column of two is filled
-        context.fillColor = CGColor(red: 1, green: 0, blue: 0)
-        context.addRect(CGRect(x: 0, y: 0, width: 0.5, height: 4))
+        context.fillColor = Color(red: 1, green: 0, blue: 0)
+        context.addRect(Rect(x: 0, y: 0, width: 0.5, height: 4))
         context.fillPath()
 
         let image = context.makeImage()!
@@ -320,17 +316,18 @@ final class Nintendo3DSTests: XCTestCase {
 
     func testGSPFramebufferSwizzle() throws {
         let width = 4, height = 3
-        let context = try Nintendo3DSContext(bitmap: CGSize(width: width, height: height))
+        let renderer = try Nintendo3DSRenderer(bitmap: Size(width: Double(width), height: Double(height)))
+        let context = GraphicsContext(renderer)
 
         // single red pixel at logical (0, 0)
-        context.fillColor = CGColor(red: 1, green: 0, blue: 0)
-        context.addRect(CGRect(x: 0, y: 0, width: 1, height: 1))
+        context.fillColor = Color(red: 1, green: 0, blue: 0)
+        context.addRect(Rect(x: 0, y: 0, width: 1, height: 1))
         context.fillPath()
 
         var framebuffer = [UInt8](repeating: 0, count: width * height * 3)
 
         framebuffer.withUnsafeMutableBytes { buffer in
-            context.present(into: buffer.baseAddress!, format: .bgr8)
+            renderer.present(into: buffer.baseAddress!, format: .bgr8)
         }
 
         // logical (x, y) → offset ((x * height) + (height - 1 - y)) * 3, bytes B G R
@@ -347,17 +344,15 @@ final class Nintendo3DSTests: XCTestCase {
     // MARK: - StyleKit
 
     func testStyleKitSimpleShapes() throws {
-        let size = CGSize(width: 240, height: 120)
-        let context = try Nintendo3DSContext(bitmap: size)
+        let size = Size(width: 240, height: 120)
+        let context = GraphicsContext(try Nintendo3DSRenderer(bitmap: size))
 
         // white background
         context.fillColor = .white
-        context.addRect(CGRect(origin: .zero, size: size))
+        context.addRect(Rect(origin: .zero, size: size))
         context.fillPath()
 
-        UIGraphicsPushContext(context)
-        TestStyleKit.drawSimpleShapes()
-        UIGraphicsPopContext()
+        TestStyleKit.drawSimpleShapes(in: context)
 
         // red square at (top-left region), per the shared StyleKit drawing
         let square = pixel(context, 20, 20)
@@ -371,16 +366,14 @@ final class Nintendo3DSTests: XCTestCase {
     }
 
     func testStyleKitSwiftLogo() throws {
-        let size = CGSize(width: 200, height: 200)
-        let context = try Nintendo3DSContext(bitmap: size, scale: 2)
+        let size = Size(width: 200, height: 200)
+        let context = GraphicsContext(try Nintendo3DSRenderer(bitmap: size, scale: 2))
 
         context.fillColor = .white
-        context.addRect(CGRect(origin: .zero, size: size))
+        context.addRect(Rect(origin: .zero, size: size))
         context.fillPath()
 
-        UIGraphicsPushContext(context)
-        TestStyleKit.drawSwiftLogo(frame: CGRect(origin: .zero, size: size))
-        UIGraphicsPopContext()
+        TestStyleKit.drawSwiftLogo(in: context, frame: Rect(origin: .zero, size: size))
 
         // the logo background is Swift orange/red at the center
         let background = pixel(context, 30, 100)
