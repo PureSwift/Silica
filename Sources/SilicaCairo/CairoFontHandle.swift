@@ -11,11 +11,10 @@
 import Cairo
 import CCairo
 import FontConfig
-import struct Foundation.CGFloat
 import Silica
 
 /// Cairo / FontConfig backed font.
-public final class CairoFontHandle: CGFontHandle {
+public final class CairoFontHandle: Silica.FontFace {
 
     // MARK: - Properties
 
@@ -35,7 +34,7 @@ public final class CairoFontHandle: CGFontHandle {
             let family = pattern.family
             else { return nil }
 
-        let face = FontFace(pattern: pattern)
+        let face = Cairo.FontFace(pattern: pattern)
 
         let options = FontOptions()
         options.hintMetrics = .off
@@ -73,7 +72,7 @@ public final class CairoFontHandle: CGFontHandle {
             pattern.setInteger(0, for: FontConfig.Pattern.Key(rawValue: "index"))
             else { return nil }
 
-        let face = FontFace(pattern: pattern)
+        let face = Cairo.FontFace(pattern: pattern)
         guard face.status == .success else { return nil }
 
         let options = FontOptions()
@@ -92,79 +91,71 @@ public final class CairoFontHandle: CGFontHandle {
         self.file = (path, 0)
     }
 
-    // MARK: - CGFontHandle
+    // MARK: - FontFace
 
     public var fullName: String { scaledFont.fullName }
 
     public var unitsPerEm: Int { scaledFont.unitsPerEm }
 
-    public var ascent: CGFloat { CGFloat(scaledFont.ascent) / CGFloat(scaledFont.unitsPerEm) }
+    public var ascent: Double { Double(scaledFont.ascent) / Double(scaledFont.unitsPerEm) }
 
-    public var descent: CGFloat { CGFloat(scaledFont.descent) / CGFloat(scaledFont.unitsPerEm) }
+    public var descent: Double { Double(scaledFont.descent) / Double(scaledFont.unitsPerEm) }
 
-    public var capHeight: CGFloat { CGFloat(scaledFont.capHeight) / CGFloat(scaledFont.unitsPerEm) }
+    public var capHeight: Double { Double(scaledFont.capHeight) / Double(scaledFont.unitsPerEm) }
 
-    public func glyph(for scalar: Unicode.Scalar) -> Silica.CGGlyph {
+    public var xHeight: Double { Double(scaledFont.xHeight) / Double(scaledFont.unitsPerEm) }
+
+    public func glyph(for scalar: Unicode.Scalar) -> Glyph {
 
         return scaledFont[UInt(scalar.value)]
     }
 
-    public func advances(for glyphs: [Silica.CGGlyph]) -> [CGFloat] {
+    public func advances(for glyphs: [Glyph]) -> [Double] {
 
-        let unitsPerEm = CGFloat(scaledFont.unitsPerEm)
+        let unitsPerEm = Double(scaledFont.unitsPerEm)
 
         // A font of pictures only (color emoji) has no outlines to measure: its glyphs are a little wider than an em.
         guard unitsPerEm > 0 else { return glyphs.map { _ in 1.2 } }
 
         return scaledFont.advances(for: glyphs).map {
-            let advance = CGFloat($0) / unitsPerEm
+            let advance = Double($0) / unitsPerEm
             return advance.isFinite ? advance : 1.2
         }
     }
 }
 
-// MARK: - CGFont Extensions
+// MARK: - Font Extensions
 
-public extension CGFont {
+public extension Silica.Font {
 
-    /// Creates a font with the specified name, resolved via FontConfig and loaded by Cairo.
-    init?(name: String, configuration: FontConfiguration = .process) {
-
-        guard let handle = CairoFontHandle(name: name, configuration: configuration)
-            else { return nil }
-
-        // Default font is Verdana, make sure the name is correct
-        let defaultFontName = "Verdana"
-
-        guard name == defaultFontName || handle.fullName != defaultFontName
-            else { return nil }
-
-        self.init(name: name, family: handle.familyName, handle: handle)
+    /// A font by name, resolved by FontConfig and loaded by Cairo.
+    init?(cairoName name: String, size: Double, configuration: FontConfiguration = .process) {
+        guard let face = CairoFontHandle(named: name, configuration: configuration) else { return nil }
+        self.init(face: face, size: size)
     }
 
-    /// Creates a font from a font file, loaded by Cairo.
-    init?(file path: String) {
-
-        guard let handle = CairoFontHandle(file: path)
-            else { return nil }
-
-        self.init(name: handle.fullName, family: handle.familyName, handle: handle)
+    /// A font from a font file, loaded by Cairo.
+    init?(file path: String, size: Double) {
+        guard let face = CairoFontHandle(file: path) else { return nil }
+        self.init(face: face, size: size)
     }
 
     /// The font file the font was loaded from, and its face's index there.
-    var file: (path: String, index: Int)? { (handle as? CairoFontHandle)?.file }
+    var file: (path: String, index: Int)? { (face as? CairoFontHandle)?.file }
+}
 
-    /// The Cairo scaled font, if this font was loaded by the Cairo backend.
-    var scaledFont: Cairo.ScaledFont {
+public extension CairoFontHandle {
 
-        guard let handle = self.handle as? CairoFontHandle
-            else { fatalError("Font \(name) was not loaded by the Cairo backend") }
-
-        return handle.scaledFont
+    /// A font by name, resolved by FontConfig, or nil when FontConfig
+    /// substitutes its default for a font it doesn't have.
+    convenience init?(named name: String, configuration: FontConfiguration = .process) {
+        self.init(name: name, configuration: configuration)
+        // FontConfig's default font is Verdana: a font of another name that resolves to it wasn't found
+        let defaultFontName = "Verdana"
+        guard name == defaultFontName || fullName != defaultFontName else { return nil }
     }
 }
 
-// MARK: - Font Config
 
 public extension FontConfiguration {
 

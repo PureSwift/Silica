@@ -29,7 +29,7 @@ jobs:
     - name: Build (Release)
       run: swift build -c release
     - name: Test (Debug)
-      # exercises both the CoreGraphics and Cairo backends
+      # exercises both the Quartz and Cairo backends
       run: swift test -c debug
 
   linux:

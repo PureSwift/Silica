@@ -1,57 +1,77 @@
 # Silica
 
-Pure Swift CoreGraphics (Quartz2D) implementation
+Pure Swift 2D vector graphics
 
-Silica provides a CoreGraphics-compatible drawing API (plus a small UIKit shim) for porting UIKit and CoreGraphics drawing code across platforms. The public API is identical on every platform; rendering is performed by interchangeable backend libraries, each producing the same vector (PDF) output.
+Silica is a 2D drawing API in idiomatic Swift, with CoreGraphics' model and method names and none of its `CG` prefixes, drawn by interchangeable backends: Cairo, Apple's Quartz, the Web Canvas, Android's Canvas, and a pure-Swift rasterizer. The same drawing code produces the same output (PDF or pixels) on every platform.
+
+```swift
+import SilicaCairo // or SilicaQuartz, Silica3DS, SilicaWeb, AndroidSilica
+
+let context = GraphicsContext(try CairoRenderer(pdf: url, size: Size(width: 200, height: 200)))
+
+context.setFillColor(Color(red: 0.95, green: 0.32, blue: 0.21))
+context.addEllipse(in: Rect(x: 20, y: 20, width: 160, height: 160))
+context.fillPath()
+
+context.font = Font(name: "Helvetica-Bold", size: 24)
+context.fillColor = .white
+context.draw("Silica", at: Point(x: 100, y: 100), anchor: .center)
+
+try context.finish() // writes the PDF
+```
 
 ## Backends
 
-| Platform | Library | Context | Renderer |
-|----------|---------|---------|----------|
-| macOS | `SilicaCoreGraphics` | `CoreGraphicsContext` | Apple CoreGraphics / CoreText / ImageIO |
-| Linux (and macOS) | `SilicaCairo` | `CairoContext` | [Cairo](https://github.com/PureSwift/Cairo) / [FontConfig](https://github.com/PureSwift/FontConfig) / FreeType |
-| Android | `AndroidSilica`, in [PureSwift/Android](https://github.com/PureSwift/Android) | `AndroidCanvasContext` | `android.graphics.Canvas` (JNI) |
-| Nintendo 3DS (experimental) | `Silica3DS` | `Nintendo3DSContext` | Built-in pure-Swift software rasterizer |
-| WebAssembly | `SilicaWeb` | `WebCanvasContext` | Web Canvas API (`CanvasRenderingContext2D`) via [JavaScriptKit](https://github.com/swiftwasm/JavaScriptKit), including Embedded Swift |
+| Platform | Library | Renderer | Draws with |
+|----------|---------|----------|------------|
+| Apple platforms | `SilicaQuartz` | `QuartzRenderer` | Apple Core Graphics / Core Text / ImageIO |
+| Linux (and macOS) | `SilicaCairo` | `CairoRenderer` | [Cairo](https://github.com/PureSwift/Cairo) / [FontConfig](https://github.com/PureSwift/FontConfig) / FreeType |
+| Android | `AndroidSilica`, in [PureSwift/Android](https://github.com/PureSwift/Android) | `AndroidCanvasContext`, until it moves to `Renderer` | `android.graphics.Canvas` (JNI) |
+| Nintendo 3DS (experimental) | `Silica3DS` | `Nintendo3DSRenderer` | Built-in pure-Swift software rasterizer |
+| WebAssembly | `SilicaWeb` | `WebCanvasRenderer` | Web Canvas API (`CanvasRenderingContext2D`) via [JavaScriptKit](https://github.com/swiftwasm/JavaScriptKit), including Embedded Swift |
 
-The `Silica` library contains the shared API: the `CGContext` protocol and its derived drawing operations, the data types (`CGPath`, `CGColor`, `CGImage`, `CGFont`, `CGAffineTransform`, …) and the UIKit compatibility layer (`UIBezierPath`, `UIColor`, `UIFont`, `UIImage`, `NSString` drawing). Drawing code only needs `import Silica`; the backend library is imported where the graphics context is created.
+The `Silica` module is the API, and has no dependencies:
 
-## Usage
+- **Geometry**: `Point`, `Size`, `Rect`, `Vector`, `UnitPoint` and `AffineTransform`, in `Double`.
+- **`Path`**: a value type of lines and quadratic and cubic curves, with rectangles, rounded rectangles, ellipses and arcs added as curves. It answers `boundingRect`, `contains(_:using:)`, `currentPoint` and `applying(_:)` itself.
+- **Styles**: `Color` (sRGB), `Gradient`, `StrokeStyle`, `Shadow`, `LineCap`, `LineJoin`, `FillRule`, `DrawingMode`, `BlendMode`.
+- **`Font`** (a platform font at a size) and **`Image`** (premultiplied RGBA pixels).
+- **`GraphicsContext`**: a class with CoreGraphics' methods (`saveGState()`, `translateBy(x:y:)`, `addArc(center:radius:startAngle:endAngle:clockwise:)`, `fillPath(using:)`, `drawLinearGradient(_:start:end:options:)`, `beginTransparencyLayer()`, …), and SwiftUI's spellings that cost nothing (`fill(_:with:)`, `stroke(_:with:style:)`, `clip(to:)`, `opacity`, `drawLayer(_:)`). It keeps the transform, the current path and the graphics state in Swift, so reading them never asks the backend.
+- **`Renderer`**: the protocol a backend implements. Each method is one drawing command (fill a path, stroke a path, clip, draw an image, glyphs, a gradient, a layer), so a recorded drawing replays into a renderer one command at a time.
+- **`BitmapContext`**: a context drawing off screen with the registered default backend.
 
-```swift
-import Silica
-import SilicaCoreGraphics // or SilicaCairo / AndroidSilica
+Code written for `CGContext` ports by dropping the prefix from its types; `CGFloat` is `Double`.
 
-// each backend provides the same factory initializers
-let context = try CoreGraphicsContext(pdf: url, size: CGSize(width: 200, height: 200))
-// let context = try CairoContext(pdf: url, size: ...)
-// let context = try AndroidCanvasContext(pdf: url, size: ...)
+Each renderer has `init(pdf:size:)` (where its platform makes PDFs), `init(bitmap:scale:)` for pixels (`makeImage()` returns them), and an initializer wrapping the platform's own drawing target (`Cairo.Surface`, `CoreGraphics.CGContext`, `android.graphics.Canvas`, an HTML canvas).
 
-UIGraphicsPushContext(context)
-// ... UIKit / CoreGraphics style drawing code ...
-UIGraphicsPopContext()
-
-try context.finish() // writes the PDF trailer
-```
-
-Each backend also offers `init(bitmap:)` for raster contexts (`makeImage()` returns the rendered `CGImage`) and an initializer wrapping a natively provided drawing target (`Cairo.Surface`, `CoreGraphics.CGContext`, `android.graphics.Canvas`).
-
-Fonts and PNG decoding without an explicit context (`CGFont(name:)`, `UIFont(name:size:)`, `CGImageSourcePNG(data:)`) use the registered default backend. A backend registers itself when its first context is created, or explicitly:
+Fonts by name (`Font(name:size:)`), PNG decoding (`Image(png:)`) and `BitmapContext` use the registered default backend. A backend registers itself when its first renderer is made, or explicitly:
 
 ```swift
-CairoBackend.register() // or CoreGraphicsBackend / AndroidBackend / Nintendo3DSBackend / WebBackend
+CairoBackend.register() // or QuartzBackend / Nintendo3DSBackend / WebBackend / AndroidBackend
 ```
+
+### Foundation's `AffineTransform`
+
+Foundation has an `AffineTransform` too, so in a file that imports both Foundation and Silica the name is ambiguous. Write `Silica.AffineTransform`, or declare `typealias AffineTransform = Silica.AffineTransform` once in your module.
 
 ## Coordinate System
 
-Silica uses a top-left origin, y-down coordinate system (UIKit convention) on every backend:
+The origin is at the top left and y points down, in points, on every backend, as in UIKit and SwiftUI:
 
-- **Cairo** and **Android Canvas** are natively y-down; no conversion is performed.
-- **Apple CoreGraphics** is natively y-up with a bottom-left origin, so `CoreGraphicsContext` installs a vertical flip as the base transform of every page. Text, images, arcs, and shadows account for the flip internally.
+- **Cairo**, **Android Canvas** and the **Web Canvas** are natively y-down; no conversion is performed.
+- **Quartz** is natively y-up from the bottom left, so `QuartzRenderer` installs a vertical flip as the base transform of every page. Text, images and shadows account for the flip.
 
-Like UIKit, `draw(_ image:in:)` follows Apple's y-up image convention: drawing code flips the CTM around the destination rect to draw images upright, and clockwise arcs appear counterclockwise.
+An image draws upright, filling its rectangle as SwiftUI draws it. Arcs keep CoreGraphics' arithmetic: with y down, `clockwise: true` looks counterclockwise, as it does in a flipped `CGContext` and in SwiftUI's `Path`. Glyphs are positioned by their baseline, as in CoreGraphics.
 
-The Cairo backend also supports an opt-in bottom-left origin mode matching a raw CoreGraphics bitmap context — `CairoContext(surface:size:flipped: false)` — where text draws upright from the baseline (see `isFlipped`).
+`GraphicsContext(renderer, origin: .bottomLeft)` puts the origin at the bottom left with y up, as in a CoreGraphics bitmap context; text and images still draw upright.
+
+## Package Traits
+
+Silica's `Cairo` and `Web` traits build the Cairo and web renderers, and are on by default. A package that needs only the `Silica` module turns them off, and the Cairo, FontConfig and JavaScriptKit packages aren't fetched:
+
+```swift
+.package(url: "https://github.com/PureSwift/Silica.git", from: "4.0.0", traits: [])
+```
 
 ## Platform Notes
 
@@ -78,8 +98,8 @@ import JavaScriptKit
 import SilicaWeb
 
 let canvas = JSObject.global.document.createElement("canvas")
-let context = try WebCanvasContext(canvas: canvas.object!)
-// ... CoreGraphics style drawing code ...
+let context = GraphicsContext(try WebCanvasRenderer(canvas: canvas.object!))
+// ... drawing code ...
 ```
 
 ```sh
@@ -93,7 +113,6 @@ cd Examples/WebCanvasDemo
 swift package --swift-sdk swift-6.3.3-RELEASE_wasm js --use-cdn   # regular SDK
 
 # the Embedded SDK build needs the Unicode data tables linked (see Package.swift)
-# and skips the two panels that use `String.draw(in:withAttributes:)` ([String: Any])
 SILICA_WASM_EMBEDDED=1 swift package --swift-sdk swift-6.3.3-RELEASE_wasm-embedded js --use-cdn
 
 npx serve .   # then open index.html
@@ -101,23 +120,25 @@ npx serve .   # then open index.html
 
 Web platform notes:
 
-- Page-based (PDF) output is not supported; `WebCanvasContext` is a bitmap destination.
+- Page-based (PDF) output is not supported; `WebCanvasRenderer` is a bitmap destination.
 - Glyph indices are Unicode scalar values (the Canvas API exposes no font tables), rendered with `fillText`; metrics come from `measureText`. Scalars outside the Basic Multilingual Plane map to glyph 0.
-- `decodePNG` is unavailable (the web only decodes images asynchronously); create a `CGImage` from an `ImageData` object instead, or draw `HTMLImageElement`/`ImageBitmap` directly onto the canvas. `encodePNG` requires a DOM document (`canvas.toDataURL`).
+- `decodePNG` is unavailable (the web only decodes images asynchronously); create an `Image` from an `ImageData` object instead, or draw `HTMLImageElement`/`ImageBitmap` directly onto the canvas. `encodePNG` requires a DOM document (`canvas.toDataURL`).
 - Shape antialiasing cannot be disabled; `shouldAntialias` only controls image smoothing.
 - Font names resolve as CSS font families (with camel-case expansion, e.g. `"TimesNewRoman-Bold"` → `"Times New Roman"`, bold), falling back to `sans-serif`.
 - Executables built with the Embedded Swift SDK must link the Unicode data tables: `.linkedLibrary("swiftUnicodeDataTables", .when(platforms: [.wasi]))`.
 
 ### Rendering Differences
 
-- **Shadows**: CoreGraphics renders true Gaussian-blurred shadows; the Cairo and Android backends emulate shadows without blur (a silhouette at the shadow offset).
-- **Fonts**: font resolution is fuzzy on Linux (FontConfig) and Android (Typeface), but strict on macOS (CoreText descriptor matching by PostScript name or family name, with camel-case expansion, e.g. `"TimesNewRoman-Bold"` → family *Times New Roman*, bold).
-- Global alpha applies to images on the CoreGraphics backend but not on the Cairo backend.
+- **Shadows**: Quartz and the Web Canvas render blurred shadows; the Cairo, Android and 3DS backends draw shadows without blur (a silhouette at the offset).
+- **Fonts**: font resolution is fuzzy on Linux (FontConfig) and Android (Typeface), but strict on Apple platforms (Core Text descriptor matching by PostScript name or family name, with camel-case expansion, e.g. `"TimesNewRoman-Bold"` → family *Times New Roman*, bold).
+- **Text** maps characters to glyphs one by one, with fallback fonts for characters the font lacks: scripts that shape aren't laid out.
+- **Gradients**: Cairo extends both ends of a gradient or neither, so `GradientOptions` with one end draws both.
+- **Blend modes** a backend can't do draw as `normal`: plus darker on Cairo, everything but normal on the 3DS.
 
 ## Building with CMake
 
 For a system image (Buildroot and the like), CMake builds `Silica` and a
-backend (`SilicaCairo` on Linux, `SilicaCoreGraphics` on macOS) as shared
+backend (`SilicaCairo` on Linux, `SilicaQuartz` on macOS) as shared
 libraries with library evolution, and installs them and their modules into
 the Swift resource directory (`lib/swift/<system>`), where apps find them
 like the OS's own frameworks:
@@ -139,5 +160,5 @@ resource directory, or on search paths in `CMAKE_Swift_FLAGS`. SwiftPM stays
 the way to develop and test, and to build the other backends.
 
 - Linux/macOS (Cairo backend): `cairo`, `fontconfig`, `freetype` system libraries.
-- macOS (CoreGraphics backend): system frameworks only.
+- macOS (Quartz backend): system frameworks only.
 - WebAssembly: [JavaScriptKit](https://github.com/swiftwasm/JavaScriptKit) (pulled automatically; only built when compiling for WebAssembly).

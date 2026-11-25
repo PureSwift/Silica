@@ -15,37 +15,18 @@ import Foundation
 import JavaScriptKit
 import Silica
 
-// MARK: - Math
-
-/// Trigonometry via the JavaScript `Math` object.
-///
-/// Embedded Swift provides no libm, so the host's implementation is used instead.
-internal enum JSMath {
-
-    static func cos(_ value: Double) -> Double {
-        JSObject.global.Math.cos(value).number ?? 0
-    }
-
-    static func sin(_ value: Double) -> Double {
-        JSObject.global.Math.sin(value).number ?? 0
-    }
-
-    static func tan(_ value: Double) -> Double {
-        JSObject.global.Math.tan(value).number ?? 0
-    }
-}
-
 // MARK: - CSS Values
 
 /// Formats a floating-point value with up to three decimal places
 /// without relying on `Double` description (unavailable in Embedded Swift).
-internal func cssNumber(_ value: CGFloat) -> String {
+internal func cssNumber(_ value: Double) -> String {
 
-    let doubleValue = Double(value)
+    // out-of-range values would trap converting to `Int`
+    guard value.isFinite, value.magnitude < 1e12 else { return "0" }
 
-    if doubleValue < 0 { return "-" + cssNumber(CGFloat(-doubleValue)) }
+    if value < 0 { return "-" + cssNumber(-value) }
 
-    let scaled = Int((doubleValue * 1000).rounded())
+    let scaled = Int((value * 1000).rounded())
     let whole = scaled / 1000
     var fraction = scaled % 1000
 
@@ -64,13 +45,90 @@ internal func cssNumber(_ value: CGFloat) -> String {
 }
 
 /// CSS `rgba()` value for the specified color.
-internal func cssColor(_ color: CGColor) -> String {
+internal func cssColor(_ color: Color) -> String {
 
-    func component(_ value: CGFloat) -> Int {
-        return Int((max(0, min(1, Double(value))) * 255).rounded())
+    func clamped(_ value: Double) -> Double {
+        value.isNaN ? 0 : max(0, min(1, value))
     }
 
-    return "rgba(\(component(color.red)),\(component(color.green)),\(component(color.blue)),\(cssNumber(max(0, min(1, color.alpha)))))"
+    func component(_ value: Double) -> Int {
+        Int((clamped(value) * 255).rounded())
+    }
+
+    return "rgba(\(component(color.red)),\(component(color.green)),\(component(color.blue)),\(cssNumber(clamped(color.alpha))))"
+}
+
+internal extension BlendMode {
+
+    /// The canvas `globalCompositeOperation` for the blend mode. Modes the
+    /// canvas lacks (`clear`, `plusDarker`) composite as `source-over`.
+    var canvasCompositeOperation: String {
+        switch self {
+        case .normal: return "source-over"
+        case .multiply: return "multiply"
+        case .screen: return "screen"
+        case .overlay: return "overlay"
+        case .darken: return "darken"
+        case .lighten: return "lighten"
+        case .colorDodge: return "color-dodge"
+        case .colorBurn: return "color-burn"
+        case .softLight: return "soft-light"
+        case .hardLight: return "hard-light"
+        case .difference: return "difference"
+        case .exclusion: return "exclusion"
+        case .hue: return "hue"
+        case .saturation: return "saturation"
+        case .color: return "color"
+        case .luminosity: return "luminosity"
+        case .clear: return "source-over"
+        case .copy: return "copy"
+        case .sourceIn: return "source-in"
+        case .sourceOut: return "source-out"
+        case .sourceAtop: return "source-atop"
+        case .destinationOver: return "destination-over"
+        case .destinationIn: return "destination-in"
+        case .destinationOut: return "destination-out"
+        case .destinationAtop: return "destination-atop"
+        case .xor: return "xor"
+        case .plusDarker: return "source-over"
+        case .plusLighter: return "lighter"
+        }
+    }
+}
+
+internal extension LineCap {
+
+    /// The canvas `lineCap` value.
+    var canvasValue: String {
+        switch self {
+        case .butt: return "butt"
+        case .round: return "round"
+        case .square: return "square"
+        }
+    }
+}
+
+internal extension LineJoin {
+
+    /// The canvas `lineJoin` value.
+    var canvasValue: String {
+        switch self {
+        case .miter: return "miter"
+        case .round: return "round"
+        case .bevel: return "bevel"
+        }
+    }
+}
+
+internal extension FillRule {
+
+    /// The canvas fill rule argument.
+    var canvasValue: String {
+        switch self {
+        case .winding: return "nonzero"
+        case .evenOdd: return "evenodd"
+        }
+    }
 }
 
 // MARK: - String
@@ -148,65 +206,6 @@ internal func decodeBase64(_ string: Substring) -> [UInt8]? {
     }
 
     return bytes
-}
-
-// MARK: - Geometry Helpers
-
-internal extension CGAffineTransform {
-
-    /// The result of applying `self` first, then `other`.
-    func multiplied(by other: CGAffineTransform) -> CGAffineTransform {
-
-        return CGAffineTransform(
-            a: a * other.a + b * other.c,
-            b: a * other.b + b * other.d,
-            c: c * other.a + d * other.c,
-            d: c * other.b + d * other.d,
-            tx: tx * other.a + ty * other.c + other.tx,
-            ty: tx * other.b + ty * other.d + other.ty
-        )
-    }
-
-    var inverse: CGAffineTransform {
-
-        let determinant = a * d - b * c
-
-        guard determinant != 0
-            else { return self }
-
-        return CGAffineTransform(
-            a: d / determinant,
-            b: -b / determinant,
-            c: -c / determinant,
-            d: a / determinant,
-            tx: (c * ty - d * tx) / determinant,
-            ty: (b * tx - a * ty) / determinant
-        )
-    }
-}
-
-internal extension PathElement {
-
-    func applying(_ transform: CGAffineTransform) -> PathElement {
-
-        switch self {
-
-        case let .moveToPoint(point):
-            return .moveToPoint(point.applying(transform))
-
-        case let .addLineToPoint(point):
-            return .addLineToPoint(point.applying(transform))
-
-        case let .addQuadCurveToPoint(control, destination):
-            return .addQuadCurveToPoint(control.applying(transform), destination.applying(transform))
-
-        case let .addCurveToPoint(control1, control2, destination):
-            return .addCurveToPoint(control1.applying(transform), control2.applying(transform), destination.applying(transform))
-
-        case .closeSubpath:
-            return .closeSubpath
-        }
-    }
 }
 
 #endif // canImport(JavaScriptKit)

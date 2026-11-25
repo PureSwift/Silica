@@ -7,7 +7,7 @@
 //
 
 #if canImport(Foundation)
-import Foundation
+import struct Foundation.Data
 #endif
 #if canImport(Silica)
 import Silica
@@ -34,7 +34,7 @@ public enum GSPFramebufferFormat {
     }
 }
 
-public extension Nintendo3DSContext {
+public extension Nintendo3DSRenderer {
 
     /// Copies the rendered contents into a Nintendo 3DS GSP framebuffer.
     ///
@@ -98,7 +98,7 @@ public extension Nintendo3DSContext {
     }
 }
 
-public extension Nintendo3DSContext {
+public extension Nintendo3DSRenderer {
 
     /// A physical 3DS screen.
     enum Screen: Sendable {
@@ -109,10 +109,10 @@ public extension Nintendo3DSContext {
         /// The 320×240 bottom screen.
         case bottom
 
-        public var size: CGSize {
+        public var size: Size {
             switch self {
-            case .top: return CGSize(width: 400, height: 240)
-            case .bottom: return CGSize(width: 320, height: 240)
+            case .top: return Size(width: 400, height: 240)
+            case .bottom: return Size(width: 320, height: 240)
             }
         }
     }
@@ -125,7 +125,7 @@ public extension Nintendo3DSContext {
 
 import CTRU
 
-internal extension Nintendo3DSContext.Screen {
+internal extension Nintendo3DSRenderer.Screen {
 
     var gfxScreen: gfxScreen_t {
         switch self {
@@ -135,7 +135,7 @@ internal extension Nintendo3DSContext.Screen {
     }
 }
 
-public extension Nintendo3DSContext {
+public extension Nintendo3DSRenderer {
 
     /// Creates a software drawing destination for a 3DS screen.
     ///

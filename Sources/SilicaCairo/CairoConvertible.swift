@@ -2,7 +2,7 @@
 //  CairoConvertible.swift
 //  SilicaCairo
 //
-//  Created by Alsey Coleman Miller on 5/9/16.
+//  Created by Alsey Coleman Miller on 1/31/16.
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
@@ -13,96 +13,101 @@ import CCairo
 import Foundation
 import Silica
 
-public protocol CairoConvertible {
+public extension AffineTransform {
 
-    associatedtype CairoType
-
-    init(cairo: CairoType)
-
-    func toCairo() -> CairoType
-}
-
-// MARK: - CGAffineTransform
-
-extension CGAffineTransform: CairoConvertible {
-
-    public typealias CairoType = Cairo.Matrix
-
-    @inline(__always)
-    public init(cairo matrix: CairoType) {
-
+    /// The transform of a Cairo matrix.
+    init(cairo matrix: Cairo.Matrix) {
         // Cairo maps x' = xx·x + xy·y + x0 and y' = yx·x + yy·y + y0,
-        // while CoreGraphics maps x' = a·x + c·y + tx and y' = b·x + d·y + ty.
-        self.init(a: CGFloat(matrix.xx),
-                  b: CGFloat(matrix.yx),
-                  c: CGFloat(matrix.xy),
-                  d: CGFloat(matrix.yy),
-                  tx: CGFloat(matrix.x0),
-                  ty: CGFloat(matrix.y0))
+        // CoreGraphics x' = a·x + c·y + tx and y' = b·x + d·y + ty.
+        self.init(a: matrix.xx, b: matrix.yx, c: matrix.xy, d: matrix.yy, tx: matrix.x0, ty: matrix.y0)
     }
 
-    @inline(__always)
-    public func toCairo() -> CairoType {
-
+    /// The transform as a Cairo matrix.
+    func toCairo() -> Cairo.Matrix {
         var matrix = Matrix()
-
-        matrix.xx = Double(a)
-        matrix.xy = Double(c)
-        matrix.yx = Double(b)
-        matrix.yy = Double(d)
-        matrix.x0 = Double(tx)
-        matrix.y0 = Double(ty)
-
+        matrix.xx = a
+        matrix.xy = c
+        matrix.yx = b
+        matrix.yy = d
+        matrix.x0 = tx
+        matrix.y0 = ty
         return matrix
     }
 }
 
-// MARK: - CGLineCap
+internal extension LineCap {
 
-extension CGLineCap: CairoConvertible {
-
-    public typealias CairoType = cairo_line_cap_t
-
-    public init(cairo: CairoType) {
-
-        self.init(rawValue: cairo.rawValue)!
-    }
-
-    public func toCairo() -> CairoType {
-
-        return CairoType(rawValue: rawValue)
+    func toCairo() -> cairo_line_cap_t {
+        switch self {
+        case .butt: return CAIRO_LINE_CAP_BUTT
+        case .round: return CAIRO_LINE_CAP_ROUND
+        case .square: return CAIRO_LINE_CAP_SQUARE
+        }
     }
 }
 
-// MARK: - CGLineJoin
+internal extension LineJoin {
 
-extension CGLineJoin: CairoConvertible {
-
-    public typealias CairoType = cairo_line_join_t
-
-    public init(cairo: CairoType) {
-
-        self.init(rawValue: cairo.rawValue)!
-    }
-
-    public func toCairo() -> CairoType {
-
-        return CairoType(rawValue: rawValue)
+    func toCairo() -> cairo_line_join_t {
+        switch self {
+        case .miter: return CAIRO_LINE_JOIN_MITER
+        case .round: return CAIRO_LINE_JOIN_ROUND
+        case .bevel: return CAIRO_LINE_JOIN_BEVEL
+        }
     }
 }
 
-// MARK: - CGColor
+internal extension FillRule {
+
+    func toCairo() -> cairo_fill_rule_t {
+        switch self {
+        case .winding: return CAIRO_FILL_RULE_WINDING
+        case .evenOdd: return CAIRO_FILL_RULE_EVEN_ODD
+        }
+    }
+}
+
+internal extension BlendMode {
+
+    /// Cairo's operator for the mode. Plus darker has none, and draws as normal.
+    func toCairo() -> cairo_operator_t {
+        switch self {
+        case .normal: return CAIRO_OPERATOR_OVER
+        case .multiply: return CAIRO_OPERATOR_MULTIPLY
+        case .screen: return CAIRO_OPERATOR_SCREEN
+        case .overlay: return CAIRO_OPERATOR_OVERLAY
+        case .darken: return CAIRO_OPERATOR_DARKEN
+        case .lighten: return CAIRO_OPERATOR_LIGHTEN
+        case .colorDodge: return CAIRO_OPERATOR_COLOR_DODGE
+        case .colorBurn: return CAIRO_OPERATOR_COLOR_BURN
+        case .softLight: return CAIRO_OPERATOR_SOFT_LIGHT
+        case .hardLight: return CAIRO_OPERATOR_HARD_LIGHT
+        case .difference: return CAIRO_OPERATOR_DIFFERENCE
+        case .exclusion: return CAIRO_OPERATOR_EXCLUSION
+        case .hue: return CAIRO_OPERATOR_HSL_HUE
+        case .saturation: return CAIRO_OPERATOR_HSL_SATURATION
+        case .color: return CAIRO_OPERATOR_HSL_COLOR
+        case .luminosity: return CAIRO_OPERATOR_HSL_LUMINOSITY
+        case .clear: return CAIRO_OPERATOR_CLEAR
+        case .copy: return CAIRO_OPERATOR_SOURCE
+        case .sourceIn: return CAIRO_OPERATOR_IN
+        case .sourceOut: return CAIRO_OPERATOR_OUT
+        case .sourceAtop: return CAIRO_OPERATOR_ATOP
+        case .destinationOver: return CAIRO_OPERATOR_DEST_OVER
+        case .destinationIn: return CAIRO_OPERATOR_DEST_IN
+        case .destinationOut: return CAIRO_OPERATOR_DEST_OUT
+        case .destinationAtop: return CAIRO_OPERATOR_DEST_ATOP
+        case .xor: return CAIRO_OPERATOR_XOR
+        case .plusDarker: return CAIRO_OPERATOR_OVER
+        case .plusLighter: return CAIRO_OPERATOR_ADD
+        }
+    }
+}
 
 internal extension Cairo.Pattern {
 
-    convenience init(color: CGColor) {
-
-        self.init(color: (Double(color.red),
-                          Double(color.green),
-                          Double(color.blue),
-                          Double(color.alpha)))
-
-        assert(status.rawValue == 0, "Error creating Cairo.Pattern from Silica.Color: \(status)")
+    convenience init(color: Color) {
+        self.init(color: (color.red, color.green, color.blue, color.alpha))
     }
 }
 

@@ -23,7 +23,7 @@ final class DemoSlidesDumpTests: XCTestCase {
 
         for (index, slide) in Silica3DSDemo.slides.enumerated() {
 
-            let context = try Nintendo3DSContext(bitmap: Silica3DSDemo.screenSize, scale: 2)
+            let context = GraphicsContext(try Nintendo3DSRenderer(bitmap: Silica3DSDemo.screenSize, scale: 2))
 
             slide.draw(context)
 

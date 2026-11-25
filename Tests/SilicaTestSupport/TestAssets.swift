@@ -84,13 +84,10 @@ public final class TestAssetManager <HTTPClient: URLClient> {
         return cacheDirectory.appendingPathComponent(assetFilename)
     }
     
-    public func cachedImage(named name: String) -> CGImage? {
+    public func cachedImage(named name: String) -> Silica.Image? {
         let fileURL = cacheURL(for: name)
-        guard let data = try? Data(contentsOf: fileURL),
-            let imageSource = CGImageSourcePNG(data: data),
-            let image = imageSource.createImage(at: 0)
-            else { return nil }
-        return image
+        guard let data = try? Data(contentsOf: fileURL) else { return nil }
+        return Silica.Image(png: data)
     }
 }
 
@@ -101,17 +98,5 @@ extension TestAssetManager {
         case invalidStatusCode(Int)
         case emptyData
         case fileWrite
-    }
-}
-
-// MARK: - UIImage
-
-extension UIImage {
-    
-    convenience init?(named name: String) {
-        guard let image = TestAssetManager.shared.cachedImage(named: name) else {
-            return nil
-        }
-        self.init(cgImage: image)
     }
 }

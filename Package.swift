@@ -1,4 +1,4 @@
-// swift-tools-version:6.0
+// swift-tools-version:6.1
 import PackageDescription
 
 let package = Package(
@@ -16,8 +16,8 @@ let package = Package(
             targets: ["SilicaCairo"]
         ),
         .library(
-            name: "SilicaCoreGraphics",
-            targets: ["SilicaCoreGraphics"]
+            name: "SilicaQuartz",
+            targets: ["SilicaQuartz"]
         ),
         .library(
             name: "Silica3DS",
@@ -33,6 +33,15 @@ let package = Package(
             name: "SilicaTestSupport",
             targets: ["SilicaTestSupport"]
         )
+    ],
+    traits: [
+        // Builds SilicaCairo's renderer, with the Cairo and FontConfig packages.
+        .trait(name: "Cairo"),
+        // Builds SilicaWeb's renderer, with JavaScriptKit.
+        .trait(name: "Web"),
+        // A package that needs only the `Silica` module can turn both off
+        // (`traits: []`), and those packages aren't fetched.
+        .default(enabledTraits: ["Cairo", "Web"])
     ],
     dependencies: [
         .package(
@@ -60,18 +69,18 @@ let package = Package(
                 .product(
                     name: "Cairo",
                     package: "Cairo",
-                    condition: .when(platforms: [.macOS, .linux])
+                    condition: .when(platforms: [.macOS, .linux], traits: ["Cairo"])
                 ),
                 .product(
                     name: "FontConfig",
                     package: "FontConfig",
-                    condition: .when(platforms: [.macOS, .linux])
+                    condition: .when(platforms: [.macOS, .linux], traits: ["Cairo"])
                 )
             ],
             exclude: ["CMakeLists.txt"]
         ),
         .target(
-            name: "SilicaCoreGraphics",
+            name: "SilicaQuartz",
             dependencies: ["Silica"],
             exclude: ["CMakeLists.txt"]
         ),
@@ -86,7 +95,7 @@ let package = Package(
                 .product(
                     name: "JavaScriptKit",
                     package: "JavaScriptKit",
-                    condition: .when(platforms: [.wasi])
+                    condition: .when(platforms: [.wasi], traits: ["Web"])
                 )
             ]
         ),
@@ -96,6 +105,10 @@ let package = Package(
             path: "Tests/SilicaTestSupport"
         ),
         .testTarget(
+            name: "SilicaTests",
+            dependencies: ["Silica"]
+        ),
+        .testTarget(
             name: "SilicaCairoTests",
             dependencies: [
                 "SilicaCairo",
@@ -103,9 +116,9 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "SilicaCoreGraphicsTests",
+            name: "SilicaQuartzTests",
             dependencies: [
-                "SilicaCoreGraphics",
+                "SilicaQuartz",
                 "SilicaCairo",
                 "SilicaTestSupport"
             ]

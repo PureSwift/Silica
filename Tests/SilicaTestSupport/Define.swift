@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Silica
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
@@ -57,3 +58,11 @@ private let testAssets: [TestAsset] = [
     TestAsset(url: URL(string: "http://www.schaik.com/pngsuite/basn0g08.png")!, filename: "basn0g08.png"),
     TestAsset(url: URL(string: "http://www.schaik.com/pngsuite/basn0g16.png")!, filename: "basn0g16.png")
 ]
+
+/// The test images, once `TestAssetManager.shared` has fetched them.
+public enum TestImages {
+
+    public static func named(_ name: String) -> Silica.Image? {
+        TestAssetManager<URLSession>.shared.cachedImage(named: name)
+    }
+}
