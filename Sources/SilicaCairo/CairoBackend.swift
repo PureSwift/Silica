@@ -12,53 +12,43 @@ import struct Foundation.Data
 import Cairo
 import Silica
 
-/// Cairo rendering backend.
+/// The Cairo rendering backend: fonts from FontConfig, PNG codecs and bitmaps from Cairo.
 public enum CairoBackend: SilicaBackendProtocol {
 
-    /// Registers Cairo as the default rendering backend.
+    /// Makes Cairo the default rendering backend.
     public static func register() {
-
-        SilicaBackend.default = CairoBackend.self
+        SilicaBackend.register(CairoBackend.self, name: "Cairo")
     }
 
     internal static func registerIfNeeded() {
-
-        guard SilicaBackend.default == nil else { return }
-        register()
+        SilicaBackend.registerIfNeeded(CairoBackend.self, name: "Cairo")
     }
 
     // MARK: - SilicaBackendProtocol
 
-    public static func font(named name: String) -> Silica.CGFont? {
-
-        return CGFont(name: name, configuration: .process)
+    public static func fontFace(named name: String) -> (any Silica.FontFace)? {
+        CairoFontHandle(named: name)
     }
 
-    public static func decodePNG(_ data: Data) -> Silica.CGImage? {
-
-        guard let decoded = try? Cairo.Surface.Image(png: data)
+    public static func decodePNG(_ data: Data) -> Silica.Image? {
+        guard let decoded = try? Cairo.Surface.Image(png: data) else { return nil }
+        // PNGs decode to RGB24 or A8 surfaces too
+        guard let normalized = try? Cairo.Surface.Image(format: .argb32, width: decoded.width, height: decoded.height)
             else { return nil }
-
-        // normalize to ARGB32 (PNG decoding may produce RGB24 or A8 surfaces)
-        guard let normalized = try? Cairo.Surface.Image(format: .argb32,
-                                                        width: decoded.width,
-                                                        height: decoded.height)
-            else { return nil }
-
         let context = Cairo.Context(surface: normalized)
         context.source = Pattern(surface: decoded)
         context.paint()
         normalized.flush()
-
-        return CGImage(cairo: normalized)
+        return Silica.Image(cairo: normalized)
     }
 
-    public static func encodePNG(_ image: Silica.CGImage) -> Data? {
-
-        guard let surface = try? Cairo.Surface.Image(image)
-            else { return nil }
-
+    public static func encodePNG(_ image: Silica.Image) -> Data? {
+        guard let surface = try? Cairo.Surface.Image(image) else { return nil }
         return try? surface.writePNG()
+    }
+
+    public static func makeBitmapRenderer(size: Size, scale: Double) -> (any Renderer)? {
+        try? CairoRenderer(bitmap: size, scale: scale)
     }
 }
 
