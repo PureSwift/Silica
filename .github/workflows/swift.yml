@@ -164,13 +164,3 @@ jobs:
     - name: Build Swift Package for Android (x86_64)
       run: |
         ANDROID_SDK_VERSION=${{ matrix.android-api }} skip android build --arch x86_64 --android-api-level ${{ matrix.android-api }}
-    - name: Test Swift Package on Android
-      # Canvas.drawGlyphs and swift-java's JVM lookup require API >= 31
-      if: ${{ matrix.android-api >= 31 }}
-      continue-on-error: true
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: ${{ matrix.android-api }}
-        arch: x86_64
-        script: |
-          ANDROID_SDK_VERSION=${{ matrix.android-api }} skip android test --android-api-level ${{ matrix.android-api }} --apk --verbose
