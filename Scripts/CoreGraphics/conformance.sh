@@ -39,11 +39,19 @@ check)
     libdir="${2:?the directory with the library}"
     library="${3:-CoreGraphics}"
     failed=0
+    # blocks, as Darwin's compilers have them: Swift's toolchain has their runtime
+    blocks=()
+    if [ "$(uname)" != Darwin ] && command -v swift > /dev/null; then
+        runtime="$(dirname "$(readlink -f "$(command -v swift)")")/../lib/swift/linux"
+        if [ -f "$runtime/libBlocksRuntime.so" ]; then
+            blocks=(-fblocks -L "$runtime" -lBlocksRuntime -Wl,-rpath,"$runtime")
+        fi
+    fi
     for source in "$SOURCES"/*.c; do
         name="$(basename "$source" .c)"
         "$CC" -std=gnu11 -O0 -DCONFORMANCE_FONTS="\"$SOURCES/fonts\"" -o "$WORK/$name" "$source" \
             -I "$ROOT/Sources/CSilicaCoreGraphics/include" \
-            -L "$libdir" -l"$library" -lm -Wl,-rpath,"$libdir"
+            -L "$libdir" -l"$library" -lm -Wl,-rpath,"$libdir" ${blocks[@]+"${blocks[@]}"}
         "$WORK/$name" > "$WORK/$name.txt"
         known="$EXPECTED/$name.differences"
         if diff -u "$EXPECTED/$name.txt" "$WORK/$name.txt" > "$WORK/$name.diff"; then
