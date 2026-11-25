@@ -12,6 +12,8 @@
 #include "CGGeometry.h"
 #include "CGAffineTransform.h"
 #include "CGPath.h"
+#include "CGDataProvider.h"
+#include "CGFont.h"
 #include "CGColorSpace.h"
 #include "CGColor.h"
 #include "CGGradient.h"

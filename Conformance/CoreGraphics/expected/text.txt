@@ -1,0 +1,50 @@
+-- providers
+font file read: true
+from file: made
+missing file: NULL
+info: lost
+-- fonts
+font: made
+from bytes, sequence, direct: 2048 2048 2048
+released data: 1
+units per em: 2048
+glyphs: 3377
+ascent: 1901
+descent: -483
+leading: 0
+cap height: 1506
+x height: 1133
+bbox: -1144 -767 2614 2873
+italic angle: 0
+stem v: 0
+advances: true
+advances: 1233 1233 1233 1233 1233
+bboxes: true
+bbox 3: 0 0 0 0
+bbox 36: 37 0 1159 1493
+bbox 43: 137 0 959 1493
+bbox 72: 123 -29 989 1176
+bbox 88: 195 -29 856 1147
+-- text
+initial text matrix: 1 0 0 1 0 0
+initial text position: 0 0
+after one glyph: 34.082 30
+ink above baseline: true
+ink below baseline: false
+ink right of glyph: false
+after two glyphs with spacing: 158.164 60
+after advances: 60 5
+after positions: 5 5
+invisible after: 34.082 30
+invisible ink: false
+text matrix: 2 0 0 4 0 0
+scaled after: 34.082 10
+scaled ink tall: true
+stroked ink: true
+-- images from data
+image: made 2 x 2 provider kept
+drawn: 255 0 0 255 | 0 255 0 255 | 0 0 255 255 | 128 128 128 128
+straight alpha drawn: 128 0 0 128
+gray image drawn: 0 64 128 255
+rgb24 image: made bpp 24
+short provider: NULL

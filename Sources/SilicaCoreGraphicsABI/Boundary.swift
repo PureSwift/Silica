@@ -39,7 +39,15 @@ public enum CoreGraphicsObjects {
         case gradient
         case image
         case context
+        case dataProvider
+        case font
     }
+
+    /// Core Foundation, for the functions that take or return its objects
+    /// (`CFStringRef`, `CFDataRef`, `CFURLRef`). Silica has none: a runtime
+    /// that does (Perry) sets this, and without it those functions return
+    /// NULL or zero.
+    nonisolated(unsafe) public static var coreFoundation: CoreFoundationBridge?
 
     /// The first type identifier: each kind's is this plus its raw value.
     nonisolated(unsafe) public static var typeIDBase: UInt = 0x5349_4C00 // "SIL"
@@ -57,13 +65,64 @@ public enum CoreGraphicsObjects {
         case is ColorObject: return .color
         case is GradientObject: return .gradient
         case is ImageObject: return .image
+        case is DataProviderObject: return .dataProvider
         #if canImport(Cairo)
         // contexts draw with Cairo, where there is Cairo
         case is ContextObject: return .context
+        case is FontObject: return .font
         #endif
         default: return nil
         }
     }
+}
+
+/// Core Foundation's objects, as a runtime that has them converts them.
+public struct CoreFoundationBridge {
+
+    /// The string a `CFStringRef` holds.
+    public var string: (UnsafeRawPointer) -> String?
+
+    /// A new `CFStringRef`, retained for the caller.
+    public var makeString: (String) -> UnsafeRawPointer?
+
+    /// The bytes a `CFDataRef` holds.
+    public var data: (UnsafeRawPointer) -> [UInt8]?
+
+    /// A new `CFDataRef`, retained for the caller.
+    public var makeData: ([UInt8]) -> UnsafeRawPointer?
+
+    /// The file path of a file `CFURLRef`.
+    public var filePath: (UnsafeRawPointer) -> String?
+
+    public init(string: @escaping (UnsafeRawPointer) -> String?,
+                makeString: @escaping (String) -> UnsafeRawPointer?,
+                data: @escaping (UnsafeRawPointer) -> [UInt8]?,
+                makeData: @escaping ([UInt8]) -> UnsafeRawPointer?,
+                filePath: @escaping (UnsafeRawPointer) -> String?) {
+        self.string = string
+        self.makeString = makeString
+        self.data = data
+        self.makeData = makeData
+        self.filePath = filePath
+    }
+}
+
+/// The string of a Core Foundation string, where there's a bridge.
+internal func string(_ reference: OpaquePointer?) -> String? {
+    guard let reference, let bridge = CoreGraphicsObjects.coreFoundation else { return nil }
+    return bridge.string(UnsafeRawPointer(reference))
+}
+
+/// A new Core Foundation string, where there's a bridge.
+internal func makeCFString(_ string: String?) -> OpaquePointer? {
+    guard let string, let bridge = CoreGraphicsObjects.coreFoundation, let made = bridge.makeString(string) else { return nil }
+    return OpaquePointer(made)
+}
+
+/// A new Core Foundation data object, where there's a bridge.
+internal func makeCFData(_ bytes: [UInt8]?) -> OpaquePointer? {
+    guard let bytes, let bridge = CoreGraphicsObjects.coreFoundation, let made = bridge.makeData(bytes) else { return nil }
+    return OpaquePointer(made)
 }
 
 // MARK: - References

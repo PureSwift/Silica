@@ -30,7 +30,7 @@ record)
     mkdir -p "$EXPECTED"
     for source in "$SOURCES"/*.c; do
         name="$(basename "$source" .c)"
-        "$CC" -std=gnu11 -O0 -o "$WORK/$name" "$source" -framework CoreGraphics
+        "$CC" -std=gnu11 -O0 -DCONFORMANCE_FONTS="\"$SOURCES/fonts\"" -o "$WORK/$name" "$source" -framework CoreGraphics
         "$WORK/$name" > "$EXPECTED/$name.txt"
         echo "recorded $name"
     done
@@ -41,7 +41,7 @@ check)
     failed=0
     for source in "$SOURCES"/*.c; do
         name="$(basename "$source" .c)"
-        "$CC" -std=gnu11 -O0 -o "$WORK/$name" "$source" \
+        "$CC" -std=gnu11 -O0 -DCONFORMANCE_FONTS="\"$SOURCES/fonts\"" -o "$WORK/$name" "$source" \
             -I "$ROOT/Sources/CSilicaCoreGraphics/include" \
             -L "$libdir" -l"$library" -lm -Wl,-rpath,"$libdir"
         "$WORK/$name" > "$WORK/$name.txt"

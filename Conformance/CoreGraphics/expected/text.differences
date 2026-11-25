@@ -1,0 +1,8 @@
+# Lines Silica prints in place of Apple's, accepted.
+#
+# The cap height and x-height of a font whose OS/2 table is too old to have
+# them (DejaVu Sans Mono's is version 1): Silica uses the tops of "H" and
+# "x", as FreeType's users do; Apple's estimate is 13 units higher, and isn't
+# any glyph's height.
+cap height: 1493
+x height: 1120

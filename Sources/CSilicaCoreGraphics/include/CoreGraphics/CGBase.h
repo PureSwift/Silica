@@ -56,11 +56,22 @@
 #define CGFloat CGFLOAT_TYPE
 #define CGFLOAT_DEFINED 1
 
-/* Core Foundation's index and type identifier, where Core Foundation itself
- * isn't included. */
+/* Core Foundation's types CoreGraphics' functions take, where Core
+ * Foundation itself isn't included. Silica has no Core Foundation: a function
+ * taking or returning one of its objects works only where a runtime that has
+ * one (Perry) bridges them, and otherwise returns NULL or zero. */
 #if !defined(__COREFOUNDATION_CFBASE__)
+#if defined(__swift__)
+/* Swift's importer makes these Core Foundation classes by their names. */
+#define CFStringRef SilicaCFStringRef
+#define CFDataRef SilicaCFDataRef
+#define CFURLRef SilicaCFURLRef
+#endif
 typedef unsigned long CFTypeID;
 typedef long CFIndex;
+typedef const struct __CFString *CFStringRef;
+typedef const struct __CFData *CFDataRef;
+typedef const struct __CFURL *CFURLRef;
 #endif
 
 #endif /* SILICA_CGBASE_H */

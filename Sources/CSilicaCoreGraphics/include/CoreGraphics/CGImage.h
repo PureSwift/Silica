@@ -11,6 +11,7 @@
 #include "CGBase.h"
 #include "CGColorSpace.h"
 #include "CGGeometry.h"
+#include "CGDataProvider.h"
 
 CG_EXTERN_C_BEGIN
 CG_ASSUME_NONNULL_BEGIN
@@ -69,6 +70,14 @@ CG_EXTERN CFTypeID CGImageGetTypeID(void);
 CG_EXTERN CGImageRef CG_NULLABLE CGImageRetain(CGImageRef CG_NULLABLE image);
 CG_EXTERN void CGImageRelease(CGImageRef CG_NULLABLE image);
 
+/* An image of the provider's pixels, rows from the top. Silica reads 8 bits
+ * a component: RGB with alpha first or last (premultiplied, straight or
+ * skipped, in either byte order), RGB of 3 bytes, gray with or without
+ * alpha, and alpha alone. `decode` isn't applied. */
+CG_EXTERN CGImageRef CG_NULLABLE CGImageCreate(size_t width, size_t height, size_t bitsPerComponent, size_t bitsPerPixel,
+                                               size_t bytesPerRow, CGColorSpaceRef CG_NULLABLE space, CGBitmapInfo bitmapInfo,
+                                               CGDataProviderRef CG_NULLABLE provider, const CGFloat * CG_NULLABLE decode,
+                                               bool shouldInterpolate, CGColorRenderingIntent intent);
 CG_EXTERN CGImageRef CG_NULLABLE CGImageCreateCopy(CGImageRef CG_NULLABLE image);
 /* The part of the image in `rect`, in pixels from its top left, rounded out
  * to whole pixels; NULL when it's outside the image. */
@@ -86,6 +95,8 @@ CG_EXTERN CGImageByteOrderInfo CGImageGetByteOrderInfo(CGImageRef CG_NULLABLE im
 CG_EXTERN bool CGImageGetShouldInterpolate(CGImageRef CG_NULLABLE image);
 CG_EXTERN CGColorRenderingIntent CGImageGetRenderingIntent(CGImageRef CG_NULLABLE image);
 CG_EXTERN bool CGImageIsMask(CGImageRef CG_NULLABLE image);
+/* A provider of the image's pixels. */
+CG_EXTERN CGDataProviderRef CG_NULLABLE CGImageGetDataProvider(CGImageRef CG_NULLABLE image);
 
 CG_ASSUME_NONNULL_END
 CG_EXTERN_C_END
