@@ -271,7 +271,17 @@ private func build(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineT
 
 @c @implementation public func CGPathApply(_ path: SilicaCGPathRef?, _ info: UnsafeMutableRawPointer?, _ function: CGPathApplierFunction?) {
     guard let object = object(path, as: PathObject.self), let function else { return }
-    for element in object.path.elements {
+    forEachElement(of: object.path) { function(info, $0) }
+}
+
+@c @implementation public func CGPathApplyWithBlock(_ path: SilicaCGPathRef, _ block: CGPathApplyBlock) {
+    guard let object = object(path, as: PathObject.self) else { return }
+    forEachElement(of: object.path) { block($0) }
+}
+
+/// Each of a path's elements as CoreGraphics hands them out, valid while `body` runs.
+private func forEachElement(of path: Silica.Path, _ body: (UnsafePointer<CGPathElement>) -> Void) {
+    for element in path.elements {
         let type: CGPathElementType
         var points: [CGPoint]
         switch element {
@@ -294,9 +304,97 @@ private func build(_ path: SilicaCGMutablePathRef?, _ m: UnsafePointer<CGAffineT
         }
         points.withUnsafeMutableBufferPointer { buffer in
             var element = CGPathElement(type: type, points: buffer.baseAddress!)
-            function(info, &element)
+            body(&element)
         }
     }
+}
+
+// MARK: - Paths of Paths
+
+private func path(_ reference: SilicaCGPathRef?) -> Silica.Path? {
+    object(reference, as: PathObject.self)?.path
+}
+
+private func rule(_ evenOdd: Bool) -> FillRule {
+    evenOdd ? .evenOdd : .winding
+}
+
+@c @implementation public func CGPathCreateCopyByFlattening(_ path: SilicaCGPathRef?, _ flatteningThreshold: Double) -> SilicaCGPathRef? {
+    guard let path = SilicaCoreGraphicsABI.path(path) else { return nil }
+    return makePathReference(path.flattened(threshold: flatteningThreshold))
+}
+
+@c @implementation public func CGPathCreateCopyByDashingPath(_ path: SilicaCGPathRef?, _ transform: UnsafePointer<CGAffineTransform>?,
+                                                             _ phase: Double, _ lengths: UnsafePointer<Double>?,
+                                                             _ count: Int) -> SilicaCGPathRef? {
+    guard let path = SilicaCoreGraphicsABI.path(path) else { return nil }
+    let dash = lengths.map { lengths in (0 ..< max(count, 0)).map { lengths[$0] } } ?? []
+    return makePathReference(path.dashed(phase: phase, lengths: dash).applying(SilicaCoreGraphicsABI.transform(transform)))
+}
+
+@c @implementation public func CGPathCreateCopyByStrokingPath(_ path: SilicaCGPathRef?, _ transform: UnsafePointer<CGAffineTransform>?,
+                                                              _ lineWidth: Double, _ lineCap: CGLineCap, _ lineJoin: CGLineJoin,
+                                                              _ miterLimit: Double) -> SilicaCGPathRef? {
+    guard let path = SilicaCoreGraphicsABI.path(path) else { return nil }
+    let style = StrokeStyle(lineWidth: lineWidth, lineCap: LineCap(rawValue: UInt8(clamping: lineCap)) ?? .butt,
+                            lineJoin: LineJoin(rawValue: UInt8(clamping: lineJoin)) ?? .miter, miterLimit: miterLimit)
+    return makePathReference(path.strokedPath(style).applying(SilicaCoreGraphicsABI.transform(transform)))
+}
+
+@c @implementation public func CGPathCreateCopyByNormalizing(_ path: SilicaCGPathRef?, _ evenOddFillRule: Bool) -> SilicaCGPathRef? {
+    guard let path = SilicaCoreGraphicsABI.path(path) else { return nil }
+    return makePathReference(path.normalized(using: rule(evenOddFillRule)))
+}
+
+/// A path of a path and a mask, or nil without both.
+private func combine(_ path: SilicaCGPathRef?, _ mask: SilicaCGPathRef?,
+                     _ body: (Silica.Path, Silica.Path) -> Silica.Path) -> SilicaCGPathRef? {
+    guard let path = SilicaCoreGraphicsABI.path(path), let mask = SilicaCoreGraphicsABI.path(mask) else { return nil }
+    return makePathReference(body(path, mask))
+}
+
+@c @implementation public func CGPathCreateCopyByUnioningPath(_ path: SilicaCGPathRef?, _ maskPath: SilicaCGPathRef?,
+                                                              _ evenOddFillRule: Bool) -> SilicaCGPathRef? {
+    combine(path, maskPath) { $0.union($1, using: rule(evenOddFillRule)) }
+}
+
+@c @implementation public func CGPathCreateCopyByIntersectingPath(_ path: SilicaCGPathRef?, _ maskPath: SilicaCGPathRef?,
+                                                                  _ evenOddFillRule: Bool) -> SilicaCGPathRef? {
+    combine(path, maskPath) { $0.intersection($1, using: rule(evenOddFillRule)) }
+}
+
+@c @implementation public func CGPathCreateCopyBySubtractingPath(_ path: SilicaCGPathRef?, _ maskPath: SilicaCGPathRef?,
+                                                                 _ evenOddFillRule: Bool) -> SilicaCGPathRef? {
+    combine(path, maskPath) { $0.subtracting($1, using: rule(evenOddFillRule)) }
+}
+
+@c @implementation public func CGPathCreateCopyBySymmetricDifferenceOfPath(_ path: SilicaCGPathRef?, _ maskPath: SilicaCGPathRef?,
+                                                                           _ evenOddFillRule: Bool) -> SilicaCGPathRef? {
+    combine(path, maskPath) { $0.symmetricDifference($1, using: rule(evenOddFillRule)) }
+}
+
+@c @implementation public func CGPathCreateCopyOfLineByIntersectingPath(_ path: SilicaCGPathRef?, _ maskPath: SilicaCGPathRef?,
+                                                                        _ evenOddFillRule: Bool) -> SilicaCGPathRef? {
+    combine(path, maskPath) { $0.lineIntersection($1, using: rule(evenOddFillRule)) }
+}
+
+@c @implementation public func CGPathCreateCopyOfLineBySubtractingPath(_ path: SilicaCGPathRef?, _ maskPath: SilicaCGPathRef?,
+                                                                       _ evenOddFillRule: Bool) -> SilicaCGPathRef? {
+    combine(path, maskPath) { $0.lineSubtraction($1, using: rule(evenOddFillRule)) }
+}
+
+/// A CFArray of the pieces' paths, where Core Foundation is bridged.
+@c @implementation public func CGPathCreateSeparateComponents(_ path: SilicaCGPathRef?, _ evenOddFillRule: Bool) -> SilicaCFArrayRef? {
+    guard let path = SilicaCoreGraphicsABI.path(path), let bridge = CoreGraphicsObjects.coreFoundation else { return nil }
+    let references = path.componentsSeparated(using: rule(evenOddFillRule)).map(makePathReference)
+    // the array keeps its own references
+    defer { references.forEach(release) }
+    return bridge.makeArray(references.map { UnsafeRawPointer($0) }).map(OpaquePointer.init)
+}
+
+@c @implementation public func CGPathIntersectsPath(_ path1: SilicaCGPathRef?, _ path2: SilicaCGPathRef?, _ evenOddFillRule: Bool) -> Bool {
+    guard let first = SilicaCoreGraphicsABI.path(path1), let second = SilicaCoreGraphicsABI.path(path2) else { return false }
+    return first.intersects(second, using: rule(evenOddFillRule))
 }
 
 #endif
