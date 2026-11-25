@@ -1,0 +1,6 @@
+// The CoreGraphics headers as SwiftPM builds them, under a name that doesn't
+// clash with Apple's. CMake installs them as the `CoreGraphics` module.
+module CSilicaCoreGraphics {
+    umbrella header "CoreGraphics/CoreGraphics.h"
+    export *
+}
