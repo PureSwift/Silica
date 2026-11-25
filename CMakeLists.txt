@@ -3,7 +3,7 @@
 # and apps link them like the OS's own frameworks.
 #
 # SwiftPM (Package.swift) stays the way to develop and test Silica, and to
-# build its Android, 3DS and web backends.
+# build its 3DS and web backends.
 
 cmake_minimum_required(VERSION 3.26)
 
