@@ -35,6 +35,11 @@ CG_EXTERN CGColorRef CG_NULLABLE CGColorCreateCopyByMatchingToColorSpace(CGColor
                                                                          CGColorRenderingIntent intent, CGColorRef CG_NULLABLE color,
                                                                          const void * CG_NULLABLE options);
 
+/* kCGColorWhite, kCGColorBlack or kCGColorClear, by its CFStringRef's string
+ * where Core Foundation is bridged: in kCGColorSpaceGenericGrayGamma2_2,
+ * made once and never released. */
+CG_EXTERN CGColorRef CG_NULLABLE CGColorGetConstantColor(CFStringRef CG_NULLABLE colorName);
+
 CG_EXTERN CGColorRef CG_NULLABLE CGColorRetain(CGColorRef CG_NULLABLE color);
 CG_EXTERN void CGColorRelease(CGColorRef CG_NULLABLE color);
 
