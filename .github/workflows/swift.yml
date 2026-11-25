@@ -110,7 +110,8 @@ jobs:
       run: Scripts/CoreGraphics/check_exports.sh build/lib/libCoreGraphics.so
     - name: Check libCoreGraphics against Apple's CoreGraphics
       # the programs' output from Apple's framework is recorded in Conformance/CoreGraphics/expected
-      run: CC=clang Scripts/CoreGraphics/conformance.sh check build/lib
+      # (libCoreGraphics draws with SilicaCairo, which needs the Cairo module's library)
+      run: LD_LIBRARY_PATH="$PWD/modules" CC=clang Scripts/CoreGraphics/conformance.sh check build/lib
     - name: Install
       run: cmake --install build --prefix "$PWD/stage"
 
