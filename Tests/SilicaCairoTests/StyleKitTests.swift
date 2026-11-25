@@ -1,16 +1,15 @@
 //
 //  StyleKitTests.swift
-//  Silica
+//  SilicaCairoTests
 //
-//  Created by Alsey Coleman Miller on 5/11/16.
-//  Copyright © 2016 PureSwift. All rights reserved.
+//  Created by Alsey Coleman Miller on 6/6/17.
+//
 //
 
 #if canImport(Cairo)
 
 import XCTest
 import Foundation
-import Cairo
 import SilicaCairo
 import SilicaTestSupport
 
@@ -21,78 +20,59 @@ final class StyleKitTests: XCTestCase {
         CairoBackend.register()
     }
 
-    private func draw(_ drawingMethod: @autoclosure () -> (), _ name: String, _ size: CGSize) {
-        
-        let filename = TestPath.testData + name + ".pdf"
-        
-        let frame = CGRect(origin: .zero, size: size)
-        
-        let surface = try! Surface.PDF(filename: filename, width: Double(frame.width), height: Double(frame.height))
-        
-        let context = try! CairoContext(surface: surface, size: frame.size)
-        
-        UIGraphicsPushContext(context)
-        
-        drawingMethod()
-        
-        UIGraphicsPopContext()
-        
-        print("Wrote to \(filename)")
+    private func draw(_ name: String, _ size: Size, _ drawing: (GraphicsContext) -> Void) throws {
+        let url = URL(fileURLWithPath: TestPath.testData + name + ".pdf")
+        let context = GraphicsContext(try CairoRenderer(pdf: url, size: size))
+        drawing(context)
+        try context.finish()
+        print("Wrote to \(url.path)")
     }
-    
-    func testSimpleShapes() {
-        
-        draw(TestStyleKit.drawSimpleShapes(), "simpleShapes", CGSize(width: 240, height: 120))
+
+    func testSimpleShapes() throws {
+        try draw("simpleShapes", Size(width: 240, height: 120)) { TestStyleKit.drawSimpleShapes(in: $0) }
     }
-    
-    func testAdvancedShapes() {
-        
-        draw(TestStyleKit.drawAdvancedShapes(), "advancedShapes", CGSize(width: 240, height: 120))
+
+    func testAdvancedShapes() throws {
+        try draw("advancedShapes", Size(width: 240, height: 120)) { TestStyleKit.drawAdvancedShapes(in: $0) }
     }
-    
+
     func testImagePNG() async throws {
-        
         try await TestAssetManager.shared.fetchAssets()
-        
-        draw(TestStyleKit.drawImagePNG(), "imagePNG", CGSize(width: 240, height: 180))
+        try draw("imagePNG", Size(width: 240, height: 180)) { TestStyleKit.drawImagePNG(in: $0) }
     }
-    
-    func testDrawSwiftLogo() {
-        
-        draw(TestStyleKit.drawSwiftLogo(frame: CGRect(origin: .zero, size: CGSize(width: 200, height: 200))), "SwiftLogo", CGSize(width: 200, height: 200))
+
+    func testDrawSwiftLogo() throws {
+        try draw("SwiftLogo", Size(width: 200, height: 200)) {
+            TestStyleKit.drawSwiftLogo(in: $0, frame: Rect(x: 0, y: 0, width: 200, height: 200))
+        }
     }
-    
-    func testDrawSwiftLogoWithText() {
-        
-        draw(TestStyleKit.drawSwiftLogoWithText(frame: CGRect(origin: .zero, size: CGSize(width: 164 * 2, height: 48 * 2))), "SwiftLogoWithText", CGSize(width: 164 * 2, height: 48 * 2))
+
+    func testDrawSwiftLogoWithText() throws {
+        try draw("SwiftLogoWithText", Size(width: 164 * 2, height: 48 * 2)) {
+            TestStyleKit.drawSwiftLogoWithText(in: $0, frame: Rect(x: 0, y: 0, width: 164 * 2, height: 48 * 2))
+        }
     }
-    
-    func testDrawSingleLineText() {
-        
-        draw(TestStyleKit.drawSingleLineText(), "singleLineText", CGSize(width: 240, height: 120))
+
+    func testDrawSingleLineText() throws {
+        try draw("singleLineText", Size(width: 240, height: 120)) { TestStyleKit.drawSingleLineText(in: $0) }
     }
-    
-    func testDrawMultilineText() {
-        
-        draw(TestStyleKit.drawMultiLineText(), "multilineText", CGSize(width: 240, height: 180))
+
+    func testDrawMultilineText() throws {
+        try draw("multilineText", Size(width: 240, height: 180)) { TestStyleKit.drawMultiLineText(in: $0) }
     }
-    
-    func testContentMode() {
-        
-        let bounds = CGRect(origin: .zero, size: CGSize(width: 320, height: 240))
-        let testData: [((CGRect) -> (), CGSize)] = [
-            (TestStyleKit.drawSwiftLogo, CGSize(width: 32, height: 32)),
-            (TestStyleKit.drawSwiftLogoWithText, CGSize(width: 32 * (41 / 12), height: 32))
+
+    func testContentMode() throws {
+        let bounds = Rect(x: 0, y: 0, width: 320, height: 240)
+        let testData: [((GraphicsContext, Rect) -> Void, Size)] = [
+            ({ TestStyleKit.drawSwiftLogo(in: $0, frame: $1) }, Size(width: 32, height: 32)),
+            ({ TestStyleKit.drawSwiftLogoWithText(in: $0, frame: $1) }, Size(width: 32 * (41 / 12), height: 32)),
         ]
-        for (index, (drawingFunction, intrinsicContentSize)) in testData.enumerated() {
-            let imageNumber = index + 1
-            for contentMode in UIViewContentMode.allCases {
-                let frame = CGRect(contentMode: contentMode, bounds: bounds, size: intrinsicContentSize)
-                print("Draw image \(imageNumber) with content mode \(contentMode). \(frame)")
-                draw(drawingFunction(frame), "testContentMode_\(imageNumber)_\(contentMode)", bounds.size)
+        for (index, (drawing, intrinsicContentSize)) in testData.enumerated() {
+            for contentMode in ContentMode.allCases {
+                let frame = Rect(contentMode: contentMode, bounds: bounds, size: intrinsicContentSize)
+                try draw("testContentMode_\(index + 1)_\(contentMode)", bounds.size) { drawing($0, frame) }
             }
         }
-        
     }
 }
 
