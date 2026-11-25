@@ -1,6 +1,6 @@
 //
 //  CoreTextFontHandle.swift
-//  SilicaCoreGraphics
+//  SilicaQuartz
 //
 //  Created by Alsey Coleman Miller on 7/13/26.
 //  Copyright © 2026 PureSwift. All rights reserved.
@@ -14,7 +14,7 @@ import Foundation
 import Silica
 
 /// CoreText backed font.
-public final class CoreTextFontHandle: CGFontHandle {
+public final class CoreTextFontHandle: FontFace {
 
     // MARK: - Properties
 
@@ -122,24 +122,28 @@ public final class CoreTextFontHandle: CGFontHandle {
     // MARK: - Methods
 
     /// Returns the font at the specified point size.
-    public func font(size: CGFloat) -> CTFont {
+    public func font(size: Double) -> CTFont {
 
         return CTFontCreateCopyWithAttributes(ctFont, size, nil, nil)
     }
 
-    // MARK: - CGFontHandle
+    // MARK: - FontFace
 
     public var fullName: String { CTFontCopyFullName(ctFont) as String }
 
     public var unitsPerEm: Int { Int(CTFontGetUnitsPerEm(ctFont)) }
 
-    public var ascent: CGFloat { CTFontGetAscent(ctFont) }
+    public var ascent: Double { CTFontGetAscent(ctFont) }
 
-    public var descent: CGFloat { -CTFontGetDescent(ctFont) }
+    public var descent: Double { -CTFontGetDescent(ctFont) }
 
-    public var capHeight: CGFloat { CTFontGetCapHeight(ctFont) }
+    public var leading: Double { CTFontGetLeading(ctFont) }
 
-    public func glyph(for scalar: Unicode.Scalar) -> Silica.CGGlyph {
+    public var capHeight: Double { CTFontGetCapHeight(ctFont) }
+
+    public var xHeight: Double { CTFontGetXHeight(ctFont) }
+
+    public func glyph(for scalar: Unicode.Scalar) -> Glyph {
 
         let characters = Array(String(scalar).utf16)
         var glyphs = [CoreGraphics.CGGlyph](repeating: 0, count: characters.count)
@@ -149,14 +153,14 @@ public final class CoreTextFontHandle: CGFontHandle {
         return glyphs[0]
     }
 
-    public func advances(for glyphs: [Silica.CGGlyph]) -> [CGFloat] {
+    public func advances(for glyphs: [Glyph]) -> [Double] {
 
         var advances = [CGSize](repeating: .zero, count: glyphs.count)
 
         // the font has a size of 1.0, so advances are already em-normalized
         CTFontGetAdvancesForGlyphs(ctFont, .horizontal, glyphs, &advances, glyphs.count)
 
-        return advances.map { $0.width }
+        return advances.map { Double($0.width) }
     }
 }
 
