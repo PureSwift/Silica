@@ -116,7 +116,14 @@ let package = Package(
             name: "SilicaCoreGraphicsABI",
             dependencies: [
                 "Silica",
-                "CSilicaCoreGraphics"
+                "CSilicaCoreGraphics",
+                // contexts draw with Cairo
+                "SilicaCairo",
+                .product(
+                    name: "Cairo",
+                    package: "Cairo",
+                    condition: .when(platforms: [.linux], traits: ["Cairo"])
+                )
             ],
             exclude: ["CMakeLists.txt"]
         ),
