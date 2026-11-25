@@ -12,13 +12,13 @@ import Cairo
 import Foundation
 import Silica
 
-// MARK: - CGImage to Cairo
+// MARK: - Image to Cairo
 
 internal extension Cairo.Surface.Image {
 
     /// Creates an ARGB32 Cairo image surface from a Silica bitmap image
     /// (premultiplied RGBA, rows top-to-bottom).
-    convenience init(_ image: CGImage) throws(CairoError) {
+    convenience init(_ image: Silica.Image) throws(CairoError) {
 
         try self.init(format: .argb32, width: image.width, height: image.height)
 
@@ -66,12 +66,12 @@ internal extension Cairo.Surface.Image {
     }
 }
 
-// MARK: - Cairo to CGImage
+// MARK: - Cairo to Image
 
-internal extension CGImage {
+internal extension Silica.Image {
 
-    /// Creates a Silica bitmap image from an ARGB32 Cairo image surface.
-    convenience init?(cairo surface: Cairo.Surface.Image) {
+    /// Creates a Silica image from an ARGB32 Cairo image surface.
+    convenience init?(cairo surface: Cairo.Surface.Image, scale: Double = 1) {
 
         guard surface.format == .argb32
             else { return nil }
@@ -122,7 +122,7 @@ internal extension CGImage {
         guard copied != nil
             else { return nil }
 
-        self.init(width: width, height: height, bytesPerRow: bytesPerRow, data: data)
+        self.init(width: width, height: height, bytesPerRow: bytesPerRow, data: data, scale: scale)
     }
 }
 
