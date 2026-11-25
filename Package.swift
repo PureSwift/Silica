@@ -20,16 +20,18 @@ let package = Package(
             targets: ["SilicaCoreGraphics"]
         ),
         .library(
-            name: "SilicaAndroid",
-            targets: ["SilicaAndroid"]
-        ),
-        .library(
             name: "Silica3DS",
             targets: ["Silica3DS"]
         ),
         .library(
             name: "SilicaWeb",
             targets: ["SilicaWeb"]
+        ),
+        // The drawings every backend's tests render, for backends in other
+        // packages (AndroidSilica, in PureSwift/Android).
+        .library(
+            name: "SilicaTestSupport",
+            targets: ["SilicaTestSupport"]
         )
     ],
     dependencies: [
@@ -40,18 +42,6 @@ let package = Package(
         .package(
             url: "https://github.com/PureSwift/FontConfig.git",
             branch: "master"
-        ),
-        .package(
-            url: "https://github.com/PureSwift/Android.git",
-            branch: "master"
-        ),
-        .package(
-            url: "https://github.com/swiftlang/swift-java.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-android-sdk/swift-android-native.git",
-            branch: "main"
         ),
         .package(
             url: "https://github.com/swiftwasm/JavaScriptKit.git",
@@ -84,22 +74,6 @@ let package = Package(
             name: "SilicaCoreGraphics",
             dependencies: ["Silica"],
             exclude: ["CMakeLists.txt"]
-        ),
-        .target(
-            name: "SilicaAndroid",
-            dependencies: [
-                "Silica",
-                .product(
-                    name: "AndroidGraphics",
-                    package: "Android",
-                    condition: .when(platforms: [.android])
-                ),
-                .product(
-                    name: "JavaIO",
-                    package: "swift-java",
-                    condition: .when(platforms: [.android])
-                )
-            ]
         ),
         .target(
             name: "Silica3DS",
@@ -141,28 +115,6 @@ let package = Package(
             dependencies: [
                 "Silica3DS",
                 "SilicaTestSupport"
-            ]
-        ),
-        .testTarget(
-            name: "SilicaAndroidTests",
-            dependencies: [
-                "SilicaAndroid",
-                "SilicaTestSupport",
-                .product(
-                    name: "AndroidApp",
-                    package: "Android",
-                    condition: .when(platforms: [.android])
-                ),
-                .product(
-                    name: "AndroidContext",
-                    package: "swift-android-native",
-                    condition: .when(platforms: [.android])
-                ),
-                .product(
-                    name: "SwiftJava",
-                    package: "swift-java",
-                    condition: .when(platforms: [.android])
-                )
             ]
         )
     ]
