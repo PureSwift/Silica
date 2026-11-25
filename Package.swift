@@ -27,6 +27,13 @@ let package = Package(
             name: "SilicaWeb",
             targets: ["SilicaWeb"]
         ),
+        // For trying the C API locally: the installed library is CMake's
+        // libCoreGraphics, built from the same targets.
+        .library(
+            name: "SilicaCoreGraphicsABI",
+            type: .dynamic,
+            targets: ["SilicaCoreGraphicsABI"]
+        ),
         // The drawings every backend's tests render, for backends in other
         // packages (AndroidSilica, in PureSwift/Android).
         .library(
@@ -98,6 +105,20 @@ let package = Package(
                     condition: .when(platforms: [.wasi], traits: ["Web"])
                 )
             ]
+        ),
+        // CoreGraphics' C API, drawn by Silica: the headers, constants and stubs
+        // in C, the functions in Swift. CMake builds it as libCoreGraphics.
+        .target(
+            name: "CSilicaCoreGraphics",
+            exclude: ["CMakeLists.txt", "CoreGraphics.modulemap"]
+        ),
+        .target(
+            name: "SilicaCoreGraphicsABI",
+            dependencies: [
+                "Silica",
+                "CSilicaCoreGraphics"
+            ],
+            exclude: ["CMakeLists.txt"]
         ),
         .target(
             name: "SilicaTestSupport",
