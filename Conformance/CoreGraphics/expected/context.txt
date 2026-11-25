@@ -1,0 +1,112 @@
+-- color spaces
+rgb: model 1 components 3
+gray: model 0 components 1
+-- colors
+color: components 4 alpha 0.4
+color components: 0.1 0.2 0.3 0.4
+copy alpha: 0.9
+equal: true
+equal with other alpha: false
+gray color components 2 model 0
+-- formats
+rgba: bpc 8 bpp 32 bytesPerRow 64 alphaInfo 1 bitmapInfo 0x1
+rgba 13 wide: bpc 8 bpp 32 bytesPerRow 64 alphaInfo 1 bitmapInfo 0x1
+bgra: bpc 8 bpp 32 bytesPerRow 64 alphaInfo 2 bitmapInfo 0x2002
+argb: bpc 8 bpp 32 bytesPerRow 64 alphaInfo 2 bitmapInfo 0x2
+rgbx: bpc 8 bpp 32 bytesPerRow 64 alphaInfo 5 bitmapInfo 0x5
+gray: bpc 8 bpp 8 bytesPerRow 32 alphaInfo 0 bitmapInfo 0x0
+gray 13 wide: bpc 8 bpp 8 bytesPerRow 32 alphaInfo 0 bitmapInfo 0x0
+alpha only: bpc 8 bpp 8 bytesPerRow 32 alphaInfo 7 bitmapInfo 0x7
+explicit row: bpc 8 bpp 32 bytesPerRow 64 alphaInfo 1 bitmapInfo 0x1
+row too short: NULL
+straight alpha: NULL
+rgb without alpha: NULL
+-- drawing
+rgba background: 51 102 153 255
+rgba blended: 160 48 80 256
+rgba outside blend: 51 102 153 255
+rgba clipped inside: 0 255 0 255
+rgba clipped outside: 51 102 153 255
+rgba stroke: 255 255 255 255
+rgba cleared: 0 0 0 0
+bgra background: 153 102 51 255
+bgra blended: 80 48 160 256
+bgra outside blend: 153 102 51 255
+bgra clipped inside: 0 255 0 255
+bgra clipped outside: 153 102 51 255
+bgra stroke: 255 255 255 255
+bgra cleared: 0 0 0 0
+argb background: 255 51 102 153
+argb blended: 256 160 48 80
+argb outside blend: 255 51 102 153
+argb clipped inside: 255 0 255 0
+argb clipped outside: 255 51 102 153
+argb stroke: 255 255 255 255
+argb cleared: 0 0 0 0
+rgbx background: 51 102 153 255
+rgbx blended: 160 48 80 256
+rgbx outside blend: 51 102 153 255
+rgbx clipped inside: 0 255 0 255
+rgbx clipped outside: 51 102 153 255
+rgbx stroke: 255 255 255 255
+rgbx cleared: 0 0 0 0
+gray background: 98
+gray blended: 112
+gray outside blend: 98
+gray clipped inside: 220
+gray clipped outside: 98
+gray stroke: 255
+gray cleared: 0
+alpha only blended: 128
+alpha only empty: 0
+-- memory written by the program
+over program's blue: 128 128 256 256
+program's blue: 0 0 255 255
+-- state
+initial ctm: 1 0 0 1 0 0
+initial clip: 0 0 100 50
+initial path empty: true
+initial current point: 0 0
+initial interpolation 0
+ctm: 0 3 -2 0 10 20
+to device: 6 27
+to user: -3.33333 -10
+size to device: -4 -3
+rect to device: 6 27 4 3
+clip: 0 0 5 5
+restored ctm: 1 0 0 1 0 0
+restored clip: 0 0 100 50
+line without point empty: true
+current point: 40 10
+path bounds: 10 -20 30 60
+contains in rect: true
+contains outside: false
+copied path bounds: 10 -20 60 60
+current point after translate: 45 5
+path empty after fill: true
+-- images
+image: 2 x 2 bpc 8 bpp 32 alphaInfo 1 bitmapInfo 0x1
+cropped: 1 x 1
+image top left: 255 0 0 255
+image top right: 0 255 0 255
+image bottom left: 0 0 255 255
+image bottom right: 255 255 255 255
+cropped image: 0 255 0 255
+interpolation 1
+nearest top left: 255 0 0 255
+nearest left of middle: 255 0 0 255
+nearest right of middle: 0 255 0 255
+nearest bottom right: 255 255 255 255
+-- gradients
+linear start: 0 0 0 256
+linear middle: 128 128 128 256
+linear end: 256 256 256 256
+radial center: 0 0 0 256
+radial halfway: 128 128 128 256
+radial outside: 0 0 0 0
+radial extended: 256 256 256 256
+-- layers and shadows
+layer overlap: 0 0 0 128
+layer single: 0 0 0 128
+shadowed shape: 256 0 0 256
+shadow: 0 48 256 256
