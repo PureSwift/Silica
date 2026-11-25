@@ -15,7 +15,7 @@ import Foundation
 import JavaScriptKit
 import Silica
 
-/// CSS font backed by canvas `measureText` metrics.
+/// A CSS font, measured with canvas `measureText`.
 ///
 /// The Web Canvas API exposes neither glyph indices nor font tables, so glyph
 /// indices are Unicode scalar values (scalars outside the Basic Multilingual
@@ -24,12 +24,12 @@ import Silica
 /// - Note: Like the other backends, unknown family names fall back to the
 ///   platform default (`sans-serif`), so font creation does not fail for
 ///   unrecognized names.
-public final class WebFontHandle: CGFontHandle {
+public final class WebFontHandle: Silica.FontFace {
 
     // MARK: - Constants
 
     /// Nominal em size used for measuring.
-    internal static let nominalSize: CGFloat = 1000
+    internal static let nominalSize: Double = 1000
 
     // MARK: - Properties
 
@@ -46,10 +46,10 @@ public final class WebFontHandle: CGFontHandle {
     /// Measuring 2D context, configured at the nominal size.
     private let measuringContext: JSObject
 
-    private let internalMetrics: (ascent: CGFloat, descent: CGFloat, capHeight: CGFloat)
+    private let internalMetrics: (ascent: Double, descent: Double, capHeight: Double, xHeight: Double)
 
     /// Measured em-normalized advances.
-    private var advanceCache = [CGGlyph: CGFloat]()
+    private var advanceCache = [Glyph: Double]()
 
     // MARK: - Initialization
 
@@ -96,7 +96,7 @@ public final class WebFontHandle: CGFontHandle {
 
         self.cssFamily = families.joined(separator: ", ")
 
-        guard let canvas = WebCanvasContext.makeCanvas(width: 1, height: 1),
+        guard let canvas = WebCanvasRenderer.makeCanvas(width: 1, height: 1),
             let context = canvas.getContext!("2d").object
             else { return nil }
 
@@ -112,41 +112,47 @@ public final class WebFontHandle: CGFontHandle {
         // fall back to the actual bounding box on engines without font metrics
         let ascent = metrics.fontBoundingBoxAscent.number
             ?? metrics.actualBoundingBoxAscent.number
-            ?? 0.8 * Double(nominal)
+            ?? 0.8 * nominal
 
         let descent = metrics.fontBoundingBoxDescent.number
             ?? metrics.actualBoundingBoxDescent.number
-            ?? 0.2 * Double(nominal)
+            ?? 0.2 * nominal
 
         let capHeight = context.measureText!("H").object?.actualBoundingBoxAscent.number
-            ?? 0.7 * Double(nominal)
+            ?? 0.7 * nominal
 
-        // Silica descent is negative below the baseline (FreeType convention).
-        self.internalMetrics = (ascent: CGFloat(ascent) / nominal,
-                                descent: -CGFloat(descent) / nominal,
-                                capHeight: CGFloat(capHeight) / nominal)
+        let xHeight = context.measureText!("x").object?.actualBoundingBoxAscent.number
+            ?? 0.7 * capHeight
+
+        // `FontFace.descent` is negative below the baseline; canvas measures it positive.
+        self.internalMetrics = (ascent: ascent / nominal,
+                                descent: -descent / nominal,
+                                capHeight: capHeight / nominal,
+                                xHeight: xHeight / nominal)
     }
 
-    // MARK: - CGFontHandle
+    // MARK: - FontFace
 
     /// The family name (CSS exposes no full font name).
     public var fullName: String { familyName }
 
     public var unitsPerEm: Int { Int(WebFontHandle.nominalSize) }
 
-    public var ascent: CGFloat { internalMetrics.ascent }
+    public var ascent: Double { internalMetrics.ascent }
 
-    public var descent: CGFloat { internalMetrics.descent }
+    public var descent: Double { internalMetrics.descent }
 
-    public var capHeight: CGFloat { internalMetrics.capHeight }
+    public var capHeight: Double { internalMetrics.capHeight }
 
-    public func glyph(for scalar: Unicode.Scalar) -> CGGlyph {
+    public var xHeight: Double { internalMetrics.xHeight }
+
+    public func glyph(for scalar: Unicode.Scalar) -> Glyph {
 
         // glyph indices are Unicode scalar values
-        return scalar.value <= UInt32(CGGlyph.max) ? CGGlyph(scalar.value) : 0
+        return scalar.value <= UInt32(Glyph.max) ? Glyph(scalar.value) : 0
     }
 
-    public func advances(for glyphs: [CGGlyph]) -> [CGFloat] {
+    public func advances(for glyphs: [Glyph]) -> [Double] {
 
         return glyphs.map { glyph in
 
@@ -155,7 +161,7 @@ public final class WebFontHandle: CGFontHandle {
             }
 
             let width = measuringContext.measureText!(text(for: glyph)).object?.width.number ?? 0
-            let advance = CGFloat(width) / WebFontHandle.nominalSize
+            let advance = width / WebFontHandle.nominalSize
 
             advanceCache[glyph] = advance
             return advance
@@ -165,7 +171,7 @@ public final class WebFontHandle: CGFontHandle {
     // MARK: - Methods
 
     /// The string rendered for the specified glyph index.
-    internal func text(for glyph: CGGlyph) -> String {
+    internal func text(for glyph: Glyph) -> String {
 
         guard let scalar = Unicode.Scalar(UInt16(glyph))
             else { return "" }
@@ -174,7 +180,7 @@ public final class WebFontHandle: CGFontHandle {
     }
 
     /// CSS `font` value at the specified size.
-    internal func cssFont(size: CGFloat) -> String {
+    internal func cssFont(size: Double) -> String {
 
         return cssTraits + cssNumber(size) + "px " + cssFamily
     }
