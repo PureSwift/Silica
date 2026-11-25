@@ -1,0 +1,105 @@
+-- layers
+layer size: 10 10
+layer has a context: true
+layer ctm: 1 0 0 1 0 0
+layer clip: 0 0 10 10
+layer context is the same: true
+at point left: 255 0 0 255
+at point right: 0 0 255 255
+at point bottom: 0 255 0 255
+at point outside: 0 0 0 0
+in rect left: 255 0 0 255
+in rect right: 0 0 255 255
+in rect bottom: 0 255 0 255
+with alpha: 128 0 0 128
+empty layer: true
+-- shadings
+function: true
+function type: true
+axial before start: 0 0 0 0
+axial start: 16 0 240 256
+axial middle: 128 0 128 256
+axial end: 240 0 16 256
+axial after end: 0 0 0 0
+extended before start: 0 0 255 255
+extended after end: 255 0 0 255
+radial center: 16 0 240 256
+radial inside: 80 0 176 256
+radial outside: 0 0 0 0
+scaled middle: 128 0 128 256
+clipped: 0 0 0 0
+gray middle: 128 128 128 256
+function info released: 1
+-- patterns
+pattern: true
+colored space: model 6 components 0 base NULL
+uncolored space: model 6 components 3 base model 1
+colored cell: 255 0 0 255
+colored outside cell: 0 0 0 0
+colored next across: 255 0 0 255
+colored next up: 255 0 0 255
+cell drawn: true
+stroke in cell: 255 0 0 255
+stroke outside cell: 0 0 0 0
+outside stroke: 0 0 0 0
+moved before: 0 0 0 0
+moved cell: 255 0 0 255
+scaled cell: 255 0 0 255
+scaled outside cell: 0 0 0 0
+scaled next: 255 0 0 255
+phase below: 0 0 0 0
+phase cell: 255 0 0 255
+wide in cell: 0 0 255 255
+wide spilled: 0 0 255 255
+wide outside: 0 0 0 0
+stencil cell: 0 255 0 255
+stencil outside cell: 0 0 0 0
+red stencil cell: 255 0 0 255
+pattern color: components 4 alpha 0.5 pattern same
+pattern color cell: 0 0 128 128
+pattern color outside cell: 0 0 0 0
+color after pattern: 255 255 255 255
+pattern with alpha: 128 0 0 128
+restored color: 0 0 255 255
+pattern info released: 3
+-- tiled images
+tile top left: 255 0 0 255
+tile top right: 0 255 0 255
+tile bottom left: 0 0 255 255
+tile bottom right: 255 255 255 255
+next tile across: 255 0 0 255
+next tile up: 255 0 0 255
+far tile: 255 0 0 255
+offset tile: 255 0 0 255
+offset before: 0 255 0 255
+tile clipped: 0 0 0 0
+-- masks
+image mask: 4x4 bpc 8 bpp 8 bytesPerRow 4 mask yes space NULL decode NULL
+bit mask: 8x2 bpc 1 bpp 1 bytesPerRow 1 mask yes space NULL decode NULL
+inverted mask: 8x2 bpc 1 bpp 1 bytesPerRow 1 mask yes space NULL decode 1 0
+bad mask: NULL
+mask paints: 0 0 255 255
+mask doesn't: 0 0 0 0
+bit mask doesn't: 0 0 0 0
+bit mask paints: 0 0 255 255
+inverted paints: 0 0 255 255
+inverted doesn't: 0 0 0 0
+mask clip: 0 0 4 4
+gray white: 255 0 0 255
+gray half: 128 0 0 128
+gray black: 0 0 0 0
+outside the mask: 0 0 0 0
+after restoring: 0 255 0 255
+image mask clip left: 0 0 255 255
+image mask clip right: 0 0 0 0
+image mask clip before: 0 0 0 0
+both masks: 255 0 0 255
+one mask: 0 0 0 0
+masked by an image mask: 4x4 bpc 8 bpp 32 bytesPerRow 16 mask no space yes decode NULL
+masked by a gray image: 4x4 bpc 8 bpp 32 bytesPerRow 16 mask no space yes decode NULL
+masked by a color image: NULL
+image mask shows: 0 255 0 255
+image mask hides: 0 0 0 0
+gray white shows: 0 255 0 255
+gray half shows: 0 128 0 128
+gray black hides: 0 0 0 0
