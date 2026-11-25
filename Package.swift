@@ -157,6 +157,13 @@ let package = Package(
                 "Silica3DS",
                 "SilicaTestSupport"
             ]
+        ),
+        .testTarget(
+            name: "SilicaCoreGraphicsABITests",
+            dependencies: [
+                "SilicaCoreGraphicsABI",
+                "CSilicaCoreGraphics"
+            ]
         )
     ]
 )
