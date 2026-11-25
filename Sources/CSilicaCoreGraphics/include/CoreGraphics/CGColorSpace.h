@@ -55,6 +55,13 @@ CG_EXTERN void CGColorSpaceRelease(CGColorSpaceRef CG_NULLABLE space);
 CG_EXTERN CGColorSpaceModel CGColorSpaceGetModel(CGColorSpaceRef CG_NULLABLE space);
 CG_EXTERN size_t CGColorSpaceGetNumberOfComponents(CGColorSpaceRef CG_NULLABLE space);
 
+/* A space of patterns: colored with no base space, or uncolored, a stencil
+ * painted in a color of the base space. */
+CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreatePattern(CGColorSpaceRef CG_NULLABLE baseSpace);
+/* A pattern space's base space, or NULL. */
+CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceGetBaseColorSpace(CGColorSpaceRef CG_NULLABLE space);
+CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCopyBaseColorSpace(CGColorSpaceRef CG_NULLABLE space);
+
 CG_ASSUME_NONNULL_END
 CG_EXTERN_C_END
 
