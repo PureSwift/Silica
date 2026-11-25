@@ -2,9 +2,8 @@
 # ports/3DS -- Nintendo 3DS demo of Silica, built with Embedded Swift.
 #
 # Follows the same shape as junkbot-swift's ports/3DS: the ARM11 binary is the
-# Silica core (compiled straight from ../../Sources/Silica, minus the
-# Foundation-dependent files) plus the Silica3DS software renderer and this
-# port's source/, targeting armv6-none-none-eabi (the 3DS's ARM11 application
+# Silica core (compiled straight from ../../Sources/Silica) plus the Silica3DS
+# software renderer and this port's source/, targeting armv6-none-none-eabi (the 3DS's ARM11 application
 # CPU is an ARMv6K core), linked against libctru, and packaged as a homebrew
 # .3dsx with 3dsxtool/smdhtool.
 #
@@ -77,16 +76,12 @@ SWIFTFLAGS	:=	-target armv6-none-none-eabi \
 			-Xcc -fmodule-map-file=$(COMMON)module.modulemap
 
 #---------------------------------------------------------------------------------
-# Sources: the Silica core (minus Foundation-dependent files) + the Silica3DS
-# software renderer (minus the Foundation-only backend registry) + this port.
+# Sources: the Silica core + the Silica3DS software renderer (minus its module
+# re-export, since everything compiles into one module here) + this port.
 #---------------------------------------------------------------------------------
-CORE_EXCLUDE	:=	CGBitmapInfo.swift CGColorRenderingIntent.swift CGColorSpace.swift \
-			CGImageSource.swift CGImageSourcePNG.swift CGImageDestination.swift \
-			SilicaBackend.swift
-CORE_SWIFT	:=	$(filter-out $(addprefix $(REPO_ROOT)/Sources/Silica/,$(CORE_EXCLUDE)), \
-			$(wildcard $(REPO_ROOT)/Sources/Silica/*.swift))
+CORE_SWIFT	:=	$(wildcard $(REPO_ROOT)/Sources/Silica/*.swift)
 
-3DS_EXCLUDE	:=	Nintendo3DSBackend.swift Export.swift
+3DS_EXCLUDE	:=	Export.swift
 3DS_SWIFT	:=	$(filter-out $(addprefix $(REPO_ROOT)/Sources/Silica3DS/,$(3DS_EXCLUDE)), \
 			$(wildcard $(REPO_ROOT)/Sources/Silica3DS/*.swift))
 
