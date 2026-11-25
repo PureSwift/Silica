@@ -42,16 +42,20 @@ internal final class ColorSpaceObject {
     /// The ICC profile the space was made with.
     let profile: [UInt8]?
 
-    init(model: Model, base: OpaquePointer? = nil, table: [UInt8] = [], profile: [UInt8]? = nil) {
+    /// The space's name, as CoreGraphics' constants spell it (`kCGColorSpaceSRGB`).
+    let name: String?
+
+    init(model: Model, base: OpaquePointer? = nil, table: [UInt8] = [], profile: [UInt8]? = nil, name: String? = nil) {
         self.model = model
         self.base = base.map(Retained.init)
         self.table = table
         self.profile = profile
+        self.name = name
     }
 
-    /// A new space of the same kind, with the same base, table and profile.
+    /// A new space of the same kind, with the same base, table, profile and name.
     func copy() -> ColorSpaceObject {
-        ColorSpaceObject(model: model, base: base?.reference, table: table, profile: profile)
+        ColorSpaceObject(model: model, base: base?.reference, table: table, profile: profile, name: name)
     }
 
     /// How many colors an indexed space's table holds.
@@ -98,9 +102,9 @@ internal final class ColorSpaceObject {
     }
 
     // The spaces are shared, as Darwin's device spaces are.
-    nonisolated(unsafe) static let deviceRGB = makeReference(ColorSpaceObject(model: .rgb))
-    nonisolated(unsafe) static let deviceGray = makeReference(ColorSpaceObject(model: .gray))
-    nonisolated(unsafe) static let deviceCMYK = makeReference(ColorSpaceObject(model: .cmyk))
+    nonisolated(unsafe) static let deviceRGB = makeReference(ColorSpaceObject(model: .rgb, name: "kCGColorSpaceDeviceRGB"))
+    nonisolated(unsafe) static let deviceGray = makeReference(ColorSpaceObject(model: .gray, name: "kCGColorSpaceDeviceGray"))
+    nonisolated(unsafe) static let deviceCMYK = makeReference(ColorSpaceObject(model: .cmyk, name: "kCGColorSpaceDeviceCMYK"))
 
     /// The shared spaces' objects.
     nonisolated(unsafe) static let rgb = object(deviceRGB, as: ColorSpaceObject.self)!
@@ -203,14 +207,17 @@ private func model(profile: [UInt8]) -> ColorSpaceObject.Model? {
     makeCFData(object(space, as: ColorSpaceObject.self)?.profile)
 }
 
-/// NULL, as for Apple's device spaces: only named spaces have linear forms.
+/// The linear form of a named space (`kCGColorSpaceSRGB`'s is
+/// `kCGColorSpaceLinearSRGB`), or NULL, as for device spaces.
 @c @implementation public func CGColorSpaceCreateLinearized(_ space: SilicaCGColorSpaceRef?) -> SilicaCGColorSpaceRef? {
-    nil
+    guard let name = object(space, as: ColorSpaceObject.self)?.name, let linear = linearNames[name] else { return nil }
+    return makeNamedSpace(linear)
 }
 
-/// NULL, as for Apple's device spaces: only named spaces have extended forms.
+/// The extended range form of a named space, or NULL, as for device spaces.
 @c @implementation public func CGColorSpaceCreateExtended(_ space: SilicaCGColorSpaceRef?) -> SilicaCGColorSpaceRef? {
-    nil
+    guard let name = object(space, as: ColorSpaceObject.self)?.name, let extended = extendedNames[name] else { return nil }
+    return makeNamedSpace(extended)
 }
 
 @c @implementation public func CGColorSpaceCreateIndexed(_ baseSpace: SilicaCGColorSpaceRef?, _ lastIndex: Int,
@@ -231,6 +238,116 @@ private func model(profile: [UInt8]) -> ColorSpaceObject.Model? {
     for (index, byte) in space.table.enumerated() {
         table[index] = byte
     }
+}
+
+// MARK: Named Spaces
+
+/// The spaces CoreGraphics names, by name: each is drawn as the device space
+/// of its model. A device space's name makes the device space.
+private let namedSpaces: [String: ColorSpaceObject.Model] = [
+    "kCGColorSpaceSRGB": .rgb, "kCGColorSpaceLinearSRGB": .rgb, "kCGColorSpaceExtendedSRGB": .rgb,
+    "kCGColorSpaceExtendedLinearSRGB": .rgb, "kCGColorSpaceGenericRGB": .rgb, "kCGColorSpaceGenericRGBLinear": .rgb,
+    "kCGColorSpaceDisplayP3": .rgb, "kCGColorSpaceLinearDisplayP3": .rgb, "kCGColorSpaceExtendedDisplayP3": .rgb,
+    "kCGColorSpaceExtendedLinearDisplayP3": .rgb, "kCGColorSpaceDCIP3": .rgb, "kCGColorSpaceAdobeRGB1998": .rgb,
+    "kCGColorSpaceITUR_709": .rgb, "kCGColorSpaceITUR_2020": .rgb, "kCGColorSpaceExtendedITUR_2020": .rgb,
+    "kCGColorSpaceLinearITUR_2020": .rgb, "kCGColorSpaceExtendedLinearITUR_2020": .rgb,
+    "kCGColorSpaceITUR_2100_PQ": .rgb, "kCGColorSpaceITUR_2100_HLG": .rgb, "kCGColorSpaceROMMRGB": .rgb,
+    "kCGColorSpaceACESCGLinear": .rgb,
+    "kCGColorSpaceGenericGray": .gray, "kCGColorSpaceGenericGrayGamma2_2": .gray, "kCGColorSpaceLinearGray": .gray,
+    "kCGColorSpaceExtendedGray": .gray, "kCGColorSpaceExtendedLinearGray": .gray,
+    "kCGColorSpaceGenericCMYK": .cmyk,
+]
+
+/// The linear and extended forms of the named spaces that have them.
+private let linearNames: [String: String] = [
+    "kCGColorSpaceSRGB": "kCGColorSpaceLinearSRGB", "kCGColorSpaceLinearSRGB": "kCGColorSpaceLinearSRGB",
+    "kCGColorSpaceExtendedSRGB": "kCGColorSpaceExtendedLinearSRGB",
+    "kCGColorSpaceExtendedLinearSRGB": "kCGColorSpaceExtendedLinearSRGB",
+    "kCGColorSpaceDisplayP3": "kCGColorSpaceLinearDisplayP3", "kCGColorSpaceLinearDisplayP3": "kCGColorSpaceLinearDisplayP3",
+    "kCGColorSpaceExtendedDisplayP3": "kCGColorSpaceExtendedLinearDisplayP3",
+    "kCGColorSpaceExtendedLinearDisplayP3": "kCGColorSpaceExtendedLinearDisplayP3",
+    "kCGColorSpaceITUR_2020": "kCGColorSpaceLinearITUR_2020", "kCGColorSpaceLinearITUR_2020": "kCGColorSpaceLinearITUR_2020",
+    "kCGColorSpaceExtendedITUR_2020": "kCGColorSpaceExtendedLinearITUR_2020",
+    "kCGColorSpaceGenericGrayGamma2_2": "kCGColorSpaceLinearGray", "kCGColorSpaceLinearGray": "kCGColorSpaceLinearGray",
+    "kCGColorSpaceExtendedGray": "kCGColorSpaceExtendedLinearGray",
+    "kCGColorSpaceExtendedLinearGray": "kCGColorSpaceExtendedLinearGray",
+]
+
+private let extendedNames: [String: String] = [
+    "kCGColorSpaceSRGB": "kCGColorSpaceExtendedSRGB", "kCGColorSpaceExtendedSRGB": "kCGColorSpaceExtendedSRGB",
+    "kCGColorSpaceLinearSRGB": "kCGColorSpaceExtendedLinearSRGB",
+    "kCGColorSpaceExtendedLinearSRGB": "kCGColorSpaceExtendedLinearSRGB",
+    "kCGColorSpaceDisplayP3": "kCGColorSpaceExtendedDisplayP3", "kCGColorSpaceExtendedDisplayP3": "kCGColorSpaceExtendedDisplayP3",
+    "kCGColorSpaceLinearDisplayP3": "kCGColorSpaceExtendedLinearDisplayP3",
+    "kCGColorSpaceExtendedLinearDisplayP3": "kCGColorSpaceExtendedLinearDisplayP3",
+    "kCGColorSpaceITUR_2020": "kCGColorSpaceExtendedITUR_2020", "kCGColorSpaceExtendedITUR_2020": "kCGColorSpaceExtendedITUR_2020",
+    "kCGColorSpaceLinearITUR_2020": "kCGColorSpaceExtendedLinearITUR_2020",
+    "kCGColorSpaceGenericGrayGamma2_2": "kCGColorSpaceExtendedGray", "kCGColorSpaceExtendedGray": "kCGColorSpaceExtendedGray",
+    "kCGColorSpaceLinearGray": "kCGColorSpaceExtendedLinearGray",
+    "kCGColorSpaceExtendedLinearGray": "kCGColorSpaceExtendedLinearGray",
+]
+
+/// The property lists of the device spaces: the names of the spaces they are, as Darwin's give.
+private let devicePropertyLists = [
+    "kCGColorSpaceDeviceRGB": "kCGColorSpaceSRGB",
+    "kCGColorSpaceDeviceGray": "kCGColorSpaceGenericGrayGamma2_2",
+    "kCGColorSpaceDeviceCMYK": "kCGColorSpaceGenericCMYK",
+]
+
+/// A new reference to the space of a name, or nil for a name Silica doesn't know.
+private func makeNamedSpace(_ name: String) -> SilicaCGColorSpaceRef? {
+    let device: SilicaCGColorSpaceRef?
+    switch name {
+    case "kCGColorSpaceDeviceRGB": device = ColorSpaceObject.deviceRGB
+    case "kCGColorSpaceDeviceGray": device = ColorSpaceObject.deviceGray
+    case "kCGColorSpaceDeviceCMYK": device = ColorSpaceObject.deviceCMYK
+    default: device = nil
+    }
+    if let device {
+        retain(device)
+        return device
+    }
+    guard let model = namedSpaces[name] else { return nil }
+    return makeReference(ColorSpaceObject(model: model, name: name))
+}
+
+/// The name of a named space, from the CFStringRef's string where Core
+/// Foundation is bridged.
+@c @implementation public func CGColorSpaceCreateWithName(_ name: SilicaCFStringRef?) -> SilicaCGColorSpaceRef? {
+    guard let name = string(name) else { return nil }
+    return makeNamedSpace(name)
+}
+
+/// The space's name, as the runtime's constant where it has one: the space
+/// keeps it.
+@c @implementation public func CGColorSpaceGetName(_ space: SilicaCGColorSpaceRef?) -> SilicaCFStringRef? {
+    guard let name = object(space, as: ColorSpaceObject.self)?.name else { return nil }
+    return constantString(name)
+}
+
+@c @implementation public func CGColorSpaceCopyName(_ space: SilicaCGColorSpaceRef?) -> SilicaCFStringRef? {
+    makeCFString(object(space, as: ColorSpaceObject.self)?.name)
+}
+
+/// A property list describing the space: its ICC profile as data if it was
+/// made from one, a named space's name, or the name of the space a device
+/// space is. NULL for other spaces, and where Core Foundation isn't bridged.
+@c @implementation public func CGColorSpaceCopyPropertyList(_ space: SilicaCGColorSpaceRef?) -> UnsafeRawPointer? {
+    guard let space = object(space, as: ColorSpaceObject.self) else { return nil }
+    if let profile = space.profile {
+        return makeCFData(profile).map(UnsafeRawPointer.init)
+    }
+    guard let name = space.name else { return nil }
+    return makeCFString(devicePropertyLists[name] ?? name).map(UnsafeRawPointer.init)
+}
+
+/// The space a property list describes: a name or an ICC profile.
+@c @implementation public func CGColorSpaceCreateWithPropertyList(_ plist: UnsafeRawPointer?) -> SilicaCGColorSpaceRef? {
+    guard let plist, let bridge = CoreGraphicsObjects.coreFoundation else { return nil }
+    if let name = bridge.string(plist) {
+        return makeNamedSpace(devicePropertyLists[name] ?? name)
+    }
+    return CGColorSpaceCreateWithICCData(plist)
 }
 
 // MARK: Pattern Spaces
@@ -349,6 +466,29 @@ internal func makeColorReference(space: SilicaCGColorSpaceRef, components: [Doub
         return nil
     }
     return makeColorReference(space: space, components: components + [color.alpha])
+}
+
+/// The colors CoreGraphics names, made once: white, black and clear, in
+/// `kCGColorSpaceGenericGrayGamma2_2`.
+nonisolated(unsafe) private var constantColors: [String: SilicaCGColorRef] = [:]
+
+/// A constant color, by its name's string where Core Foundation is bridged;
+/// the color is never released.
+@c @implementation public func CGColorGetConstantColor(_ colorName: SilicaCFStringRef?) -> SilicaCGColorRef? {
+    guard let name = string(colorName) else { return nil }
+    if let color = constantColors[name] { return color }
+    let components: [Double]
+    switch name {
+    case "kCGColorWhite": components = [1, 1]
+    case "kCGColorBlack": components = [0, 1]
+    case "kCGColorClear": components = [0, 0]
+    default: return nil
+    }
+    guard let space = makeNamedSpace("kCGColorSpaceGenericGrayGamma2_2") else { return nil }
+    defer { release(space) }
+    let color = makeColorReference(space: space, components: components)
+    constantColors[name] = color
+    return color
 }
 
 @c @implementation public func CGColorRetain(_ color: SilicaCGColorRef?) -> SilicaCGColorRef? {
