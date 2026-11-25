@@ -15,50 +15,43 @@ import Foundation
 import JavaScriptKit
 import Silica
 
-/// Web Canvas rendering backend.
+/// The Web Canvas rendering backend: CSS fonts measured by the canvas, PNG
+/// encoding with `toDataURL`, and bitmaps on an `OffscreenCanvas`.
 public enum WebBackend: SilicaBackendProtocol {
 
-    /// Registers the Web Canvas API as the default rendering backend.
+    /// Makes the Web Canvas API the default rendering backend.
     public static func register() {
-
-        #if canImport(Foundation)
-        SilicaBackend.default = WebBackend.self
-        #else
         SilicaBackend.register(WebBackend.self, name: "Web")
-        #endif
     }
 
     internal static func registerIfNeeded() {
-
-        guard SilicaBackend.default == nil else { return }
-        register()
+        SilicaBackend.registerIfNeeded(WebBackend.self, name: "Web")
     }
 
     // MARK: - SilicaBackendProtocol
 
-    public static func font(named name: String) -> Silica.CGFont? {
-
-        guard let handle = WebFontHandle(name: name)
-            else { return nil }
-
-        return Silica.CGFont(name: name, family: handle.familyName, handle: handle)
+    public static func fontFace(named name: String) -> (any Silica.FontFace)? {
+        WebFontHandle(name: name)
     }
 
     /// PNG decoding is not supported: the Web platform only exposes
     /// asynchronous image decoding (`createImageBitmap`).
     ///
-    /// Draw `HTMLImageElement`/`ImageBitmap` objects onto a `WebCanvasContext`'s
-    /// canvas directly, or create a `CGImage` from an `ImageData` object instead.
-    public static func decodePNG(_ data: Data) -> Silica.CGImage? {
+    /// Draw `HTMLImageElement`/`ImageBitmap` objects onto a `WebCanvasRenderer`'s
+    /// canvas directly, or make an `Image` from an `ImageData` object instead.
+    public static func decodePNG(_ data: Data) -> Silica.Image? {
+        nil
+    }
 
-        return nil
+    public static func makeBitmapRenderer(size: Size, scale: Double) -> (any Renderer)? {
+        try? WebCanvasRenderer(bitmap: size, scale: scale)
     }
 
     /// Encodes a bitmap image as PNG data via `canvas.toDataURL`.
     ///
     /// - Note: Requires a DOM document; returns `nil` in worker contexts, where
     ///   only the asynchronous `OffscreenCanvas.convertToBlob` is available.
-    public static func encodePNG(_ image: Silica.CGImage) -> Data? {
+    public static func encodePNG(_ image: Silica.Image) -> Data? {
 
         let document = JSObject.global.document
 
@@ -84,13 +77,13 @@ public enum WebBackend: SilicaBackendProtocol {
     }
 }
 
-// MARK: - CGImage Conversion
+// MARK: - Image Conversion
 
-public extension Silica.CGImage {
+public extension Silica.Image {
 
-    /// Creates a Silica bitmap image from an `ImageData` object,
-    /// normalizing the pixel format to premultiplied RGBA.
-    convenience init?(_ imageData: JSObject) {
+    /// An image from an `ImageData` object, premultiplied, with `scale`
+    /// pixels per point.
+    convenience init?(_ imageData: JSObject, scale: Double = 1) {
 
         let width = Int(imageData.width.number ?? 0)
         let height = Int(imageData.height.number ?? 0)
@@ -123,13 +116,15 @@ public extension Silica.CGImage {
             }
         }
 
-        self.init(width: width, height: height, bytesPerRow: width * 4, data: Data(bytes))
+        self.init(width: width, height: height, bytesPerRow: width * 4, data: Data(bytes), scale: scale)
     }
 
     /// Converts to an `ImageData` object (non-premultiplied RGBA).
     func makeImageData() -> JSObject? {
 
-        guard let imageDataClass = JSObject.global.ImageData.function
+        // `ImageData` throws for an empty image
+        guard width > 0, height > 0,
+            let imageDataClass = JSObject.global.ImageData.function
             else { return nil }
 
         var bytes = [UInt8](repeating: 0, count: width * height * 4)
@@ -173,7 +168,7 @@ public extension Silica.CGImage {
     /// Renders the image into a new canvas (for `drawImage`).
     internal func makeWebCanvas() -> JSObject? {
 
-        guard let canvas = WebCanvasContext.makeCanvas(width: width, height: height),
+        guard let canvas = WebCanvasRenderer.makeCanvas(width: width, height: height),
             let context = canvas.getContext!("2d").object,
             let imageData = makeImageData()
             else { return nil }
