@@ -65,6 +65,10 @@ public protocol Renderer: AnyObject {
     /// Intersects the clip with a path.
     func clip(to path: Path, rule: FillRule)
 
+    /// Sets the clip back to the whole destination, until the graphics state
+    /// is restored. A renderer that can't ignores it.
+    func resetClip()
+
     /// Clears a rectangle to transparent, within the clip.
     func clear(_ rect: Rect)
 
@@ -113,4 +117,6 @@ public protocol Renderer: AnyObject {
 public extension Renderer {
 
     func setInterpolationQuality(_ quality: InterpolationQuality) { }
+
+    func resetClip() { }
 }
