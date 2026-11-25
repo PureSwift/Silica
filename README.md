@@ -10,7 +10,7 @@ Silica provides a CoreGraphics-compatible drawing API (plus a small UIKit shim) 
 |----------|---------|---------|----------|
 | macOS | `SilicaCoreGraphics` | `CoreGraphicsContext` | Apple CoreGraphics / CoreText / ImageIO |
 | Linux (and macOS) | `SilicaCairo` | `CairoContext` | [Cairo](https://github.com/PureSwift/Cairo) / [FontConfig](https://github.com/PureSwift/FontConfig) / FreeType |
-| Android | `SilicaAndroid` | `AndroidCanvasContext` | `android.graphics.Canvas` via [PureSwift/Android](https://github.com/PureSwift/Android) (JNI) |
+| Android | `AndroidSilica`, in [PureSwift/Android](https://github.com/PureSwift/Android) | `AndroidCanvasContext` | `android.graphics.Canvas` (JNI) |
 | Nintendo 3DS (experimental) | `Silica3DS` | `Nintendo3DSContext` | Built-in pure-Swift software rasterizer |
 | WebAssembly | `SilicaWeb` | `WebCanvasContext` | Web Canvas API (`CanvasRenderingContext2D`) via [JavaScriptKit](https://github.com/swiftwasm/JavaScriptKit), including Embedded Swift |
 
@@ -20,7 +20,7 @@ The `Silica` library contains the shared API: the `CGContext` protocol and its d
 
 ```swift
 import Silica
-import SilicaCoreGraphics // or SilicaCairo / SilicaAndroid
+import SilicaCoreGraphics // or SilicaCairo / AndroidSilica
 
 // each backend provides the same factory initializers
 let context = try CoreGraphicsContext(pdf: url, size: CGSize(width: 200, height: 200))
@@ -61,11 +61,7 @@ The Cairo backend also builds and runs on macOS (`brew install cairo fontconfig 
 
 ### Android
 
-- Requires **API 31+** at runtime for glyph rendering (`Canvas.drawGlyphs`, `TextRunShaper`).
-- `finish()` is **mandatory** for PDF contexts — the document is only written to disk when it is called.
-- JNI-backed objects must be used from a JVM-attached thread; create, use, and finish a context on the same thread.
-- The linear (scale/rotation) components of the text matrix are not applied to glyph shapes.
-- Unknown font names fall back to the system typeface (Android provides no font-matching failure signal).
+The Android backend is `AndroidSilica`, a product of [PureSwift/Android](https://github.com/PureSwift/Android); its README has the platform notes.
 
 ### Nintendo 3DS
 
@@ -143,6 +139,5 @@ resource directory, or on search paths in `CMAKE_Swift_FLAGS`. SwiftPM stays
 the way to develop and test, and to build the other backends.
 
 - Linux/macOS (Cairo backend): `cairo`, `fontconfig`, `freetype` system libraries.
-- Android: [PureSwift/Android](https://github.com/PureSwift/Android) (pulled automatically; only built when compiling for Android).
 - macOS (CoreGraphics backend): system frameworks only.
 - WebAssembly: [JavaScriptKit](https://github.com/swiftwasm/JavaScriptKit) (pulled automatically; only built when compiling for WebAssembly).
