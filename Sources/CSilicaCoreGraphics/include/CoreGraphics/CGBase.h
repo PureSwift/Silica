@@ -25,6 +25,13 @@
 
 #define CG_INLINE static inline
 
+/* A block or function that doesn't outlive the call it's passed to. */
+#if defined(__has_attribute) && __has_attribute(noescape)
+#define CG_NOESCAPE __attribute__((noescape))
+#else
+#define CG_NOESCAPE
+#endif
+
 #if defined(__has_feature) && __has_feature(nullability)
 #define CG_ASSUME_NONNULL_BEGIN _Pragma("clang assume_nonnull begin")
 #define CG_ASSUME_NONNULL_END _Pragma("clang assume_nonnull end")
@@ -66,12 +73,14 @@
 #define CFStringRef SilicaCFStringRef
 #define CFDataRef SilicaCFDataRef
 #define CFURLRef SilicaCFURLRef
+#define CFArrayRef SilicaCFArrayRef
 #endif
 typedef unsigned long CFTypeID;
 typedef long CFIndex;
 typedef const struct __CFString *CFStringRef;
 typedef const struct __CFData *CFDataRef;
 typedef const struct __CFURL *CFURLRef;
+typedef const struct __CFArray *CFArrayRef;
 #endif
 
 #endif /* SILICA_CGBASE_H */

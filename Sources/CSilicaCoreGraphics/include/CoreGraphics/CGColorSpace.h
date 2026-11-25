@@ -9,6 +9,7 @@
 #define SILICA_CGCOLORSPACE_H
 
 #include "CGBase.h"
+#include "CGDataProvider.h"
 
 CG_EXTERN_C_BEGIN
 CG_ASSUME_NONNULL_BEGIN
@@ -61,6 +62,34 @@ CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreatePattern(CGColorSpaceRef 
 /* A pattern space's base space, or NULL. */
 CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceGetBaseColorSpace(CGColorSpaceRef CG_NULLABLE space);
 CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCopyBaseColorSpace(CGColorSpaceRef CG_NULLABLE space);
+
+/* Calibrated and ICC spaces draw as the device space of their model: Silica
+ * has no color management. */
+CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateCalibratedGray(const CGFloat * CG_NULLABLE whitePoint,
+                                                                       const CGFloat * CG_NULLABLE blackPoint, CGFloat gamma);
+CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateCalibratedRGB(const CGFloat * CG_NULLABLE whitePoint,
+                                                                      const CGFloat * CG_NULLABLE blackPoint,
+                                                                      const CGFloat * CG_NULLABLE gamma, const CGFloat * CG_NULLABLE matrix);
+/* An ICC profile of 1, 3 or 4 components, or else the alternate space. */
+CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateICCBased(size_t nComponents, const CGFloat * CG_NULLABLE range,
+                                                                 CGDataProviderRef CG_NULLABLE profile,
+                                                                 CGColorSpaceRef CG_NULLABLE alternate);
+/* `data` is a CFDataRef, where Core Foundation is bridged: its profile's
+ * gray, RGB or CMYK space. */
+CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateWithICCData(const void * CG_NULLABLE data);
+/* The profile an ICC space was made with, where Core Foundation is bridged. */
+CG_EXTERN CFDataRef CG_NULLABLE CGColorSpaceCopyICCData(CGColorSpaceRef CG_NULLABLE space);
+/* NULL: only named spaces have linear and extended forms, as on Darwin, and
+ * Silica has none. */
+CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateLinearized(CGColorSpaceRef CG_NULLABLE space);
+CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateExtended(CGColorSpaceRef CG_NULLABLE space);
+
+/* A space of `lastIndex + 1` colors of the base space, a byte a component in
+ * the table. */
+CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateIndexed(CGColorSpaceRef CG_NULLABLE baseSpace, size_t lastIndex,
+                                                                const unsigned char * CG_NULLABLE colorTable);
+CG_EXTERN size_t CGColorSpaceGetColorTableCount(CGColorSpaceRef CG_NULLABLE space);
+CG_EXTERN void CGColorSpaceGetColorTable(CGColorSpaceRef CG_NULLABLE space, uint8_t * CG_NULLABLE table);
 
 CG_ASSUME_NONNULL_END
 CG_EXTERN_C_END

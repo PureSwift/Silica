@@ -517,6 +517,13 @@ public extension GraphicsContext {
         clip(toUserPath: Path { $0.addRects(rects) }, rule: .winding)
     }
 
+    /// Sets the clip back to the whole destination, until the graphics state
+    /// is restored.
+    func resetClip() {
+        state.clipBounds = Rect(origin: .zero, size: size)
+        renderer.resetClip()
+    }
+
     /// The clip's bounding box, in user space.
     var clipBoundingBox: Rect {
         guard let inverse = state.ctm.invertedIfPossible() else { return .null }

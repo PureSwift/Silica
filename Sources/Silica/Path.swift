@@ -430,18 +430,25 @@ public extension Path {
     /// Each subpath as a polygon: curves become lines no farther than
     /// `tolerance` from them. A closed subpath doesn't repeat its first point.
     func flattened(tolerance: Double = 0.1) -> [[Point]] {
-        var polygons: [[Point]] = []
+        subpaths(tolerance: tolerance).map { $0.points }
+    }
+
+    /// Each subpath as a polyline, and whether it's closed: curves become
+    /// lines no farther than `tolerance` from them. A closed subpath doesn't
+    /// repeat its first point.
+    internal func subpaths(tolerance: Double = 0.1) -> [(points: [Point], closed: Bool)] {
+        var subpaths: [(points: [Point], closed: Bool)] = []
         var polygon: [Point] = []
         var current = Point()
         var subpathStart = Point()
-        func finish() {
-            if polygon.isEmpty == false { polygons.append(polygon) }
+        func finish(closed: Bool) {
+            if polygon.isEmpty == false { subpaths.append((polygon, closed)) }
             polygon = []
         }
         for element in elements {
             switch element {
             case let .move(point):
-                finish()
+                finish(closed: false)
                 polygon = [point]
                 current = point
                 subpathStart = point
@@ -468,12 +475,12 @@ public extension Path {
                 if let first = polygon.first, let last = polygon.last, first == last, polygon.count > 1 {
                     polygon.removeLast()
                 }
-                finish()
+                finish(closed: true)
                 current = subpathStart
             }
         }
-        finish()
-        return polygons
+        finish(closed: false)
+        return subpaths
     }
 }
 

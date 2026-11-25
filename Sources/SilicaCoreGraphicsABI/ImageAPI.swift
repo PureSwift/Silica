@@ -15,6 +15,7 @@ import Silica
 import struct Foundation.Data
 #if canImport(Cairo)
 import Cairo
+import CCairo
 #endif
 
 #if canImport(Glibc)
@@ -63,7 +64,8 @@ internal struct PixelFormat: Equatable {
     /// The format of a CoreGraphics bitmap, or nil for one Silica doesn't read
     /// or write.
     init?(bitsPerComponent: Int, bitsPerPixel: Int, model: ColorSpaceObject.Model?, bitmapInfo: UInt32) {
-        guard bitsPerComponent == 8, bitmapInfo & 0xF00 == 0 else { return nil }
+        // 8 bits a component, of integers, packed
+        guard bitsPerComponent == 8, bitmapInfo & 0xF00 == 0, bitmapInfo & 0xF0000 == 0 else { return nil }
         let alphaInfo = bitmapInfo & 0x1F
         let byteOrder = bitmapInfo & 0x7000
         self.bitmapInfo = bitmapInfo
@@ -218,9 +220,14 @@ internal final class ImageObject {
     /// The decode array, where `CGImageGetDecode` points.
     let decode: UnsafeMutableBufferPointer<Double>?
 
+    /// Each color component's lowest and highest sample values where the
+    /// image is transparent: all of them must be within theirs.
+    let maskingColors: [Double]?
+
     init(width: Int, height: Int, bitsPerComponent: Int, bytesPerRow: Int, format: PixelFormat,
          space: OpaquePointer?, data: [UInt8], shouldInterpolate: Bool = true, renderingIntent: Int32 = 0,
-         maskBits: Int? = nil, mask: ImageObject? = nil, decode: [Double]? = nil) {
+         maskBits: Int? = nil, mask: ImageObject? = nil, decode: [Double]? = nil, maskingColors: [Double]? = nil) {
+        self.maskingColors = maskingColors
         self.width = width
         self.height = height
         self.bitsPerComponent = bitsPerComponent
@@ -306,6 +313,22 @@ internal final class ImageObject {
                     let (r, g, b, a) = format.read(source.baseAddress! + y * bytesPerRow + x * format.bytesPerPixel)
                     let offset = (y * width + x) * 4
                     pixels[offset] = r; pixels[offset + 1] = g; pixels[offset + 2] = b; pixels[offset + 3] = a
+                }
+            }
+        }
+        if let ranges = maskingColors {
+            // the image has no alpha, so its pixels are its samples
+            for offset in Swift.stride(from: 0, to: pixels.count, by: 4) {
+                let samples: [UInt8]
+                switch format.layout {
+                case .gray: samples = [pixels[offset]]
+                default: samples = [pixels[offset], pixels[offset + 1], pixels[offset + 2]]
+                }
+                let masked = samples.enumerated().allSatisfy { index, sample in
+                    Double(sample) >= ranges[index * 2] && Double(sample) <= ranges[index * 2 + 1]
+                }
+                if masked {
+                    for component in offset ..< offset + 4 { pixels[component] = 0 }
                 }
             }
         }
@@ -400,6 +423,34 @@ internal final class ImageObject {
     return makeReference(ImageObject(width: width, height: height, bitsPerComponent: bitsPerComponent, bytesPerRow: bytesPerRow,
                                      format: format, space: nil, data: data, shouldInterpolate: shouldInterpolate,
                                      maskBits: bitsPerPixel, decode: decode.map { [$0[0], $0[1]] }))
+}
+
+/// The image in a space of as many components.
+@c @implementation public func CGImageCreateCopyWithColorSpace(_ image: SilicaCGImageRef?, _ space: SilicaCGColorSpaceRef?) -> SilicaCGImageRef? {
+    guard let source = object(image, as: ImageObject.self), source.isMask == false, let space,
+          let target = object(space, as: ColorSpaceObject.self),
+          let current = source.space.flatMap({ object($0.reference, as: ColorSpaceObject.self) }),
+          target.numberOfComponents == current.numberOfComponents,
+          target.model == current.model || (target.model != .indexed && target.model != .pattern) else { return nil }
+    return makeReference(ImageObject(width: source.width, height: source.height, bitsPerComponent: source.bitsPerComponent,
+                                     bytesPerRow: source.bytesPerRow, format: source.format, space: space, data: source.data,
+                                     shouldInterpolate: source.shouldInterpolate, renderingIntent: source.renderingIntent,
+                                     mask: source.mask, decode: source.decode.map(Array.init),
+                                     maskingColors: source.maskingColors))
+}
+
+/// An image without alpha, transparent where its color is in the ranges.
+@c @implementation public func CGImageCreateWithMaskingColors(_ image: SilicaCGImageRef?, _ components: UnsafePointer<Double>?) -> SilicaCGImageRef? {
+    guard let source = object(image, as: ImageObject.self), source.isMask == false, source.mask == nil,
+          source.maskingColors == nil, let components,
+          source.format.alpha == .none || source.format.alpha == .skip,
+          let space = source.space.flatMap({ object($0.reference, as: ColorSpaceObject.self) }) else { return nil }
+    let ranges = (0 ..< space.numberOfComponents * 2).map { components[$0] }
+    return makeReference(ImageObject(width: source.width, height: source.height, bitsPerComponent: source.bitsPerComponent,
+                                     bytesPerRow: source.bytesPerRow, format: source.format, space: source.space?.reference,
+                                     data: source.data, shouldInterpolate: source.shouldInterpolate,
+                                     renderingIntent: source.renderingIntent, decode: source.decode.map(Array.init),
+                                     maskingColors: ranges))
 }
 
 /// An image masked by an image mask, or by a gray (or alpha-only) image.
@@ -499,8 +550,89 @@ internal final class ImageObject {
     object(image, as: ImageObject.self)?.isMask ?? false
 }
 
+@c @implementation public func CGImageGetPixelFormatInfo(_ image: SilicaCGImageRef?) -> CGImagePixelFormatInfo {
+    (object(image, as: ImageObject.self)?.format.bitmapInfo ?? 0) & 0xF0000
+}
+
+/// Silica reads no image files with ImageIO.
+@c @implementation public func CGImageGetUTType(_ image: SilicaCGImageRef?) -> SilicaCFStringRef? {
+    nil
+}
+
 @c @implementation public func CGImageGetDecode(_ image: SilicaCGImageRef?) -> UnsafePointer<Double>? {
     object(image, as: ImageObject.self)?.decode.flatMap { UnsafePointer($0.baseAddress) }
 }
+
+// MARK: - PNG
+
+// Cairo reads PNGs, where there is Cairo.
+#if canImport(Cairo)
+
+/// The bytes a PNG is read from, as Cairo reads them.
+private final class PNGReader {
+
+    let bytes: [UInt8]
+    var offset = 0
+
+    init(bytes: [UInt8]) {
+        self.bytes = bytes
+    }
+}
+
+/// A PNG's image: RGBA, its alpha not premultiplied, or RGB with a skipped
+/// byte where it's opaque, as Cairo decodes it.
+@c @implementation public func CGImageCreateWithPNGDataProvider(_ source: SilicaCGDataProviderRef?, _ decode: UnsafePointer<Double>?,
+                                                                _ shouldInterpolate: Bool,
+                                                                _ intent: CGColorRenderingIntent) -> SilicaCGImageRef? {
+    guard let provider = object(source, as: DataProviderObject.self) else { return nil }
+    let reader = PNGReader(bytes: provider.bytes)
+    let surface = withExtendedLifetime(reader) {
+        cairo_image_surface_create_from_png_stream({ closure, data, length in
+            let reader = Unmanaged<PNGReader>.fromOpaque(closure!).takeUnretainedValue()
+            let count = Int(length)
+            guard let data, reader.offset + count <= reader.bytes.count else { return CAIRO_STATUS_READ_ERROR }
+            reader.bytes.withUnsafeBufferPointer { bytes in
+                data.update(from: bytes.baseAddress! + reader.offset, count: count)
+            }
+            reader.offset += count
+            return CAIRO_STATUS_SUCCESS
+        }, Unmanaged.passUnretained(reader).toOpaque())
+    }
+    guard let surface else { return nil }
+    defer { cairo_surface_destroy(surface) }
+    let cairoFormat = cairo_image_surface_get_format(surface)
+    guard cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS,
+          cairoFormat == CAIRO_FORMAT_ARGB32 || cairoFormat == CAIRO_FORMAT_RGB24 else { return nil }
+    cairo_surface_flush(surface)
+    let width = Int(cairo_image_surface_get_width(surface)), height = Int(cairo_image_surface_get_height(surface))
+    let stride = Int(cairo_image_surface_get_stride(surface))
+    guard width > 0, height > 0, let pixels = cairo_image_surface_get_data(surface) else { return nil }
+    let opaque = cairoFormat == CAIRO_FORMAT_RGB24
+    let bitmapInfo = opaque ? CGBitmapInfo(kCGImageAlphaNoneSkipLast) : CGBitmapInfo(kCGImageAlphaLast)
+    guard let format = PixelFormat(bitsPerComponent: 8, bitsPerPixel: 32, model: .rgb, bitmapInfo: bitmapInfo) else { return nil }
+    var data = [UInt8](repeating: 0, count: width * height * 4)
+    for y in 0 ..< height {
+        let row = UnsafeRawPointer(pixels + y * stride)
+        for x in 0 ..< width {
+            let word = row.load(fromByteOffset: x * 4, as: UInt32.self)
+            let alpha = opaque ? 255 : UInt8(truncatingIfNeeded: word >> 24)
+            let offset = (y * width + x) * 4
+            data[offset] = UInt8(truncatingIfNeeded: word >> 16)
+            data[offset + 1] = UInt8(truncatingIfNeeded: word >> 8)
+            data[offset + 2] = UInt8(truncatingIfNeeded: word)
+            data[offset + 3] = alpha
+            if opaque == false {
+                for component in offset ..< offset + 3 {
+                    data[component] = unpremultiply(data[component], alpha)
+                }
+            }
+        }
+    }
+    return makeReference(ImageObject(width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4, format: format,
+                                     space: ColorSpaceObject.deviceRGB, data: data, shouldInterpolate: shouldInterpolate,
+                                     renderingIntent: intent, decode: decode.map { decode in (0 ..< 6).map { decode[$0] } }))
+}
+
+#endif
 
 #endif

@@ -48,7 +48,7 @@ public enum CoreGraphicsObjects {
     }
 
     /// Core Foundation, for the functions that take or return its objects
-    /// (`CFStringRef`, `CFDataRef`, `CFURLRef`). Silica has none: a runtime
+    /// (`CFStringRef`, `CFDataRef`, `CFURLRef`, `CFArrayRef`). Silica has none: a runtime
     /// that does (Perry) sets this, and without it those functions return
     /// NULL or zero.
     nonisolated(unsafe) public static var coreFoundation: CoreFoundationBridge?
@@ -102,16 +102,26 @@ public struct CoreFoundationBridge {
     /// The file path of a file `CFURLRef`.
     public var filePath: (UnsafeRawPointer) -> String?
 
+    /// The values a `CFArrayRef` holds.
+    public var array: (UnsafeRawPointer) -> [UnsafeRawPointer]?
+
+    /// A new `CFArrayRef` retaining the values, retained for the caller.
+    public var makeArray: ([UnsafeRawPointer]) -> UnsafeRawPointer?
+
     public init(string: @escaping (UnsafeRawPointer) -> String?,
                 makeString: @escaping (String) -> UnsafeRawPointer?,
                 data: @escaping (UnsafeRawPointer) -> [UInt8]?,
                 makeData: @escaping ([UInt8]) -> UnsafeRawPointer?,
-                filePath: @escaping (UnsafeRawPointer) -> String?) {
+                filePath: @escaping (UnsafeRawPointer) -> String?,
+                array: @escaping (UnsafeRawPointer) -> [UnsafeRawPointer]? = { _ in nil },
+                makeArray: @escaping ([UnsafeRawPointer]) -> UnsafeRawPointer? = { _ in nil }) {
         self.string = string
         self.makeString = makeString
         self.data = data
         self.makeData = makeData
         self.filePath = filePath
+        self.array = array
+        self.makeArray = makeArray
     }
 }
 

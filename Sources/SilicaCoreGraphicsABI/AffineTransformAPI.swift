@@ -13,6 +13,16 @@
 import CSilicaCoreGraphics
 import Silica
 
+#if canImport(Glibc)
+import Glibc
+#elseif canImport(Musl)
+import Musl
+#elseif canImport(Android)
+import Android
+#elseif canImport(WASILibc)
+import WASILibc
+#endif
+
 // The functions of CGAffineTransform.h, in its order.
 
 @c @implementation public func CGAffineTransformMake(_ a: Double, _ b: Double, _ c: Double, _ d: Double,
@@ -58,6 +68,34 @@ import Silica
 
 @c @implementation public func CGAffineTransformConcat(_ t1: CGAffineTransform, _ t2: CGAffineTransform) -> CGAffineTransform {
     CGAffineTransform(t1.silica.concatenating(t2.silica))
+}
+
+/// The transform as a scale, then a horizontal shear, a rotation and a
+/// translation: a = sx·cos θ, b = sx·sin θ, c = sy·(k·cos θ − sin θ),
+/// d = sy·(k·sin θ + cos θ). A transform that mirrors has a negative sx, as
+/// Apple's decomposes it.
+@c @implementation public func CGAffineTransformDecompose(_ transform: CGAffineTransform) -> CGAffineTransformComponents {
+    let mirrors = transform.a * transform.d - transform.b * transform.c < 0
+    let length = (transform.a * transform.a + transform.b * transform.b).squareRoot()
+    let scaleX = mirrors ? -length : length
+    let rotation = length > 0 ? (mirrors ? atan2(-transform.b, -transform.a) : atan2(transform.b, transform.a)) : 0
+    let cosine = cos(rotation), sine = sin(rotation)
+    // the second row turned back by the rotation: sy·k, sy
+    let shearScaled = transform.c * cosine + transform.d * sine
+    let scaleY = -transform.c * sine + transform.d * cosine
+    return CGAffineTransformComponents(scale: CGSize(width: scaleX, height: scaleY),
+                                       horizontalShear: scaleY != 0 ? shearScaled / scaleY : 0,
+                                       rotation: rotation,
+                                       translation: CGVector(dx: transform.tx, dy: transform.ty))
+}
+
+@c @implementation public func CGAffineTransformMakeWithComponents(_ components: CGAffineTransformComponents) -> CGAffineTransform {
+    let scaleX = components.scale.width, scaleY = components.scale.height
+    let shear = components.horizontalShear
+    let cosine = cos(components.rotation), sine = sin(components.rotation)
+    return CGAffineTransform(a: scaleX * cosine, b: scaleX * sine,
+                             c: scaleY * (shear * cosine - sine), d: scaleY * (shear * sine + cosine),
+                             tx: components.translation.dx, ty: components.translation.dy)
 }
 
 @c @implementation public func CGPointApplyAffineTransform(_ point: CGPoint, _ t: CGAffineTransform) -> CGPoint {

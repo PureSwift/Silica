@@ -170,6 +170,11 @@ public final class CairoRenderer: Renderer {
         context.fillRule = CAIRO_FILL_RULE_WINDING
     }
 
+    public func resetClip() {
+        context.withUnsafePointer { cairo_reset_clip($0) }
+        state.clipMask = nil
+    }
+
     public func clear(_ rect: Rect) {
         context.save()
         context.newPath()

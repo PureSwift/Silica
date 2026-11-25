@@ -34,6 +34,10 @@ CG_EXTERN CGGradientRef CG_NULLABLE CGGradientCreateWithColorComponents(CGColorS
                                                                         const CGFloat * CG_NULLABLE components,
                                                                         const CGFloat * CG_NULLABLE locations, size_t count);
 
+/* `colors` is a CFArray of CGColorRefs, where Core Foundation is bridged. */
+CG_EXTERN CGGradientRef CG_NULLABLE CGGradientCreateWithColors(CGColorSpaceRef CG_NULLABLE space, CFArrayRef CG_NULLABLE colors,
+                                                               const CGFloat * CG_NULLABLE locations);
+
 CG_EXTERN CGGradientRef CG_NULLABLE CGGradientRetain(CGGradientRef CG_NULLABLE gradient);
 CG_EXTERN void CGGradientRelease(CGGradientRef CG_NULLABLE gradient);
 

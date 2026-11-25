@@ -199,6 +199,11 @@ public final class QuartzRenderer: Renderer {
         nativeContext.clip(using: rule.toCoreGraphics())
     }
 
+    public func resetClip() {
+        ensurePage()
+        nativeContext.resetClip()
+    }
+
     public func clear(_ rect: Rect) {
         ensurePage()
         nativeContext.clear(rect.toCoreGraphics())

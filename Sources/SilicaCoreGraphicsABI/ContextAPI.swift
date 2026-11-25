@@ -200,6 +200,7 @@ internal final class SyncedRenderer: Renderer {
     func fill(_ path: Silica.Path, rule: FillRule) { painting { base.fill(path, rule: rule) } }
     func stroke(_ path: Silica.Path) { painting { base.stroke(path) } }
     func clip(to path: Silica.Path, rule: FillRule) { base.clip(to: path, rule: rule) }
+    func resetClip() { base.resetClip() }
     func clear(_ rect: Silica.Rect) { painting { base.clear(rect) } }
     func draw(_ image: Silica.Image, in rect: Silica.Rect) { painting { base.draw(image, in: rect) } }
     func drawLinearGradient(_ gradient: Gradient, start: Silica.Point, end: Silica.Point, options: GradientOptions) {
@@ -464,6 +465,13 @@ private func withCurrentPoint(_ c: SilicaCGContextRef?, _ body: (GraphicsContext
     return makePathReference(target.context.path)
 }
 
+@c @implementation public func CGContextReplacePathWithStrokedPath(_ c: SilicaCGContextRef?) {
+    guard let target = contextObject(c), target.context.isPathEmpty == false else { return }
+    let stroked = target.context.path.strokedPath(target.context.strokeStyle)
+    target.context.beginPath()
+    target.context.addPath(stroked)
+}
+
 @c @implementation public func CGContextIsPathEmpty(_ c: SilicaCGContextRef?) -> Bool {
     contextObject(c)?.context.isPathEmpty ?? true
 }
@@ -577,6 +585,10 @@ extension ContextObject {
         renderer.clip(toMask: surface, width: mask.width, height: mask.height, in: rect)
         renderer.concatenate(flip)
     }
+}
+
+@c @implementation public func CGContextResetClip(_ c: SilicaCGContextRef?) {
+    contextObject(c)?.context.resetClip()
 }
 
 @c @implementation public func CGContextGetClipBoundingBox(_ c: SilicaCGContextRef?) -> CGRect {

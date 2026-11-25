@@ -118,6 +118,41 @@ CG_EXTERN bool CGPathContainsPoint(CGPathRef CG_NULLABLE path, const CGAffineTra
 /* Calls `function` with each element, in order. */
 CG_EXTERN void CGPathApply(CGPathRef CG_NULLABLE path, void * CG_NULLABLE info, CGPathApplierFunction CG_NULLABLE function);
 
+#if defined(__BLOCKS__)
+typedef void (^CGPathApplyBlock)(const CGPathElement *element);
+CG_EXTERN void CGPathApplyWithBlock(CGPathRef path, CGPathApplyBlock CG_NOESCAPE block);
+#endif
+
+/* Paths made from others. Silica makes them of lines: curves become lines no
+ * farther than 0.05 from them, or the threshold when flattening. */
+CG_EXTERN CGPathRef CG_NULLABLE CGPathCreateCopyByFlattening(CGPathRef CG_NULLABLE path, CGFloat flatteningThreshold);
+/* The dashes of the path, then transformed. */
+CG_EXTERN CGPathRef CG_NULLABLE CGPathCreateCopyByDashingPath(CGPathRef CG_NULLABLE path, const CGAffineTransform * CG_NULLABLE transform,
+                                                              CGFloat phase, const CGFloat * CG_NULLABLE lengths, size_t count);
+/* The outline of the path's stroke, then transformed. */
+CG_EXTERN CGPathRef CG_NULLABLE CGPathCreateCopyByStrokingPath(CGPathRef CG_NULLABLE path, const CGAffineTransform * CG_NULLABLE transform,
+                                                               CGFloat lineWidth, CGLineCap lineCap, CGLineJoin lineJoin,
+                                                               CGFloat miterLimit);
+
+/* The areas paths fill, each with the rule: outlined without overlaps,
+ * counterclockwise around the area and clockwise around its holes (y up). */
+CG_EXTERN CGPathRef CG_NULLABLE CGPathCreateCopyByNormalizing(CGPathRef CG_NULLABLE path, bool evenOddFillRule);
+CG_EXTERN CGPathRef CG_NULLABLE CGPathCreateCopyByUnioningPath(CGPathRef CG_NULLABLE path, CGPathRef CG_NULLABLE maskPath, bool evenOddFillRule);
+CG_EXTERN CGPathRef CG_NULLABLE CGPathCreateCopyByIntersectingPath(CGPathRef CG_NULLABLE path, CGPathRef CG_NULLABLE maskPath, bool evenOddFillRule);
+CG_EXTERN CGPathRef CG_NULLABLE CGPathCreateCopyBySubtractingPath(CGPathRef CG_NULLABLE path, CGPathRef CG_NULLABLE maskPath, bool evenOddFillRule);
+CG_EXTERN CGPathRef CG_NULLABLE CGPathCreateCopyBySymmetricDifferenceOfPath(CGPathRef CG_NULLABLE path, CGPathRef CG_NULLABLE maskPath,
+                                                                            bool evenOddFillRule);
+/* The path's lines inside, or outside, the area the mask fills. */
+CG_EXTERN CGPathRef CG_NULLABLE CGPathCreateCopyOfLineByIntersectingPath(CGPathRef CG_NULLABLE path, CGPathRef CG_NULLABLE maskPath,
+                                                                         bool evenOddFillRule);
+CG_EXTERN CGPathRef CG_NULLABLE CGPathCreateCopyOfLineBySubtractingPath(CGPathRef CG_NULLABLE path, CGPathRef CG_NULLABLE maskPath,
+                                                                        bool evenOddFillRule);
+/* The area's separate pieces, each an outline and its holes, largest first:
+ * a CFArray of paths, where Core Foundation is bridged. */
+CG_EXTERN CFArrayRef CG_NULLABLE CGPathCreateSeparateComponents(CGPathRef CG_NULLABLE path, bool evenOddFillRule);
+/* Whether the areas overlap. */
+CG_EXTERN bool CGPathIntersectsPath(CGPathRef CG_NULLABLE path1, CGPathRef CG_NULLABLE path2, bool evenOddFillRule);
+
 CG_ASSUME_NONNULL_END
 CG_EXTERN_C_END
 

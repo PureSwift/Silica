@@ -137,6 +137,9 @@ CG_EXTERN CGPathRef CG_NULLABLE CGContextCopyPath(CGContextRef CG_NULLABLE c);
 CG_EXTERN bool CGContextIsPathEmpty(CGContextRef CG_NULLABLE c);
 CG_EXTERN CGPoint CGContextGetPathCurrentPoint(CGContextRef CG_NULLABLE c);
 CG_EXTERN CGRect CGContextGetPathBoundingBox(CGContextRef CG_NULLABLE c);
+/* The current path, replaced by the outline of its stroke in the context's
+ * line width, caps, joins, miter limit and dashes. */
+CG_EXTERN void CGContextReplacePathWithStrokedPath(CGContextRef CG_NULLABLE c);
 CG_EXTERN bool CGContextPathContainsPoint(CGContextRef CG_NULLABLE c, CGPoint point, CGPathDrawingMode mode);
 
 /* Painting; each clears the current path */
@@ -161,6 +164,8 @@ CG_EXTERN void CGContextClipToRects(CGContextRef CG_NULLABLE c, const CGRect * C
 /* Clips to a mask in a rectangle, upright: an image mask, or a gray image
  * whose samples are the alpha. Nothing is drawn outside the rectangle. */
 CG_EXTERN void CGContextClipToMask(CGContextRef CG_NULLABLE c, CGRect rect, CGImageRef CG_NULLABLE mask);
+/* The clip back to the whole context, until the state is restored. */
+CG_EXTERN void CGContextResetClip(CGContextRef CG_NULLABLE c);
 CG_EXTERN CGRect CGContextGetClipBoundingBox(CGContextRef CG_NULLABLE c);
 
 /* Colors */

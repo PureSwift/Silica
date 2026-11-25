@@ -30,6 +30,10 @@ CG_EXTERN CGColorRef CGColorCreateGenericRGB(CGFloat red, CGFloat green, CGFloat
 CG_EXTERN CGColorRef CGColorCreateSRGB(CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha);
 CG_EXTERN CGColorRef CG_NULLABLE CGColorCreateCopy(CGColorRef CG_NULLABLE color);
 CG_EXTERN CGColorRef CG_NULLABLE CGColorCreateCopyWithAlpha(CGColorRef CG_NULLABLE color, CGFloat alpha);
+/* The color in another space; `options` is a CFDictionaryRef, unused. */
+CG_EXTERN CGColorRef CG_NULLABLE CGColorCreateCopyByMatchingToColorSpace(CGColorSpaceRef CG_NULLABLE space,
+                                                                         CGColorRenderingIntent intent, CGColorRef CG_NULLABLE color,
+                                                                         const void * CG_NULLABLE options);
 
 CG_EXTERN CGColorRef CG_NULLABLE CGColorRetain(CGColorRef CG_NULLABLE color);
 CG_EXTERN void CGColorRelease(CGColorRef CG_NULLABLE color);
