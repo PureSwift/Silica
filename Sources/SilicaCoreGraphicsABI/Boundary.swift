@@ -108,13 +108,19 @@ public struct CoreFoundationBridge {
     /// A new `CFArrayRef` retaining the values, retained for the caller.
     public var makeArray: ([UnsafeRawPointer]) -> UnsafeRawPointer?
 
+    /// The runtime's own constant `CFStringRef` of a CoreGraphics constant's
+    /// name (`kCGColorSpaceSRGB`), so a name returned compares equal to it by
+    /// pointer; nil to have one made and kept.
+    public var constant: (String) -> UnsafeRawPointer?
+
     public init(string: @escaping (UnsafeRawPointer) -> String?,
                 makeString: @escaping (String) -> UnsafeRawPointer?,
                 data: @escaping (UnsafeRawPointer) -> [UInt8]?,
                 makeData: @escaping ([UInt8]) -> UnsafeRawPointer?,
                 filePath: @escaping (UnsafeRawPointer) -> String?,
                 array: @escaping (UnsafeRawPointer) -> [UnsafeRawPointer]? = { _ in nil },
-                makeArray: @escaping ([UnsafeRawPointer]) -> UnsafeRawPointer? = { _ in nil }) {
+                makeArray: @escaping ([UnsafeRawPointer]) -> UnsafeRawPointer? = { _ in nil },
+                constant: @escaping (String) -> UnsafeRawPointer? = { _ in nil }) {
         self.string = string
         self.makeString = makeString
         self.data = data
@@ -122,6 +128,7 @@ public struct CoreFoundationBridge {
         self.filePath = filePath
         self.array = array
         self.makeArray = makeArray
+        self.constant = constant
     }
 }
 
@@ -135,6 +142,20 @@ internal func string(_ reference: OpaquePointer?) -> String? {
 internal func makeCFString(_ string: String?) -> OpaquePointer? {
     guard let string, let bridge = CoreGraphicsObjects.coreFoundation, let made = bridge.makeString(string) else { return nil }
     return OpaquePointer(made)
+}
+
+/// The strings made for constants' names, kept for good.
+nonisolated(unsafe) private var constantStrings: [String: OpaquePointer] = [:]
+
+/// A Core Foundation string of a constant's name that isn't released: the
+/// runtime's own constant, or one made once and kept.
+internal func constantString(_ name: String) -> OpaquePointer? {
+    guard let bridge = CoreGraphicsObjects.coreFoundation else { return nil }
+    if let constant = bridge.constant(name) { return OpaquePointer(constant) }
+    if let made = constantStrings[name] { return made }
+    guard let made = bridge.makeString(name).map(OpaquePointer.init) else { return nil }
+    constantStrings[name] = made
+    return made
 }
 
 /// A new Core Foundation data object, where there's a bridge.
