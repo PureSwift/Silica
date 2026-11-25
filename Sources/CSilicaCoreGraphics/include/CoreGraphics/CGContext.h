@@ -16,6 +16,7 @@
 #include "CGColor.h"
 #include "CGGradient.h"
 #include "CGImage.h"
+#include "CGFont.h"
 
 CG_EXTERN_C_BEGIN
 CG_ASSUME_NONNULL_BEGIN
@@ -188,6 +189,57 @@ CG_EXTERN void CGContextEndTransparencyLayer(CGContextRef CG_NULLABLE c);
 
 /* Images */
 CG_EXTERN void CGContextDrawImage(CGContextRef CG_NULLABLE c, CGRect rect, CGImageRef CG_NULLABLE image);
+
+/* Text: glyphs of a font at a size, placed by the text matrix. The clipping
+ * modes draw as their fill and stroke parts, and don't clip. */
+typedef int32_t CGTextDrawingMode;
+enum {
+    kCGTextFill = 0,
+    kCGTextStroke = 1,
+    kCGTextFillStroke = 2,
+    kCGTextInvisible = 3,
+    kCGTextFillClip = 4,
+    kCGTextStrokeClip = 5,
+    kCGTextFillStrokeClip = 6,
+    kCGTextClip = 7
+};
+
+typedef int32_t CGTextEncoding;
+enum {
+    kCGEncodingFontSpecific = 0,
+    kCGEncodingMacRoman = 1
+};
+
+CG_EXTERN void CGContextSetFont(CGContextRef CG_NULLABLE c, CGFontRef CG_NULLABLE font);
+CG_EXTERN void CGContextSetFontSize(CGContextRef CG_NULLABLE c, CGFloat size);
+CG_EXTERN void CGContextSetCharacterSpacing(CGContextRef CG_NULLABLE c, CGFloat spacing);
+CG_EXTERN void CGContextSetTextDrawingMode(CGContextRef CG_NULLABLE c, CGTextDrawingMode mode);
+CG_EXTERN void CGContextSetTextMatrix(CGContextRef CG_NULLABLE c, CGAffineTransform t);
+CG_EXTERN CGAffineTransform CGContextGetTextMatrix(CGContextRef CG_NULLABLE c);
+CG_EXTERN void CGContextSetTextPosition(CGContextRef CG_NULLABLE c, CGFloat x, CGFloat y);
+CG_EXTERN CGPoint CGContextGetTextPosition(CGContextRef CG_NULLABLE c);
+/* Glyphs from the text position, each after the last one's advance and the
+ * character spacing; the text position moves past them. */
+CG_EXTERN void CGContextShowGlyphs(CGContextRef CG_NULLABLE c, const CGGlyph * CG_NULLABLE g, size_t count);
+CG_EXTERN void CGContextShowGlyphsAtPoint(CGContextRef CG_NULLABLE c, CGFloat x, CGFloat y, const CGGlyph * CG_NULLABLE glyphs, size_t count);
+/* Glyphs at positions in text space; the text position doesn't move. */
+CG_EXTERN void CGContextShowGlyphsAtPositions(CGContextRef CG_NULLABLE c, const CGGlyph * CG_NULLABLE glyphs,
+                                              const CGPoint * CG_NULLABLE Lpositions, size_t count);
+/* Glyphs from the text position, each after the advance before it. */
+CG_EXTERN void CGContextShowGlyphsWithAdvances(CGContextRef CG_NULLABLE c, const CGGlyph * CG_NULLABLE glyphs,
+                                               const CGSize * CG_NULLABLE advances, size_t count);
+/* The font by name at a size, for CGContextShowText. */
+CG_EXTERN void CGContextSelectFont(CGContextRef CG_NULLABLE c, const char * CG_NULLABLE name, CGFloat size, CGTextEncoding textEncoding);
+/* Mac Roman text with the selected font. */
+CG_EXTERN void CGContextShowText(CGContextRef CG_NULLABLE c, const char * CG_NULLABLE string, size_t length);
+CG_EXTERN void CGContextShowTextAtPoint(CGContextRef CG_NULLABLE c, CGFloat x, CGFloat y, const char * CG_NULLABLE string, size_t length);
+/* Silica's rasterizers smooth glyphs themselves: these do nothing. */
+CG_EXTERN void CGContextSetShouldSmoothFonts(CGContextRef CG_NULLABLE c, bool shouldSmoothFonts);
+CG_EXTERN void CGContextSetAllowsFontSmoothing(CGContextRef CG_NULLABLE c, bool allowsFontSmoothing);
+CG_EXTERN void CGContextSetShouldSubpixelPositionFonts(CGContextRef CG_NULLABLE c, bool shouldSubpixelPositionFonts);
+CG_EXTERN void CGContextSetAllowsFontSubpixelPositioning(CGContextRef CG_NULLABLE c, bool allowsFontSubpixelPositioning);
+CG_EXTERN void CGContextSetShouldSubpixelQuantizeFonts(CGContextRef CG_NULLABLE c, bool shouldSubpixelQuantizeFonts);
+CG_EXTERN void CGContextSetAllowsFontSubpixelQuantization(CGContextRef CG_NULLABLE c, bool allowsFontSubpixelQuantization);
 
 /* Device space: a bitmap's pixels, from its top left */
 CG_EXTERN CGPoint CGContextConvertPointToDeviceSpace(CGContextRef CG_NULLABLE c, CGPoint point);
