@@ -137,6 +137,10 @@ public final class CairoRenderer: Renderer {
         state.shadow = shadow
     }
 
+    public func setInterpolationQuality(_ quality: InterpolationQuality) {
+        state.interpolationQuality = quality
+    }
+
     // MARK: - Painting
 
     public func fill(_ path: Silica.Path, rule: FillRule) {
@@ -300,6 +304,14 @@ public extension CairoRenderer {
         matrix.invert()
         pattern.matrix = matrix
         pattern.extend = .pad
+        let filter: cairo_filter_t
+        switch state.interpolationQuality {
+        case .none: filter = CAIRO_FILTER_NEAREST
+        case .low: filter = CAIRO_FILTER_FAST
+        case .default, .medium: filter = CAIRO_FILTER_GOOD
+        case .high: filter = CAIRO_FILTER_BEST
+        }
+        pattern.withUnsafePointer { cairo_pattern_set_filter($0, filter) }
         withShadow {
             context.save()
             context.source = pattern
@@ -365,6 +377,7 @@ private extension CairoRenderer {
         var strokeColor: Color = .black
         var alpha: Double = 1
         var shadow: Shadow?
+        var interpolationQuality: InterpolationQuality = .default
         /// The transparency layers begun, innermost last.
         var layers: [Layer] = []
         /// Masks clipped to since the state was saved: each began a group that
