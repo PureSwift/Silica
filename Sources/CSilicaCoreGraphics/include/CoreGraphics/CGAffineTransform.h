@@ -50,6 +50,10 @@ CG_EXTERN CGAffineTransform CGAffineTransformInvert(CGAffineTransform t);
 /* `t1`, then `t2`. */
 CG_EXTERN CGAffineTransform CGAffineTransformConcat(CGAffineTransform t1, CGAffineTransform t2);
 
+/* The transform's scale, shear, rotation and translation, and back. */
+CG_EXTERN CGAffineTransformComponents CGAffineTransformDecompose(CGAffineTransform transform);
+CG_EXTERN CGAffineTransform CGAffineTransformMakeWithComponents(CGAffineTransformComponents components);
+
 CG_EXTERN CGPoint CGPointApplyAffineTransform(CGPoint point, CGAffineTransform t);
 CG_EXTERN CGSize CGSizeApplyAffineTransform(CGSize size, CGAffineTransform t);
 /* The smallest rectangle containing the transformed corners. */
