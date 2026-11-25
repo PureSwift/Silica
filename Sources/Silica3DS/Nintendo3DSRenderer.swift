@@ -152,6 +152,10 @@ public final class Nintendo3DSRenderer: Renderer {
         state.clip = intersect(state.clip, mask)
     }
 
+    public func resetClip() {
+        state.clip = nil
+    }
+
     public func clear(_ rect: Rect) {
         let mask = intersect(state.clip, SoftwareRasterizer.mask([devicePolygon(of: rect)], evenOdd: false,
                                                                  width: pixelWidth, height: pixelHeight))
