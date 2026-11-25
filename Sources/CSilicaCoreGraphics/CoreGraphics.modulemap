@@ -1,0 +1,6 @@
+// The installed headers' module: `import CoreGraphics` in Swift on Linux.
+module CoreGraphics {
+    umbrella header "CoreGraphics.h"
+    link "CoreGraphics"
+    export *
+}
