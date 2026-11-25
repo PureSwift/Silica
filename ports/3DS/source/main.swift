@@ -2,7 +2,7 @@
 //
 //  Silica demo for Nintendo 3DS -- Embedded Swift ARM11 binary.
 //
-//  A slideshow of vector-graphics drawings (Silica's CGContext API, rasterized
+//  A slideshow of vector-graphics drawings (Silica's GraphicsContext, rasterized
 //  by the Silica3DS software renderer) on the top screen. The slide content
 //  lives in Sources/Silica3DS/DemoSlides.swift, shared with a host-side
 //  render-dump test so the exact same drawing code can be inspected without
@@ -27,15 +27,16 @@ consoleInit(GFX_BOTTOM, nil)
 let slides = Silica3DSDemo.slides
 
 var currentSlide = 0
-let context = try! Nintendo3DSContext(screen: .top, scale: 2)
+let renderer = try! Nintendo3DSRenderer(screen: .top, scale: 2)
+let context = GraphicsContext(renderer)
 
 func showCurrentSlide() {
     slides[currentSlide].draw(context)
-    context.present()
+    renderer.present()
 
     consoleClear()
     ctru_puts("\n  Silica on Nintendo 3DS\n")
-    ctru_puts("  Software-rendered CGContext\n\n")
+    ctru_puts("  Software-rendered GraphicsContext\n\n")
     ctru_printf_1i("  Slide %d", Int32(currentSlide + 1))
     ctru_printf_1i(" / %d\n", Int32(slides.count))
     ctru_puts("  ")
