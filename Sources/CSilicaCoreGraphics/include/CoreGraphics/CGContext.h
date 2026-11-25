@@ -15,6 +15,8 @@
 #include "CGColorSpace.h"
 #include "CGColor.h"
 #include "CGGradient.h"
+#include "CGPattern.h"
+#include "CGShading.h"
 #include "CGImage.h"
 #include "CGFont.h"
 
@@ -156,6 +158,9 @@ CG_EXTERN void CGContextClip(CGContextRef CG_NULLABLE c);
 CG_EXTERN void CGContextEOClip(CGContextRef CG_NULLABLE c);
 CG_EXTERN void CGContextClipToRect(CGContextRef CG_NULLABLE c, CGRect rect);
 CG_EXTERN void CGContextClipToRects(CGContextRef CG_NULLABLE c, const CGRect * CG_NULLABLE rects, size_t count);
+/* Clips to a mask in a rectangle, upright: an image mask, or a gray image
+ * whose samples are the alpha. Nothing is drawn outside the rectangle. */
+CG_EXTERN void CGContextClipToMask(CGContextRef CG_NULLABLE c, CGRect rect, CGImageRef CG_NULLABLE mask);
 CG_EXTERN CGRect CGContextGetClipBoundingBox(CGContextRef CG_NULLABLE c);
 
 /* Colors */
@@ -171,6 +176,13 @@ CG_EXTERN void CGContextSetGrayStrokeColor(CGContextRef CG_NULLABLE c, CGFloat g
 CG_EXTERN void CGContextSetRGBFillColor(CGContextRef CG_NULLABLE c, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha);
 CG_EXTERN void CGContextSetRGBStrokeColor(CGContextRef CG_NULLABLE c, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha);
 
+/* Patterns: `components` are the base space's components and alpha for an
+ * uncolored pattern, or alpha alone. The phase moves the patterns set after
+ * it, in base space. */
+CG_EXTERN void CGContextSetFillPattern(CGContextRef CG_NULLABLE c, CGPatternRef CG_NULLABLE pattern, const CGFloat * CG_NULLABLE components);
+CG_EXTERN void CGContextSetStrokePattern(CGContextRef CG_NULLABLE c, CGPatternRef CG_NULLABLE pattern, const CGFloat * CG_NULLABLE components);
+CG_EXTERN void CGContextSetPatternPhase(CGContextRef CG_NULLABLE c, CGSize phase);
+
 /* Shadows: the offset is in base space, y up */
 CG_EXTERN void CGContextSetShadow(CGContextRef CG_NULLABLE c, CGSize offset, CGFloat blur);
 CG_EXTERN void CGContextSetShadowWithColor(CGContextRef CG_NULLABLE c, CGSize offset, CGFloat blur, CGColorRef CG_NULLABLE color);
@@ -182,13 +194,20 @@ CG_EXTERN void CGContextDrawRadialGradient(CGContextRef CG_NULLABLE c, CGGradien
                                            CGPoint startCenter, CGFloat startRadius, CGPoint endCenter, CGFloat endRadius,
                                            CGGradientDrawingOptions options);
 
+/* Shadings, within the clip */
+CG_EXTERN void CGContextDrawShading(CGContextRef CG_NULLABLE c, CGShadingRef CG_NULLABLE shading);
+
 /* Transparency layers; `auxiliaryInfo` is a CFDictionaryRef, unused */
 CG_EXTERN void CGContextBeginTransparencyLayer(CGContextRef CG_NULLABLE c, const void * CG_NULLABLE auxiliaryInfo);
 CG_EXTERN void CGContextBeginTransparencyLayerWithRect(CGContextRef CG_NULLABLE c, CGRect rect, const void * CG_NULLABLE auxInfo);
 CG_EXTERN void CGContextEndTransparencyLayer(CGContextRef CG_NULLABLE c);
 
 /* Images */
+/* An image mask paints the fill color where it lets through. */
 CG_EXTERN void CGContextDrawImage(CGContextRef CG_NULLABLE c, CGRect rect, CGImageRef CG_NULLABLE image);
+/* The image repeated across the clip, each copy the rectangle's size, one at
+ * the rectangle. */
+CG_EXTERN void CGContextDrawTiledImage(CGContextRef CG_NULLABLE c, CGRect rect, CGImageRef CG_NULLABLE image);
 
 /* Text: glyphs of a font at a size, placed by the text matrix. The clipping
  * modes draw as their fill and stroke parts, and don't clip. */
