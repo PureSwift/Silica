@@ -34,12 +34,14 @@
     CGColorCreateGenericGray;
     CGColorCreateGenericRGB;
     CGColorCreateSRGB;
+    CGColorCreateWithPattern;
     CGColorEqualToColor;
     CGColorGetAlpha;
     CGColorGetColorSpace;
     CGColorGetComponents;
     CGColorGetConstantColor;
     CGColorGetNumberOfComponents;
+    CGColorGetPattern;
     CGColorGetTypeID;
     CGColorRelease;
     CGColorRetain;
@@ -103,6 +105,7 @@
     CGContextDrawLinearGradient;
     CGContextDrawPath;
     CGContextDrawRadialGradient;
+    CGContextDrawShading;
     CGContextDrawTiledImage;
     CGContextEOClip;
     CGContextEOFillPath;
@@ -143,6 +146,7 @@
     CGContextSetFillColor;
     CGContextSetFillColorSpace;
     CGContextSetFillColorWithColor;
+    CGContextSetFillPattern;
     CGContextSetFlatness;
     CGContextSetFont;
     CGContextSetFontSize;
@@ -154,6 +158,7 @@
     CGContextSetLineJoin;
     CGContextSetLineWidth;
     CGContextSetMiterLimit;
+    CGContextSetPatternPhase;
     CGContextSetRGBFillColor;
     CGContextSetRGBStrokeColor;
     CGContextSetRenderingIntent;
@@ -166,6 +171,7 @@
     CGContextSetStrokeColor;
     CGContextSetStrokeColorSpace;
     CGContextSetStrokeColorWithColor;
+    CGContextSetStrokePattern;
     CGContextSetTextDrawingMode;
     CGContextSetTextMatrix;
     CGContextSetTextPosition;
@@ -216,6 +222,10 @@
     CGFontGetXHeight;
     CGFontRelease;
     CGFontRetain;
+    CGFunctionCreate;
+    CGFunctionGetTypeID;
+    CGFunctionRelease;
+    CGFunctionRetain;
     CGGradientCreateWithColorComponents;
     CGGradientCreateWithColors;
     CGGradientGetTypeID;
@@ -301,6 +311,10 @@
     CGPathMoveToPoint;
     CGPathRelease;
     CGPathRetain;
+    CGPatternCreate;
+    CGPatternGetTypeID;
+    CGPatternRelease;
+    CGPatternRetain;
     CGPointApplyAffineTransform;
     CGPointEqualToPoint;
     CGPointZero;
@@ -330,6 +344,11 @@
     CGRectStandardize;
     CGRectUnion;
     CGRectZero;
+    CGShadingCreateAxial;
+    CGShadingCreateRadial;
+    CGShadingGetTypeID;
+    CGShadingRelease;
+    CGShadingRetain;
     CGSizeApplyAffineTransform;
     CGSizeEqualToSize;
     CGSizeZero;
@@ -366,12 +385,14 @@
     _CGColorCreateGenericGray;
     _CGColorCreateGenericRGB;
     _CGColorCreateSRGB;
+    _CGColorCreateWithPattern;
     _CGColorEqualToColor;
     _CGColorGetAlpha;
     _CGColorGetColorSpace;
     _CGColorGetComponents;
     _CGColorGetConstantColor;
     _CGColorGetNumberOfComponents;
+    _CGColorGetPattern;
     _CGColorGetTypeID;
     _CGColorRelease;
     _CGColorRetain;
@@ -435,6 +456,7 @@
     _CGContextDrawLinearGradient;
     _CGContextDrawPath;
     _CGContextDrawRadialGradient;
+    _CGContextDrawShading;
     _CGContextDrawTiledImage;
     _CGContextEOClip;
     _CGContextEOFillPath;
@@ -475,6 +497,7 @@
     _CGContextSetFillColor;
     _CGContextSetFillColorSpace;
     _CGContextSetFillColorWithColor;
+    _CGContextSetFillPattern;
     _CGContextSetFlatness;
     _CGContextSetFont;
     _CGContextSetFontSize;
@@ -486,6 +509,7 @@
     _CGContextSetLineJoin;
     _CGContextSetLineWidth;
     _CGContextSetMiterLimit;
+    _CGContextSetPatternPhase;
     _CGContextSetRGBFillColor;
     _CGContextSetRGBStrokeColor;
     _CGContextSetRenderingIntent;
@@ -498,6 +522,7 @@
     _CGContextSetStrokeColor;
     _CGContextSetStrokeColorSpace;
     _CGContextSetStrokeColorWithColor;
+    _CGContextSetStrokePattern;
     _CGContextSetTextDrawingMode;
     _CGContextSetTextMatrix;
     _CGContextSetTextPosition;
@@ -548,6 +573,10 @@
     _CGFontGetXHeight;
     _CGFontRelease;
     _CGFontRetain;
+    _CGFunctionCreate;
+    _CGFunctionGetTypeID;
+    _CGFunctionRelease;
+    _CGFunctionRetain;
     _CGGradientCreateWithColorComponents;
     _CGGradientCreateWithColors;
     _CGGradientGetTypeID;
@@ -633,6 +662,10 @@
     _CGPathMoveToPoint;
     _CGPathRelease;
     _CGPathRetain;
+    _CGPatternCreate;
+    _CGPatternGetTypeID;
+    _CGPatternRelease;
+    _CGPatternRetain;
     _CGPointApplyAffineTransform;
     _CGPointEqualToPoint;
     _CGPointZero;
@@ -662,6 +695,11 @@
     _CGRectStandardize;
     _CGRectUnion;
     _CGRectZero;
+    _CGShadingCreateAxial;
+    _CGShadingCreateRadial;
+    _CGShadingGetTypeID;
+    _CGShadingRelease;
+    _CGShadingRetain;
     _CGSizeApplyAffineTransform;
     _CGSizeEqualToSize;
     _CGSizeZero;
