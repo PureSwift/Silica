@@ -90,6 +90,18 @@ public enum BlendMode: UInt8, Sendable {
     case plusLighter
 }
 
+/// How images are sampled when they're scaled.
+@frozen
+public enum InterpolationQuality: UInt8, Sendable {
+    /// The renderer's choice: smooth.
+    case `default`
+    /// The nearest pixel: sharp edges, as pixel art wants.
+    case none
+    case low
+    case medium
+    case high
+}
+
 /// How a path is stroked.
 public struct StrokeStyle: Equatable, Hashable, Sendable {
 
