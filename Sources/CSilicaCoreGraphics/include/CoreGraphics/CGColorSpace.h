@@ -79,8 +79,9 @@ CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateICCBased(size_t nCompone
 CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateWithICCData(const void * CG_NULLABLE data);
 /* The profile an ICC space was made with, where Core Foundation is bridged. */
 CG_EXTERN CFDataRef CG_NULLABLE CGColorSpaceCopyICCData(CGColorSpaceRef CG_NULLABLE space);
-/* NULL: only named spaces have linear and extended forms, as on Darwin, and
- * Silica has none. */
+/* A named space's linear or extended range form (kCGColorSpaceSRGB's are
+ * kCGColorSpaceLinearSRGB and kCGColorSpaceExtendedSRGB); NULL for other
+ * spaces, as on Darwin. They draw as their model's device space. */
 CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateLinearized(CGColorSpaceRef CG_NULLABLE space);
 CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateExtended(CGColorSpaceRef CG_NULLABLE space);
 
@@ -88,6 +89,21 @@ CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateExtended(CGColorSpaceRef
  * the table. */
 CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateIndexed(CGColorSpaceRef CG_NULLABLE baseSpace, size_t lastIndex,
                                                                 const unsigned char * CG_NULLABLE colorTable);
+/* Spaces by name. A name is a CFStringRef, read by its string where Core
+ * Foundation is bridged: Silica knows Darwin's names (kCGColorSpaceSRGB,
+ * kCGColorSpaceDisplayP3, kCGColorSpaceGenericGrayGamma2_2, …), and draws
+ * each space as the device space of its model. The device spaces are named
+ * too (kCGColorSpaceDeviceRGB). The name a space gets is the runtime's
+ * constant, where it has one; the space keeps it. */
+CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateWithName(CFStringRef CG_NULLABLE name);
+CG_EXTERN CFStringRef CG_NULLABLE CGColorSpaceGetName(CGColorSpaceRef CG_NULLABLE space);
+CG_EXTERN CFStringRef CG_NULLABLE CGColorSpaceCopyName(CGColorSpaceRef CG_NULLABLE space);
+/* A CFPropertyListRef describing a space: its ICC profile as data if it was
+ * made from one, else its name, or for a device space the name of the space
+ * it is (kCGColorSpaceSRGB for kCGColorSpaceDeviceRGB). NULL for others. */
+CG_EXTERN const void * CG_NULLABLE CGColorSpaceCopyPropertyList(CGColorSpaceRef CG_NULLABLE space);
+CG_EXTERN CGColorSpaceRef CG_NULLABLE CGColorSpaceCreateWithPropertyList(const void * CG_NULLABLE plist);
+
 CG_EXTERN size_t CGColorSpaceGetColorTableCount(CGColorSpaceRef CG_NULLABLE space);
 CG_EXTERN void CGColorSpaceGetColorTable(CGColorSpaceRef CG_NULLABLE space, uint8_t * CG_NULLABLE table);
 
