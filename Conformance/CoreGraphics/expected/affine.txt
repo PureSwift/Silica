@@ -1,0 +1,176 @@
+-- transform 0
+t: 1 0 0 1 0 0
+isIdentity: true
+translate: 1 0 0 1 3 4
+scale: 2 0 0 0.5 0 0
+rotate: 0.5 0.866025 -0.866025 0.5 0 0
+invert: 1 0 0 1 0 0
+point: 7 -2
+size: 7 -2
+rect: 1 2 3 4
+null rect: inf inf 0 0
+concat 0: 1 0 0 1 0 0
+equal 0: true
+concat 1: 1 2 3 4 5 6
+equal 1: false
+concat 2: 1 0 0 1 10 -20
+equal 2: false
+concat 3: 2 0 0 -3 0 0
+equal 3: false
+concat 4: 0.866025 0.5 -0.5 0.866025 0 0
+equal 4: false
+concat 5: 0 1 -1 0 0 0
+equal 5: false
+concat 6: 0 0 0 0 5 5
+equal 6: false
+-- transform 1
+t: 1 2 3 4 5 6
+isIdentity: false
+translate: 1 2 3 4 20 28
+scale: 2 4 1.5 2 5 6
+rotate: 3.09808 4.4641 0.633975 0.267949 5 6
+invert: -2 1 1.5 -0.5 1 -2
+point: 6 12
+size: 1 6
+rect: 12 16 15 22
+null rect: inf inf 0 0
+concat 0: 1 2 3 4 5 6
+equal 0: false
+concat 1: 7 10 15 22 28 40
+equal 1: true
+concat 2: 1 2 3 4 15 -14
+equal 2: false
+concat 3: 2 -6 6 -12 10 -18
+equal 3: false
+concat 4: -0.133975 2.23205 0.598076 4.9641 1.33013 7.69615
+equal 4: false
+concat 5: -2 1 -4 3 -6 5
+equal 5: false
+concat 6: 0 0 0 0 5 5
+equal 6: false
+-- transform 2
+t: 1 0 0 1 10 -20
+isIdentity: false
+translate: 1 0 0 1 13 -16
+scale: 2 0 0 0.5 10 -20
+rotate: 0.5 0.866025 -0.866025 0.5 10 -20
+invert: 1 0 0 1 -10 20
+point: 17 -22
+size: 7 -2
+rect: 11 -18 3 4
+null rect: inf inf 0 0
+concat 0: 1 0 0 1 10 -20
+equal 0: false
+concat 1: 1 2 3 4 -45 -54
+equal 1: false
+concat 2: 1 0 0 1 20 -40
+equal 2: true
+concat 3: 2 0 0 -3 20 60
+equal 3: false
+concat 4: 0.866025 0.5 -0.5 0.866025 18.6603 -12.3205
+equal 4: false
+concat 5: 0 1 -1 0 20 10
+equal 5: false
+concat 6: 0 0 0 0 5 5
+equal 6: false
+-- transform 3
+t: 2 0 0 -3 0 0
+isIdentity: false
+translate: 2 0 0 -3 6 -12
+scale: 4 0 0 -1.5 0 0
+rotate: 1 -2.59808 -1.73205 -1.5 0 0
+invert: 0.5 0 0 -0.333333 0 0
+point: 14 6
+size: 14 6
+rect: 2 -18 6 12
+null rect: inf inf 0 0
+concat 0: 2 0 0 -3 0 0
+equal 0: false
+concat 1: 2 4 -9 -12 5 6
+equal 1: false
+concat 2: 2 0 0 -3 10 -20
+equal 2: false
+concat 3: 4 0 0 9 0 0
+equal 3: true
+concat 4: 1.73205 1 1.5 -2.59808 0 0
+equal 4: false
+concat 5: 0 2 3 0 0 0
+equal 5: false
+concat 6: 0 0 0 0 5 5
+equal 6: false
+-- transform 4
+t: 0.866025 0.5 -0.5 0.866025 0 0
+isIdentity: false
+translate: 0.866025 0.5 -0.5 0.866025 0.598076 4.9641
+scale: 1.73205 1 -0.25 0.433013 0 0
+rotate: 0 1 -1 0 0 0
+invert: 0.866025 -0.5 0.5 0.866025 0 0
+point: 7.06218 1.76795
+size: 7.06218 1.76795
+rect: -2.13397 2.23205 4.59808 4.9641
+null rect: inf inf 0 0
+concat 0: 0.866025 0.5 -0.5 0.866025 0 0
+equal 0: false
+concat 1: 2.36603 3.73205 2.09808 2.4641 5 6
+equal 1: false
+concat 2: 0.866025 0.5 -0.5 0.866025 10 -20
+equal 2: false
+concat 3: 1.73205 -1.5 -1 -2.59808 0 0
+equal 3: false
+concat 4: 0.5 0.866025 -0.866025 0.5 0 0
+equal 4: true
+concat 5: -0.5 0.866025 -0.866025 -0.5 0 0
+equal 5: false
+concat 6: 0 0 0 0 5 5
+equal 6: false
+-- transform 5
+t: 0 1 -1 0 0 0
+isIdentity: false
+translate: 0 1 -1 0 -4 3
+scale: 0 2 -0.5 0 0 0
+rotate: -0.866025 0.5 -0.5 -0.866025 0 0
+invert: 0 -1 1 0 0 0
+point: 2 7
+size: 2 7
+rect: -6 1 4 3
+null rect: inf inf 0 0
+concat 0: 0 1 -1 0 0 0
+equal 0: false
+concat 1: 3 4 -1 -2 5 6
+equal 1: false
+concat 2: 0 1 -1 0 10 -20
+equal 2: false
+concat 3: 0 -3 -2 0 0 0
+equal 3: false
+concat 4: -0.5 0.866025 -0.866025 -0.5 0 0
+equal 4: false
+concat 5: -1 0 0 -1 0 0
+equal 5: true
+concat 6: 0 0 0 0 5 5
+equal 6: false
+-- transform 6
+t: 0 0 0 0 5 5
+isIdentity: false
+translate: 0 0 0 0 5 5
+scale: 0 0 0 0 5 5
+rotate: 0 0 0 0 5 5
+invert: 0 0 0 0 5 5
+point: 5 5
+size: 0 0
+rect: 5 5 0 0
+null rect: inf inf 0 0
+concat 0: 0 0 0 0 5 5
+equal 0: false
+concat 1: 0 0 0 0 25 36
+equal 1: false
+concat 2: 0 0 0 0 15 -15
+equal 2: false
+concat 3: 0 0 0 0 10 -15
+equal 3: false
+concat 4: 0 0 0 0 1.83013 6.83013
+equal 4: false
+concat 5: 0 0 0 0 -5 5
+equal 5: false
+concat 6: 0 0 0 0 5 5
+equal 6: true
+identity: 1 0 0 1 0 0

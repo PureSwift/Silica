@@ -26,6 +26,15 @@ else()
   set(SILICA_BUILD_QUARTZ OFF)
   option(SILICA_BUILD_CAIRO "Build SilicaCairo, the Cairo backend (needs the Cairo and FontConfig Swift modules)" ON)
 endif()
+if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
+  # Darwin has Apple's CoreGraphics
+  set(SILICA_BUILD_COREGRAPHICS OFF)
+else()
+  option(SILICA_BUILD_COREGRAPHICS "Build libCoreGraphics, Darwin's CoreGraphics C API drawn by Silica" ON)
+endif()
+if(SILICA_BUILD_COREGRAPHICS)
+  enable_language(C)
+endif()
 
 set(CMAKE_Swift_LANGUAGE_VERSION 6)
 

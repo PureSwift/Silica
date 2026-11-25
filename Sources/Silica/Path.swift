@@ -144,12 +144,13 @@ public extension Path {
         }
     }
 
-    /// Adds a closed rectangle as a new subpath.
+    /// Adds a closed rectangle as a new subpath, from its minimum corner
+    /// toward increasing x, as CoreGraphics does.
     mutating func addRect(_ rect: Rect) {
-        elements.append(.move(to: Point(x: rect.origin.x, y: rect.origin.y)))
-        elements.append(.line(to: Point(x: rect.origin.x + rect.size.width, y: rect.origin.y)))
-        elements.append(.line(to: Point(x: rect.origin.x + rect.size.width, y: rect.origin.y + rect.size.height)))
-        elements.append(.line(to: Point(x: rect.origin.x, y: rect.origin.y + rect.size.height)))
+        elements.append(.move(to: Point(x: rect.minX, y: rect.minY)))
+        elements.append(.line(to: Point(x: rect.maxX, y: rect.minY)))
+        elements.append(.line(to: Point(x: rect.maxX, y: rect.maxY)))
+        elements.append(.line(to: Point(x: rect.minX, y: rect.maxY)))
         elements.append(.closeSubpath)
     }
 
@@ -176,6 +177,9 @@ public extension Path {
 
     /// Adds a closed rectangle with rounded corners. Radii larger than half
     /// the rectangle's side are reduced to it.
+    ///
+    /// As in CoreGraphics, it starts at the middle of the maximum-x side and
+    /// goes toward increasing y.
     mutating func addRoundedRect(in rect: Rect, cornerSize: Size) {
         let rect = rect.standardized
         let rx = min(max(cornerSize.width, 0), rect.width / 2)
@@ -187,15 +191,15 @@ public extension Path {
         let ox = rx * kappa
         let oy = ry * kappa
         let minX = rect.minX, maxX = rect.maxX, minY = rect.minY, maxY = rect.maxY
-        elements.append(.move(to: Point(x: minX + rx, y: minY)))
-        elements.append(.line(to: Point(x: maxX - rx, y: minY)))
-        elements.append(.curve(to: Point(x: maxX, y: minY + ry), control1: Point(x: maxX - rx + ox, y: minY), control2: Point(x: maxX, y: minY + ry - oy)))
+        elements.append(.move(to: Point(x: maxX, y: rect.midY)))
         elements.append(.line(to: Point(x: maxX, y: maxY - ry)))
         elements.append(.curve(to: Point(x: maxX - rx, y: maxY), control1: Point(x: maxX, y: maxY - ry + oy), control2: Point(x: maxX - rx + ox, y: maxY)))
         elements.append(.line(to: Point(x: minX + rx, y: maxY)))
         elements.append(.curve(to: Point(x: minX, y: maxY - ry), control1: Point(x: minX + rx - ox, y: maxY), control2: Point(x: minX, y: maxY - ry + oy)))
         elements.append(.line(to: Point(x: minX, y: minY + ry)))
         elements.append(.curve(to: Point(x: minX + rx, y: minY), control1: Point(x: minX, y: minY + ry - oy), control2: Point(x: minX + rx - ox, y: minY)))
+        elements.append(.line(to: Point(x: maxX - rx, y: minY)))
+        elements.append(.curve(to: Point(x: maxX, y: minY + ry), control1: Point(x: maxX - rx + ox, y: minY), control2: Point(x: maxX, y: minY + ry - oy)))
         elements.append(.closeSubpath)
     }
 
@@ -225,16 +229,19 @@ public extension Path {
         } else {
             while end < startAngle { end += 2 * .pi }
         }
-        let sweep = end - startAngle
-        guard sweep != 0 else { return }
+        guard end != startAngle else { return }
 
-        // at most a quarter turn per curve
-        let segments = max(1, Int(ceil(abs(sweep) / (.pi / 2) - 1e-9)))
-        let step = sweep / Double(segments)
-        let handle = 4.0 / 3.0 * tan(step / 4)
+        // A curve per quarter turn, split where the angle crosses a multiple
+        // of a quarter turn, as CoreGraphics does.
+        let quarter = Double.pi / 2
         var angle = startAngle
-        for _ in 0 ..< segments {
-            let next = angle + step
+        while clockwise ? angle > end : angle < end {
+            var next = clockwise
+                ? (ceil(angle / quarter - 1e-9) - 1) * quarter
+                : (floor(angle / quarter + 1e-9) + 1) * quarter
+            next = clockwise ? max(next, end) : min(next, end)
+            let step = next - angle
+            let handle = 4.0 / 3.0 * tan(step / 4)
             let cos0 = cos(angle), sin0 = sin(angle)
             let cos1 = cos(next), sin1 = sin(next)
             let control1 = Point(x: center.x + radius * (cos0 - handle * sin0), y: center.y + radius * (sin0 + handle * cos0))

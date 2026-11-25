@@ -24,6 +24,8 @@ jobs:
       run: swift --version
     - name: Install dependencies
       run: brew install cairo fontconfig freetype
+    - name: Check libCoreGraphics' generated stubs and export lists
+      run: python3 Scripts/CoreGraphics/gen_stubs.py --check
     - name: Build (Debug)
       run: swift build -c debug
     - name: Build (Release)
@@ -102,8 +104,13 @@ jobs:
         done
         cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_Swift_FLAGS="$flags"
     - name: Build
-      # Silica and its Cairo backend, as shared libraries
+      # Silica, its Cairo backend, and libCoreGraphics, as shared libraries
       run: cmake --build build
+    - name: Check libCoreGraphics' exports
+      run: Scripts/CoreGraphics/check_exports.sh build/lib/libCoreGraphics.so
+    - name: Check libCoreGraphics against Apple's CoreGraphics
+      # the programs' output from Apple's framework is recorded in Conformance/CoreGraphics/expected
+      run: CC=clang Scripts/CoreGraphics/conformance.sh check build/lib
     - name: Install
       run: cmake --install build --prefix "$PWD/stage"
 

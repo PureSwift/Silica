@@ -1,0 +1,229 @@
+empty:
+  elements: 0
+  empty: true
+  current: 0 0
+  bounds: inf inf 0 0
+  path bounds: inf inf 0 0
+  isRect: false
+lines:
+  move 0,0
+  line 10,0
+  line 10,10
+  close
+  line 20,20
+  elements: 5
+  empty: false
+  current: 20 20
+  bounds: 0 0 20 20
+  path bounds: 0 0 20 20
+  isRect: false
+curves:
+  move 100,50
+  quad 110,70 120,50
+  curve 130,30 140,70 150,50
+  elements: 3
+  empty: false
+  current: 150 50
+  bounds: 100 30 50 40
+  path bounds: 100 44.2265 50 15.7735
+  isRect: false
+rect:
+  move 1,2
+  line 31,2
+  line 31,42
+  line 1,42
+  close
+  elements: 5
+  empty: false
+  current: 1 2
+  bounds: 1 2 30 40
+  path bounds: 1 2 30 40
+  isRect: true
+  rect: 1 2 30 40
+negative rect:
+  move 1,2
+  line 31,2
+  line 31,42
+  line 1,42
+  close
+  elements: 5
+  empty: false
+  current: 1 2
+  bounds: 1 2 30 40
+  path bounds: 1 2 30 40
+  isRect: true
+  rect: 1 2 30 40
+created rect:
+  move 100,50
+  line 110,50
+  line 110,70
+  line 100,70
+  close
+  elements: 5
+  empty: false
+  current: 100 50
+  bounds: 100 50 10 20
+  path bounds: 100 50 10 20
+  isRect: true
+  rect: 100 50 10 20
+ellipse:
+  move 40,10
+  curve 40,15.5228 31.0457,20 20,20
+  curve 8.95431,20 0,15.5228 0,10
+  curve 0,4.47715 8.95431,0 20,0
+  curve 31.0457,0 40,4.47715 40,10
+  close
+  elements: 6
+  empty: false
+  current: 40 10
+  bounds: 0 0 40 20
+  path bounds: 0 0 40 20
+  isRect: false
+rounded rect:
+  move 40,10
+  line 40,16
+  curve 40,18.2091 37.7614,20 35,20
+  line 5,20
+  curve 2.23858,20 0,18.2091 0,16
+  line 0,4
+  curve 0,1.79086 2.23858,0 5,0
+  line 35,0
+  curve 37.7614,0 40,1.79086 40,4
+  close
+  elements: 10
+  empty: false
+  current: 40 10
+  bounds: 0 0 40 20
+  path bounds: 0 0 40 20
+  isRect: false
+arc ccw:
+  move 60,50
+  curve 60,55.5228 55.5228,60 50,60
+  elements: 2
+  empty: false
+  current: 50 60
+  bounds: 50 50 10 10
+  path bounds: 50 50 10 10
+  isRect: false
+arc cw:
+  move 60,50
+  curve 60,44.4772 55.5228,40 50,40
+  curve 44.4772,40 40,44.4772 40,50
+  curve 40,55.5228 44.4772,60 50,60
+  elements: 4
+  empty: false
+  current: 50 60
+  bounds: 40 40 20 20
+  path bounds: 40 40 20 20
+  isRect: false
+arc full:
+  move 60,50
+  curve 60,55.5228 55.5228,60 50,60
+  curve 44.4772,60 40,55.5228 40,50
+  curve 40,44.4772 44.4772,40 50,40
+  curve 55.5228,40 60,44.4772 60,50
+  elements: 5
+  empty: false
+  current: 60 50
+  bounds: 40 40 20 20
+  path bounds: 40 40 20 20
+  isRect: false
+arc wrap:
+  move 40,50
+  curve 40,44.4772 44.4772,40 50,40
+  curve 55.5228,40 60,44.4772 60,50
+  curve 60,52.6522 58.9464,55.1957 57.0711,57.0711
+  elements: 4
+  empty: false
+  current: 57.0711 57.0711
+  bounds: 40 40 20 17.0711
+  path bounds: 40 40 20 17.0711
+  isRect: false
+arc same:
+  move 55.403,58.4147
+  elements: 1
+  empty: false
+  current: 55.403 58.4147
+  bounds: 55.403 58.4147 0 0
+  path bounds: 55.403 58.4147 0 0
+  isRect: false
+relative arc:
+  move 0,0
+  line 60,50
+  curve 60,44.4772 55.5228,40 50,40
+  curve 44.4772,40 40,44.4772 40,50
+  elements: 4
+  empty: false
+  current: 40 50
+  bounds: 0 0 60 50
+  path bounds: 0 0 60 50
+  isRect: false
+arc to point:
+  move 0,0
+  line 5,0
+  curve 7.76142,0 10,2.23858 10,5
+  elements: 3
+  empty: false
+  current: 10 5
+  bounds: 0 0 10 5
+  path bounds: 0 0 10 5
+  isRect: false
+lines, rects and ellipse:
+  move 0,0
+  line 5,10
+  line 10,0
+  move 0,0
+  line 1,0
+  line 1,1
+  line 0,1
+  close
+  move 2,2
+  line 3,2
+  line 3,3
+  line 2,3
+  close
+  move 104,52
+  curve 104,53.1046 103.105,54 102,54
+  curve 100.895,54 100,53.1046 100,52
+  curve 100,50.8954 100.895,50 102,50
+  curve 103.105,50 104,50.8954 104,52
+  close
+  elements: 19
+  empty: false
+  current: 104 52
+  bounds: 0 0 104 54
+  path bounds: 0 0 104 54
+  isRect: false
+combined:
+  move 0,0
+  line 10,0
+  line 10,10
+  close
+  line 20,20
+  move 200,100
+  quad 210,120 220,100
+  curve 230,80 240,120 250,100
+  elements: 8
+  empty: false
+  current: 250 100
+  bounds: 0 0 250 120
+  path bounds: 0 0 250 110
+  isRect: false
+transformed:
+  move 200,100
+  quad 210,120 220,100
+  curve 230,80 240,120 250,100
+  elements: 3
+  empty: false
+  current: 250 100
+  bounds: 200 80 50 40
+  path bounds: 200 94.2265 50 15.7735
+  isRect: false
+equal copy: true
+equal other: false
+contains hole winding: true
+contains hole even-odd: false
+contains outside: false
+contains transformed: true
+contains ellipse center: true
+contains ellipse corner: false

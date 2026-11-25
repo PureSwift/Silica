@@ -135,6 +135,26 @@ Web platform notes:
 - **Gradients**: Cairo extends both ends of a gradient or neither, so `GradientOptions` with one end draws both.
 - **Blend modes** a backend can't do draw as `normal`: plus darker on Cairo, everything but normal on the 3DS.
 
+## CoreGraphics C API (Linux)
+
+`libCoreGraphics` is Darwin's CoreGraphics C API (`CGContextRef`, `CGPathRef`, `CGRectGetMinX`, …) drawn by Silica, for programs written against Apple's CoreGraphics on platforms that don't have it: C and C++ code on Linux, and [Perry](https://github.com/PureSwift/Perry)'s Darwin apps. CMake builds it on platforms other than Darwin (`SILICA_BUILD_COREGRAPHICS`), and installs `include/CoreGraphics/CoreGraphics.h`, a `CoreGraphics` module map for Swift, and `lib/libCoreGraphics.so`:
+
+```c
+#include <CoreGraphics/CoreGraphics.h>
+
+CGMutablePathRef path = CGPathCreateMutable();
+CGPathAddEllipseInRect(path, NULL, CGRectMake(0, 0, 40, 20));
+CGRect bounds = CGPathGetPathBoundingBox(path);
+CGPathRelease(path);
+```
+
+- **What it exports** is listed in [`Scripts/CoreGraphics/symbols.txt`](Scripts/CoreGraphics/symbols.txt): the public drawing API (contexts, bitmap contexts, paths, geometry, colors and color spaces, images, data providers, gradients, fonts, layers). Displays, events, windows, PDF documents and ImageIO aren't part of it.
+- **Implemented so far:** geometry, affine transforms and paths. Everything else listed is a stub that prints `CoreGraphics: <function> is not implemented by Silica yet` once and returns zero (or aborts, with `SILICA_CG_ABORT_ON_UNIMPLEMENTED` set), so programs link and load against the whole API.
+- **Each symbol is also exported under its Mach-O name** (`_CGPathCreateMutable`), as Darwin code links it.
+- **References** (`CGPathRef`, …) are retained Swift objects behind an opaque pointer, following Core Foundation's create, copy and release rules. A runtime that needs its own objects behind them (Perry, for Core Foundation and Objective-C) supplies them through `CoreGraphicsObjects` in the `SilicaCoreGraphicsABI` module.
+- **Conformance:** the programs in [`Conformance/CoreGraphics`](Conformance/CoreGraphics) print what CoreGraphics returns. Their output from Apple's framework is recorded on macOS (`Scripts/CoreGraphics/conformance.sh record`), and CI compares libCoreGraphics' output with it (`conformance.sh check`).
+- After implementing a function in `Sources/SilicaCoreGraphicsABI` (with `@c @implementation`), run `Scripts/CoreGraphics/gen_stubs.py` to retire its stub and regenerate the export lists.
+
 ## Building with CMake
 
 For a system image (Buildroot and the like), CMake builds `Silica` and a
