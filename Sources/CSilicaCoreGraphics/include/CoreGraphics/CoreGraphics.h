@@ -12,5 +12,11 @@
 #include "CGGeometry.h"
 #include "CGAffineTransform.h"
 #include "CGPath.h"
+#include "CGColorSpace.h"
+#include "CGColor.h"
+#include "CGGradient.h"
+#include "CGImage.h"
+#include "CGContext.h"
+#include "CGBitmapContext.h"
 
 #endif /* SILICA_COREGRAPHICS_H */
