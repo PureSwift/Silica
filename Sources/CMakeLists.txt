@@ -4,6 +4,6 @@ if(SILICA_BUILD_CAIRO)
   add_subdirectory(SilicaCairo)
 endif()
 
-if(SILICA_BUILD_COREGRAPHICS)
-  add_subdirectory(SilicaCoreGraphics)
+if(SILICA_BUILD_QUARTZ)
+  add_subdirectory(SilicaQuartz)
 endif()
