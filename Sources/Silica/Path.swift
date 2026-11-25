@@ -430,7 +430,7 @@ public extension Path {
     /// Each subpath as a polygon: curves become lines no farther than
     /// `tolerance` from them. A closed subpath doesn't repeat its first point.
     func flattened(tolerance: Double = 0.1) -> [[Point]] {
-        subpaths(tolerance: tolerance).map(\.points)
+        subpaths(tolerance: tolerance).map { $0.points }
     }
 
     /// Each subpath as a polyline, and whether it's closed: curves become
