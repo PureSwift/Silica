@@ -6,7 +6,7 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
-#if canImport(CoreGraphics)
+#if Quartz && canImport(CoreGraphics)
 
 import XCTest
 import SilicaQuartz
@@ -47,4 +47,4 @@ final class CoreTextFontTests: XCTestCase {
     }
 }
 
-#endif // canImport(CoreGraphics)
+#endif
