@@ -6,7 +6,7 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
-#if canImport(CoreGraphics)
+#if (!SWIFT_PACKAGE || Quartz) && canImport(CoreGraphics)
 
 import CoreGraphics
 import ImageIO
@@ -111,4 +111,4 @@ public extension Silica.Image {
     }
 }
 
-#endif // canImport(CoreGraphics)
+#endif
