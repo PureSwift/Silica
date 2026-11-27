@@ -9,7 +9,7 @@
 // Apple's CoreGraphics is loaded with Foundation on Darwin, and clashes with
 // these headers: libCoreGraphics is for other platforms. Contexts draw with
 // Silica's Cairo renderer.
-#if !canImport(Darwin) && canImport(Cairo)
+#if !canImport(Darwin) && (!SWIFT_PACKAGE || Cairo) && canImport(Cairo)
 
 import Cairo
 import CSilicaCoreGraphics

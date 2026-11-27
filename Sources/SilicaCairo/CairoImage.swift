@@ -6,10 +6,14 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
-#if canImport(Cairo)
+#if (!SWIFT_PACKAGE || Cairo) && canImport(Cairo)
 
 import Cairo
+#if !canImport(Darwin) && canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 import Silica
 
 // MARK: - Image to Cairo

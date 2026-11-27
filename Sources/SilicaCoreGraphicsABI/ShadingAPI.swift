@@ -178,7 +178,7 @@ private func makeShading(_ space: SilicaCGColorSpaceRef?, _ function: SilicaCGFu
 }
 
 // Contexts draw with Cairo, where there is Cairo.
-#if canImport(Cairo)
+#if (!SWIFT_PACKAGE || Cairo) && canImport(Cairo)
 
 @c @implementation public func CGContextDrawShading(_ c: SilicaCGContextRef?, _ shading: SilicaCGShadingRef?) {
     guard let target = contextObject(c), let shading = object(shading, as: ShadingObject.self) else { return }

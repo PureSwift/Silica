@@ -6,9 +6,11 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
+#if !SWIFT_PACKAGE || Web
 @_exported import Silica
 
-#if canImport(Foundation)
+#if canImport(Foundation) && (canImport(Darwin) || !canImport(FoundationEssentials))
 // Foundation has an `AffineTransform` too: in this module the name is Silica's.
 typealias AffineTransform = Silica.AffineTransform
+#endif
 #endif

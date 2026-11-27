@@ -6,4 +6,6 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
+#if !SWIFT_PACKAGE || Nintendo3DS
 @_exported import Silica
+#endif

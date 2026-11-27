@@ -46,18 +46,18 @@ let package = Package(
         .trait(name: "Cairo"),
         // Builds SilicaWeb's renderer, with JavaScriptKit.
         .trait(name: "Web"),
-        // A package that needs only the `Silica` module can turn both off
-        // (`traits: []`), and those packages aren't fetched.
-        .default(enabledTraits: ["Cairo", "Web"])
+        .trait(name: "Quartz"),
+        .trait(name: "Nintendo3DS"),
+        .default(enabledTraits: ["Cairo", "Quartz"])
     ],
     dependencies: [
         .package(
             url: "https://github.com/PureSwift/Cairo.git",
-            branch: "master"
+            from: "1.4.0"
         ),
         .package(
             url: "https://github.com/PureSwift/FontConfig.git",
-            branch: "master"
+            from: "2.0.0"
         ),
         .package(
             url: "https://github.com/swiftwasm/JavaScriptKit.git",
@@ -118,7 +118,7 @@ let package = Package(
                 "Silica",
                 "CSilicaCoreGraphics",
                 // contexts draw with Cairo
-                "SilicaCairo",
+                .target(name: "SilicaCairo", condition: .when(platforms: [.linux], traits: ["Cairo"])),
                 .product(
                     name: "Cairo",
                     package: "Cairo",
@@ -139,22 +139,22 @@ let package = Package(
         .testTarget(
             name: "SilicaCairoTests",
             dependencies: [
-                "SilicaCairo",
+                .target(name: "SilicaCairo", condition: .when(traits: ["Cairo"])),
                 "SilicaTestSupport"
             ]
         ),
         .testTarget(
             name: "SilicaQuartzTests",
             dependencies: [
-                "SilicaQuartz",
-                "SilicaCairo",
+                .target(name: "SilicaQuartz", condition: .when(traits: ["Quartz"])),
+                .target(name: "SilicaCairo", condition: .when(traits: ["Cairo"])),
                 "SilicaTestSupport"
             ]
         ),
         .testTarget(
             name: "Silica3DSTests",
             dependencies: [
-                "Silica3DS",
+                .target(name: "Silica3DS", condition: .when(traits: ["Nintendo3DS"])),
                 "SilicaTestSupport"
             ]
         ),

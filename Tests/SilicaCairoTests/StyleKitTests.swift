@@ -6,7 +6,7 @@
 //
 //
 
-#if canImport(Cairo)
+#if Cairo && canImport(Cairo)
 
 import XCTest
 import Foundation

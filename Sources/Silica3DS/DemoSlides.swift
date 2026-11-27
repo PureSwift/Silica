@@ -11,6 +11,7 @@
 //  bug to one slide instead of a single busy composite.
 //
 
+#if !SWIFT_PACKAGE || Nintendo3DS
 #if canImport(Darwin)
 import Darwin
 #elseif canImport(Glibc)
@@ -23,7 +24,9 @@ import Android
 import WASILibc
 #endif
 
-#if canImport(Foundation)
+#if !canImport(Darwin) && canImport(FoundationEssentials)
+import struct FoundationEssentials.Data
+#elseif canImport(Foundation)
 import struct Foundation.Data
 #endif
 #if canImport(Silica)
@@ -479,3 +482,4 @@ public enum Silica3DSDemo {
         context.fillPath()
     }
 }
+#endif

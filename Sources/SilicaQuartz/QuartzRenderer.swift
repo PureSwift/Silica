@@ -6,7 +6,7 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
-#if canImport(CoreGraphics)
+#if (!SWIFT_PACKAGE || Quartz) && canImport(CoreGraphics)
 
 import CoreGraphics
 import CoreText
@@ -480,4 +480,4 @@ internal extension BlendMode {
     }
 }
 
-#endif // canImport(CoreGraphics)
+#endif

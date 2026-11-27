@@ -6,9 +6,13 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
-#if canImport(Cairo)
+#if (!SWIFT_PACKAGE || Cairo) && canImport(Cairo)
 
+#if !canImport(Darwin) && canImport(FoundationEssentials)
+import struct FoundationEssentials.Data
+#else
 import struct Foundation.Data
+#endif
 import Cairo
 import Silica
 

@@ -6,7 +6,19 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
-#if canImport(Foundation)
+#if !canImport(Darwin) && canImport(FoundationEssentials)
+#if canImport(Glibc)
+import Glibc
+#elseif canImport(Musl)
+import Musl
+#elseif canImport(Android)
+import Android
+#elseif canImport(WASILibc)
+import WASILibc
+#elseif canImport(ucrt)
+import ucrt
+#endif
+#elseif canImport(Foundation)
 import Foundation
 #endif
 

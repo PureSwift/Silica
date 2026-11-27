@@ -6,7 +6,7 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
-#if canImport(Cairo)
+#if Cairo && canImport(Cairo)
 
 import XCTest
 import Foundation

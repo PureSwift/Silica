@@ -6,7 +6,10 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
-#if canImport(Foundation)
+#if !SWIFT_PACKAGE || Nintendo3DS
+#if !canImport(Darwin) && canImport(FoundationEssentials)
+import struct FoundationEssentials.Data
+#elseif canImport(Foundation)
 import struct Foundation.Data
 #endif
 #if canImport(Silica)
@@ -167,3 +170,4 @@ public extension Nintendo3DSRenderer {
 }
 
 #endif // canImport(CTRU)
+#endif

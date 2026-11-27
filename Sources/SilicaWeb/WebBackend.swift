@@ -6,9 +6,11 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
-#if canImport(JavaScriptKit)
+#if (!SWIFT_PACKAGE || Web) && canImport(JavaScriptKit)
 
-#if canImport(Foundation)
+#if !canImport(Darwin) && canImport(FoundationEssentials)
+import FoundationEssentials
+#elseif canImport(Foundation)
 import Foundation
 #endif
 

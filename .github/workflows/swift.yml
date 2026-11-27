@@ -5,21 +5,13 @@ jobs:
   macos:
     name: macOS
     runs-on: macos-latest
-    env:
-      # Lets the test bundle link FT_* until PureSwift/Cairo#9 (which fixes
-      # CFreeType's pkg-config module name, so SwiftPM emits this search
-      # path itself) lands on Cairo master; harmless afterwards.
-      LIBRARY_PATH: /opt/homebrew/lib
     steps:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Setup Swift
-      # swift-actions/setup-swift's known-version list lags behind swift.org
-      # releases (rejected 6.3.3 as of this writing); this one resolves
-      # versions from swift.org's download API directly.
       uses: SwiftyLab/setup-swift@latest
       with:
-        swift-version: "6.3.3"
+        swift-version: "6.4.2"
     - name: Swift Version
       run: swift --version
     - name: Install dependencies
@@ -31,8 +23,7 @@ jobs:
     - name: Build (Release)
       run: swift build -c release
     - name: Test (Debug)
-      # exercises both the Quartz and Cairo backends
-      run: swift test -c debug
+      run: swift test -c debug --traits Cairo,Quartz,Nintendo3DS
 
   linux:
     name: Linux (${{ matrix.container }})
@@ -40,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        container: ["swift:latest"]
+        container: ["swift:6.4.2-trixie"]
     container: ${{ matrix.container }}
     steps:
     - name: Checkout
@@ -69,11 +60,13 @@ jobs:
     - name: Setup Swift
       uses: SwiftyLab/setup-swift@latest
       with:
-        swift-version: "6.3.3"
+        swift-version: "6.4.2"
     - name: Install dependencies
       run: brew install ninja
     - name: Configure
-      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      run: |
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)"
     - name: Build
       # Silica and its Core Graphics backend, as shared libraries
       run: cmake --build build
@@ -83,7 +76,7 @@ jobs:
   cmake-linux:
     name: CMake (Linux)
     runs-on: ubuntu-latest
-    container: swift:latest
+    container: swift:6.4.2-trixie
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -118,12 +111,12 @@ jobs:
   wasm:
     name: WebAssembly (${{ matrix.swift-sdk }})
     runs-on: ubuntu-latest
-    container: swift:6.3.3
+    container: swift:6.4.2-trixie
     strategy:
       fail-fast: false
       matrix:
         # regular and Embedded Swift WebAssembly SDKs
-        swift-sdk: ['swift-6.3.3-RELEASE_wasm', 'swift-6.3.3-RELEASE_wasm-embedded']
+        swift-sdk: ['swift-6.4.2-RELEASE_wasm', 'swift-6.4.2-RELEASE_wasm-embedded']
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -132,11 +125,11 @@ jobs:
     - name: Install Swift SDK for WebAssembly
       run: |
         swift sdk install \
-          https://download.swift.org/swift-6.3.3-release/wasm-sdk/swift-6.3.3-RELEASE/swift-6.3.3-RELEASE_wasm.artifactbundle.tar.gz \
-          --checksum cabfa08b73bb8ac783927ecd15fa386e99d0c139c5f232445067bcf58379cae7
+          https://download.swift.org/swift-6.4.2-release/wasm-sdk/swift-6.4.2-RELEASE/swift-6.4.2-RELEASE_wasm.artifactbundle.tar.gz \
+          --checksum 83baca83553f8c443cda7b84800912e6e709c3acd2e7ebf277794ca5836c0da5
         swift sdk list
     - name: Build
-      run: swift build --swift-sdk ${{ matrix.swift-sdk }} --target SilicaWeb
+      run: swift build --swift-sdk ${{ matrix.swift-sdk }} --target SilicaWeb --traits Web
     - name: Build Example
       # the Embedded SDK needs the Unicode data tables linked explicitly; see Examples/WebCanvasDemo/Package.swift
       # (this container's `run:` steps use `sh`, not `bash`, hence `case` instead of `[[ ... ]]`)
@@ -147,28 +140,32 @@ jobs:
         swift build --package-path Examples/WebCanvasDemo --swift-sdk ${{ matrix.swift-sdk }}
 
   android:
-    name: Android
+    name: Android (API ${{ matrix.api }}, ${{ matrix.arch }})
     runs-on: ubuntu-24.04
+    container: swift:6.4.2-trixie
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        android-sdk: ['nightly-6.3']
-        android-api: ['28', '31']
-        android-ndk: ['r27d']
+        api: [28, 31]
+        arch: [aarch64, x86_64]
     steps:
     - name: Checkout
       uses: actions/checkout@v6
-    - name: Setup Swift Android SDK
-      uses: skiptools/actions/setup-skip@v1
-      with:
-        gradle-version: 'none'
-        install-swift-android-sdk: true
-        swift-android-sdk-version: ${{ matrix.android-sdk }}
-        swift-android-ndk-version: ${{ matrix.android-ndk }}
-    - name: Build Swift Package for Android (aarch64)
+    - name: Install the Android NDK
       run: |
-        ANDROID_SDK_VERSION=${{ matrix.android-api }} skip android build --arch aarch64 --android-api-level ${{ matrix.android-api }}
-    - name: Build Swift Package for Android (x86_64)
+        apt-get update
+        apt-get install -y --no-install-recommends ca-certificates curl unzip
+        curl -fsSL https://dl.google.com/android/repository/android-ndk-r30-linux.zip -o /tmp/android-ndk.zip
+        unzip -q /tmp/android-ndk.zip -d /opt
+        echo "ANDROID_NDK_HOME=/opt/android-ndk-r30" >> "$GITHUB_ENV"
+    - name: Install the Swift SDK for Android
       run: |
-        ANDROID_SDK_VERSION=${{ matrix.android-api }} skip android build --arch x86_64 --android-api-level ${{ matrix.android-api }}
+        swift sdk install \
+          https://download.swift.org/swift-6.4.2-release/android-sdk/swift-6.4.2-RELEASE/swift-6.4.2-RELEASE_android.artifactbundle.tar.gz \
+          --checksum 4d6ad63ea74becd58e123ff58b1b48c3be5ec0db0dff0ea5abe37ac007dd3233
+    - name: Build Silica
+      run: |
+        swift build --swift-sdk swift-6.4.2-RELEASE_android \
+          --triple ${{ matrix.arch }}-unknown-linux-android${{ matrix.api }} \
+          --target Silica --disable-default-traits

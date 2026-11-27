@@ -6,13 +6,14 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
-#if !canImport(Foundation)
-
-// Foundation-free stand-ins for `Data` and the math functions, used when
-// building for Embedded Swift (e.g. Embedded WebAssembly).
+#if !canImport(Foundation) && !canImport(FoundationEssentials)
 
 /// Byte buffer type standing in for `Foundation.Data`.
 public typealias Data = [UInt8]
+
+#endif
+
+#if !canImport(Foundation) && (!canImport(FoundationEssentials) || (!canImport(Glibc) && !canImport(Musl) && !canImport(Android) && !canImport(WASILibc) && !canImport(ucrt)))
 
 /// Returns the square root of the specified value.
 public func sqrt(_ value: Double) -> Double {
