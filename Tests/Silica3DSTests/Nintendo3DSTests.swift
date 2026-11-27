@@ -6,6 +6,7 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
+#if Nintendo3DS
 import XCTest
 import Foundation
 import Silica3DS
@@ -387,3 +388,4 @@ final class Nintendo3DSTests: XCTestCase {
         XCTAssertGreaterThan(bird.blue, 200)
     }
 }
+#endif
