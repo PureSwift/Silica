@@ -6,13 +6,15 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
-#if canImport(CoreGraphics)
+#if Quartz && canImport(CoreGraphics)
 
 import XCTest
 import Foundation
 import CoreGraphics
 import SilicaQuartz
+#if Cairo
 import SilicaCairo
+#endif
 import SilicaTestSupport
 
 final class QuartzStyleKitTests: XCTestCase {
@@ -72,6 +74,7 @@ final class QuartzStyleKitTests: XCTestCase {
         try draw("quartz_multilineText", Size(width: 240, height: 180)) { TestStyleKit.drawMultiLineText(in: $0) }
     }
 
+    #if Cairo
     // MARK: - Parity
 
     /// The share of pixels whose channels differ by more than `tolerance`.
@@ -169,6 +172,7 @@ final class QuartzStyleKitTests: XCTestCase {
             XCTAssertGreaterThan(pixel(35, 35).min() ?? 0, 240, "\(renderer)")
         }
     }
+    #endif
 }
 
-#endif // canImport(CoreGraphics)
+#endif
