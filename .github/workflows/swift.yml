@@ -64,7 +64,9 @@ jobs:
     - name: Install dependencies
       run: brew install ninja
     - name: Configure
-      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      run: |
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)"
     - name: Build
       # Silica and its Core Graphics backend, as shared libraries
       run: cmake --build build
@@ -153,7 +155,7 @@ jobs:
     - name: Install the Android NDK
       run: |
         apt-get update
-        apt-get install -y --no-install-recommends unzip
+        apt-get install -y --no-install-recommends ca-certificates curl unzip
         curl -fsSL https://dl.google.com/android/repository/android-ndk-r30-linux.zip -o /tmp/android-ndk.zip
         unzip -q /tmp/android-ndk.zip -d /opt
         echo "ANDROID_NDK_HOME=/opt/android-ndk-r30" >> "$GITHUB_ENV"
