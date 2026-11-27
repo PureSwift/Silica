@@ -67,7 +67,9 @@ An image draws upright, filling its rectangle as SwiftUI draws it. Arcs keep Cor
 
 ## Package Traits
 
-Silica's `Cairo` and `Web` traits build the Cairo and web renderers, and are on by default. A package that needs only the `Silica` module turns them off, and the Cairo, FontConfig and JavaScriptKit packages aren't fetched:
+The `Cairo` and `Quartz` traits are enabled by default. Enable `Web` for the WebAssembly renderer or `Nintendo3DS` for the software renderer. To keep the defaults when opting in, for example, pass `traits: [.defaults, "Web"]` to the package dependency.
+
+A package that needs only the `Silica` module can disable all backend traits with an empty set. SwiftPM then skips the Cairo, FontConfig and JavaScriptKit dependencies:
 
 ```swift
 .package(url: "https://github.com/PureSwift/Silica.git", from: "4.0.0", traits: [])
@@ -103,17 +105,17 @@ let context = GraphicsContext(try WebCanvasRenderer(canvas: canvas.object!))
 ```
 
 ```sh
-swift build --swift-sdk swift-6.3.3-RELEASE_wasm-embedded --target SilicaWeb
+swift build --swift-sdk swift-6.4.2-RELEASE_wasm-embedded --target SilicaWeb --traits Web
 ```
 
 See [`Examples/WebCanvasDemo`](Examples/WebCanvasDemo) for a complete browser app built with the [PackageToJS](https://swiftpackageindex.com/swiftwasm/JavaScriptKit/main/documentation/javascriptkit/packagetojs) plugin (`swift package --swift-sdk <sdk-id> js`). It renders the same `TestStyleKit` (PaintCode-generated) drawing methods that `SilicaCairoTests` renders to PDF with the Cairo backend, plus a showcase panel of paths, arcs, transforms, transparency layers, clipping, and bitmap round-tripping:
 
 ```sh
 cd Examples/WebCanvasDemo
-swift package --swift-sdk swift-6.3.3-RELEASE_wasm js --use-cdn   # regular SDK
+swift package --swift-sdk swift-6.4.2-RELEASE_wasm js --use-cdn   # regular SDK
 
 # the Embedded SDK build needs the Unicode data tables linked (see Package.swift)
-SILICA_WASM_EMBEDDED=1 swift package --swift-sdk swift-6.3.3-RELEASE_wasm-embedded js --use-cdn
+SILICA_WASM_EMBEDDED=1 swift package --swift-sdk swift-6.4.2-RELEASE_wasm-embedded js --use-cdn
 
 npx serve .   # then open index.html
 ```
