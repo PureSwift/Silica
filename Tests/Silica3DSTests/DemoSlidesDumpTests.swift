@@ -8,6 +8,7 @@
 //  can look at without a 3DS or emulator.
 //
 
+#if Nintendo3DS
 import XCTest
 import Foundation
 import Silica3DS
@@ -51,3 +52,4 @@ final class DemoSlidesDumpTests: XCTestCase {
         }
     }
 }
+#endif
