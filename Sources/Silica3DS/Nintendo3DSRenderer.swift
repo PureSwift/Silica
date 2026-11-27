@@ -6,6 +6,7 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
+#if !SWIFT_PACKAGE || Nintendo3DS
 #if canImport(Darwin)
 import Darwin
 #elseif canImport(Glibc)
@@ -18,7 +19,9 @@ import Android
 import WASILibc
 #endif
 
-#if canImport(Foundation)
+#if !canImport(Darwin) && canImport(FoundationEssentials)
+import struct FoundationEssentials.Data
+#elseif canImport(Foundation)
 import struct Foundation.Data
 #endif
 #if canImport(Silica)
@@ -282,7 +285,7 @@ public final class Nintendo3DSRenderer: Renderer {
                 data[offset + 3] = UInt8(sums.3 / samples)
             }
         }
-        #if canImport(Foundation)
+        #if canImport(Foundation) || canImport(FoundationEssentials)
         return Image(width: width, height: height, bytesPerRow: bytesPerRow, data: Data(data))
         #else
         return Image(width: width, height: height, bytesPerRow: bytesPerRow, data: data)
@@ -396,3 +399,4 @@ private extension Nintendo3DSRenderer {
         }
     }
 }
+#endif
