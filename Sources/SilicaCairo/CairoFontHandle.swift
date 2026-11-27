@@ -6,7 +6,7 @@
 //  Copyright © 2026 PureSwift. All rights reserved.
 //
 
-#if canImport(Cairo)
+#if (!SWIFT_PACKAGE || Cairo) && canImport(Cairo)
 
 import Cairo
 import CCairo
