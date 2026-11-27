@@ -1,4 +1,4 @@
-// swift-tools-version:6.0
+// swift-tools-version:6.1
 import Foundation
 import PackageDescription
 
@@ -10,7 +10,7 @@ let isEmbedded = ProcessInfo.processInfo.environment["SILICA_WASM_EMBEDDED"] != 
 let package = Package(
     name: "WebCanvasDemo",
     dependencies: [
-        .package(name: "Silica", path: "../.."),
+        .package(name: "Silica", path: "../..", traits: ["Web"]),
         .package(
             url: "https://github.com/swiftwasm/JavaScriptKit.git",
             from: "0.56.1"
