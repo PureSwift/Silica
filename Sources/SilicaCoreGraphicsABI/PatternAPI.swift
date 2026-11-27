@@ -12,7 +12,7 @@
 
 import CSilicaCoreGraphics
 import Silica
-#if canImport(Cairo)
+#if (!SWIFT_PACKAGE || Cairo) && canImport(Cairo)
 import Cairo
 import SilicaCairo
 #endif
@@ -80,7 +80,7 @@ internal final class PatternObject {
 }
 
 // Patterns paint with Cairo, where contexts draw.
-#if canImport(Cairo)
+#if (!SWIFT_PACKAGE || Cairo) && canImport(Cairo)
 
 // MARK: - Tiles
 
