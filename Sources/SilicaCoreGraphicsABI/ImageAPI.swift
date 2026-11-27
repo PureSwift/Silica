@@ -12,8 +12,12 @@
 
 import CSilicaCoreGraphics
 import Silica
+#if !canImport(Darwin) && canImport(FoundationEssentials)
+import struct FoundationEssentials.Data
+#else
 import struct Foundation.Data
-#if canImport(Cairo)
+#endif
+#if (!SWIFT_PACKAGE || Cairo) && canImport(Cairo)
 import Cairo
 import CCairo
 #endif
@@ -350,7 +354,7 @@ internal final class ImageObject {
         return Silica.Image(width: width, height: height, data: Data(pixels))
     }()
 
-    #if canImport(Cairo)
+    #if (!SWIFT_PACKAGE || Cairo) && canImport(Cairo)
     /// The coverage as a Cairo alpha surface, to clip to.
     func maskSurface() -> Cairo.Surface.Image? {
         guard let surface = try? Cairo.Surface.Image(format: .a8, width: width, height: height) else { return nil }
@@ -566,7 +570,7 @@ internal final class ImageObject {
 // MARK: - PNG
 
 // Cairo reads PNGs, where there is Cairo.
-#if canImport(Cairo)
+#if (!SWIFT_PACKAGE || Cairo) && canImport(Cairo)
 
 /// The bytes a PNG is read from, as Cairo reads them.
 private final class PNGReader {
