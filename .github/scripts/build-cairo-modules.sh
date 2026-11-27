@@ -19,7 +19,13 @@ case "$(uname -s)" in
 esac
 
 clone() {
-  [ -d "$work/$1" ] || git clone --depth 1 "https://github.com/PureSwift/$1.git" "$work/$1"
+  if [ ! -d "$work/$1" ]; then
+    git clone --depth 1 --branch "$2" "https://github.com/PureSwift/$1.git" "$work/$1"
+  fi
+  if [ "$(git -C "$work/$1" rev-parse HEAD)" != "$(git -C "$work/$1" rev-parse "refs/tags/$2^{}")" ]; then
+    printf '%s must be checked out at tag %s\n' "$work/$1" "$2" >&2
+    exit 1
+  fi
 }
 
 # pkg-config's compiler flags, for the C headers the modules wrap.
@@ -51,12 +57,13 @@ module() {
     "$work/$repository/Sources/$name"/*.swift
 }
 
-clone FontConfig
-clone Cairo
+clone FontConfig 2.0.0
+clone Cairo 1.4.0
+clone swift-freetype 0.1.1
 
 cmodule FontConfig CFontConfig
 cmodule Cairo CCairo
-cmodule Cairo CFreeType
+cmodule swift-freetype CFreeType
 
 # shellcheck disable=SC2046
 module FontConfig FontConfig $(pkg-config --libs fontconfig freetype2)
