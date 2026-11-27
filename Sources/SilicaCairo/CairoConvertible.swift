@@ -6,11 +6,15 @@
 //  Copyright © 2016 PureSwift. All rights reserved.
 //
 
-#if canImport(Cairo)
+#if (!SWIFT_PACKAGE || Cairo) && canImport(Cairo)
 
 import Cairo
 import CCairo
+#if !canImport(Darwin) && canImport(FoundationEssentials)
+import FoundationEssentials
+#else
 import Foundation
+#endif
 import Silica
 
 public extension AffineTransform {
