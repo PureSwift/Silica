@@ -73,7 +73,7 @@ public enum CoreGraphicsObjects {
         case is PatternObject: return .pattern
         case is FunctionObject: return .function
         case is ShadingObject: return .shading
-        #if canImport(Cairo)
+        #if (!SWIFT_PACKAGE || Cairo) && canImport(Cairo)
         // contexts draw with Cairo, where there is Cairo
         case is ContextObject: return .context
         case is FontObject: return .font
